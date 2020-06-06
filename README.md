@@ -1,2 +1,15 @@
 # dbTwig
-Thin exposure layer of Database Secured Business Logic
+## Thin Exposure Layer of Database Secured Business Logic
+
+The dbTwig Project has the goal of providing an example of the very thin execution layer utilized by the AsterionDB product set.
+The AsterionDB Product design includes both the Data and the Busienss Logic controlling access to that data to reside within the Database.
+The initial releases of the AsterionDB Product followed a typicaly model of parsing RESTful API requests, performing Function or Procedure calls to Stored Logic in the Database.  As the Database became able to work directly with JSON and to emit JSON, there was an opportunity to simplify the Middletier logic to generically package the parameters in JSON and to just return the resuting JSON emitted from the Database Functions as the response value.
+During the latest Refactoring, it was discovered that the need to have the routing logic itself in the Middletier was no longer needed by placing the "routing" logic itself into a function within the Database.  This reduced hundreds of useless boilerplate code in the Middletier, but more importantly, it became clear that one the one function need be exposed.
+Thus, it was possible to have a new Database User that ONLY had the ability to Execute that chokepoint function and no ownership of the Tables or actual functions themselves.
+
+This is exactly what dbTwig is all about.  The securing of the Business Logic into the Database, with nothing on the Middletier to compromise how the "Black Box" works.  A very thin layer which just packages up the RESTful Request information into JSON and provides the URL Path being requested into a single Function within the Database. This provides no information as to the Makeup of the implementation or even what a given session has the authorization to execute at any given time.
+
+## Best Practices
+In AsterionDB, the session tracking and user authentication is performed within the Business Logic in the Database.  The actual Database Schema (User) within the Database that owns the Tables and Logic can be disabled for access when the system is not in active maintenance.  The dbTwig Database User is just delegating the RESTFul API request and so, the password of the dbTwig DB User is of no great consequence.  There would be nothing that the dbTwig DB User can do what is not already available from the exposed RESTful API.  Far too often the DB User Password needs to be around somewhere in clear text (or the Key to unscamble it is somewhere in clear text) providing a false sense of security from intrusions at the Middletier.
+Reliance on the Middletier to provide Application Level access or having direct accesss to the Database Objects, means that system itself needs to have a higher critical patch consideration than if all of that logic is secured within the Database.
+Changes to Stored Procedures within the Database, especially when the Schema itself is locked except when maintatnce activities are underway, are much more easily audited than the filesystem of a Middletier which itself may be getting its execution code from a file share appliance - then the file share appliance or host is ALSO in need of higher critical patch considerations.
