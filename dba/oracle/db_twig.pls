@@ -16,7 +16,7 @@ package body db_twig as
     l_object_name                     middle_tier_map.object_name%type;
     l_json_data                       clob;
     l_entry_point                     middle_tier_map.entry_point%type := l_json_parameters.get_string('entryPoint');
-    l_object_owner                    user_users.username%type := l_json_parameters.get_string('objectOwner');
+    l_object_owner                    user_users.username%type := l_json_parameters.get_string('databaseUsername');
     l_fully_qualified_object          varchar2(257);
 
   begin

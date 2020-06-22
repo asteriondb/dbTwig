@@ -9,6 +9,7 @@
   "author": "Steve Guilford, AsterionDB Inc.",
   "license": "MIT",
   "dependencies": {
+    "busboy": "^0.3.1",
     "express": "^4.17.1",
     "oracledb": "^4.2.0"
   }
