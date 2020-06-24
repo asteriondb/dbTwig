@@ -2,7 +2,6 @@ const oracledb = require('oracledb');
 oracledb.autoCommit = true;
 
 const ORA_PACKAGE_STATE_DISCARDED = 4068;
-const FATAL_API_ERROR_FLOOR = 20000;
 const SESSION_TIMEOUT = 20002;
 const USER_PASSWORD_ERROR = 20124;
 const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
@@ -71,19 +70,19 @@ exports.getConnectionFromPool = async function()
   return await oracledb.getPool().getConnection()
 }
 
-exports.callDbTwig = async function(server, connection, request)
+exports.callDbTwig = async function(server, connection, requestData)
 {
-  systemParameters.authorization = request.get('Authorization');
-  systemParameters.clientAddress = request.ip;
-  systemParameters.userAgent = request.get('User-Agent');
-  systemParameters.httpHost =  request.get('Host');
+  systemParameters.authorization = requestData.authorization;
+  systemParameters.clientAddress = requestData.clientAddress;
+  systemParameters.userAgent = requestData.userAgent;
+  systemParameters.httpHost =  requestData.httpHost;
   systemParameters.serverAddress = server.address().address;
 
   let text = 'begin :jsonData := db_twig.call_rest_api(:jsonParameters); end;';
   let bindVars = 
   {
     jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
-    jsonParameters: JSON.stringify({...systemParameters, ...request.body, entryPoint: request.params.entryPoint})
+    jsonParameters: JSON.stringify({...systemParameters, ...requestData.body, entryPoint: requestData.entryPoint})
   }
 
   let oraError = 0;
@@ -97,7 +96,7 @@ exports.callDbTwig = async function(server, connection, request)
   {
     oraError = error.errorNum;
     
-    if (USER_PASSWORD_ERROR === oraError && CREATE_USER_SESSION === request.params.entryPoint)
+    if (USER_PASSWORD_ERROR === oraError && CREATE_USER_SESSION === requestData.entryPoint)
     {
       msleep(5000);
       return {status: false, errorCode: oraError, errorMessage: USER_PASSWORD_ERROR_MSG};
@@ -105,7 +104,7 @@ exports.callDbTwig = async function(server, connection, request)
     
     if (ORA_PACKAGE_STATE_DISCARDED !== oraError)
     {
-      let obj = await errorHandler(connection, request.originalUrl, error, text);
+      let obj = await errorHandler(connection, requestData.originalUrl, error, text);
       return obj;
     }
   }
@@ -118,12 +117,18 @@ exports.callDbTwig = async function(server, connection, request)
     }
     catch (error)
     {
-      let obj = await errorHandler(connection, request.originalUrl, error, text);
+      let obj = await errorHandler(connection, requestData.originalUrl, error, text);
       return obj;
     }
   }
 
   return {status: true, lob: result.outBinds.jsonData};
+}
+
+exports.oracleClientVersionString = oracledb.versionString;
+exports.oracleServerVersionString = function(connection)
+{
+  return connection.oracleServerVersionString;
 }
 
 exports.sendLobResponse = async function(lob, response)
@@ -165,7 +170,6 @@ exports.getJsonPayload = async function(lob)
     lob.setEncoding('utf8');  // set the encoding so we get a 'string' not a 'buffer'
     lob.on('error', function(err) 
     { 
-      status = 500;
       console.log(err); 
       reject();
     });
