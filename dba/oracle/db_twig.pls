@@ -1,6 +1,8 @@
 create or replace
 package body db_twig as
 
+  s_json_response                     constant varchar2(23) := '{"response": "success"}';
+
   function call_rest_api
   (
     p_json_parameters                 clob
@@ -10,7 +12,6 @@ package body db_twig as
   is
 
     l_json_parameters                 json_object_t := json_object_t(p_json_parameters);
-    l_json_object                     json_object_t;
     l_plsql_text                      varchar2(1024);
     l_object_type                     middle_tier_map.object_type%type;
     l_object_name                     middle_tier_map.object_name%type;
@@ -46,9 +47,7 @@ package body db_twig as
       l_plsql_text := 'begin '||l_fully_qualified_object||'(:l_json_parameters); end;';
       execute immediate l_plsql_text using p_json_parameters;
 
-      l_json_object := json_object_t;
-      l_json_object.put('response', 'success');
-      l_json_data := l_json_object.to_string;
+      l_json_data := s_json_response;
 
     end if;
 
