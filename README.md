@@ -4,17 +4,36 @@
 
 We know.  It seems crazy. But, when you build applications following patterns innovated by AsterionDB, that's all you need.  By utilizing DbTwig, you will embrace a software architecture that forces you to write secure applications and combats cybersecurity threats in ways that we have never imagined.
 
-AsterionDB allows the Oracle database to seamlessly manage unstructured (e.g. file based) data. We migrate all of your digital assets out of the legacy file system and into the database. *(For those of you that think it's scary to store files in a database, remember, the file system is a database too.)* Given that they're now in the database, we don't need to keep a static filename anymore.
+AsterionDB allows the Oracle database to seamlessly manage unstructured (e.g. file based) data. We migrate all of your digital assets out of the legacy file system and into the database. *(For those of you that think it's scary to store files in a database, remember, the legacy file system is a database too.)* Given that they're now in the database, we don't need to keep a static filename anymore.
 
-Think of it, if all of your files are now stored in the database and there are no more PDFs in your directories, how does ransomware infect your files?  They're not there anymore!
+Think about it, if all of your files are now stored in the database and there are no more PDFs in your directories, how does ransomware infect your files?  They're not there anymore!
 
 **DbTwig is our gift to the open-source community and society in general so that everyone can build applications that are inherently secure and resistant to cybersecurity attack. If this is intriguing to you, please continue reading.**
 
+## Why do I want to use DbTwig?
+
+    1.  You will be using a framework and an architecture that forces you to write secure applications
+    2.  You will have an architectural basis from which to fight cybersecurity threats
+    3.  You will be building an architecture that is resilient to cybersecurity attacks
+    4.  You will be reducing the threshold between intrusion and detection
+    5.  You will be bringing the logic as close to the data as technically possible
+    6.  You will backup your data and logic together in one operation
+    7.  You will restore your data and logic together in one operation
+    8.  You will secure your logic using the same policies that are in place for data security
+    9.  You will simplify audit and compliance activities
+    10. You will streamline development by focusing on data-layer and presentation-layer technologies
+    11. You will be writing less code and getting more done
+    12. You will be reducing the number of components and technologies required to achieve your goals
+    13. You will simplify troubleshooting and hot patching
+    14. You will be using a framework and an architecture that forces you to write secure applications
+
 ## DbTwig - The Basic Concept
 
-So, its really pretty simple.  AsterionDB has pioneered the ability to merge all data types within the Oracle database.  That means structured and unstructured data are managed equally, side-by-side within the database.  A photograph, that you previously had to store outside of the RDBMS, is now just another data type that you manage and secure just like anything else.  This has profound security implications.
+So, its really pretty simple.  AsterionDB has pioneered the ability to merge all data types within the Oracle database.  That means structured and unstructured data is managed equally, side-by-side, within the database.  A photograph that you previously had to store outside of the RDBMS is now just another data type that you manage and secure like anything else.  This has profound security implications.
 
-Naturally of course, if you have all of your data in the database, you're going to want all of your business logic there too.  As you might suspect, this also has very significant and profound implications. The recent integration of JSON capabilities in the Oracle database make it feasible now to encorporate all business logic at the data-layer. Specifically, by moving all of your select statements into a package in the database, you can turn off schema visibility in the middle-tier. Now, all requests for data are in the form of an API call that is satisfied entirely within the secure confines of the database. The middle-tier does not need to know the 'layout' of the data in order to find what it needs.  It just needs to know the appropriate API call to make. That's the trick that allows you to implement a single access point through DbTwig for all middle-tier requests. Removing schema visibility is essential to being able to build a hyper-secure architecture.
+Naturally of course, if you have all of your data in the database, you're going to want all of your business logic there too.  As you might suspect, this also has very significant and profound implications. The recent integration of JSON capabilities in the Oracle database make it feasible to encorporate all business logic at the data-layer. Specifically, by moving all of your select statements into a package in the database, you can turn off schema visibility in the middle-tier. All requests for data are in the form of an API call that is satisfied entirely within the secure confines of the database. The middle-tier does not need to know the 'layout' of the data in order to find what it needs.  It just needs to know the appropriate API call to make. That's the trick that allows you to implement a single access point through DbTwig for all middle-tier requests. 
+
+**Removing schema visibility is essential to being able to build a hyper-secure architecture.**
 
 This is exactly the approach that AsterionDB takes and the innovation that we bring to market.  DbTwig is a core technology that helps to make this all happen. DbTwig is technology you can use to gain the same level of efficiency and security that AsterionDB embodies.
 
@@ -24,24 +43,49 @@ The Oracle database allows you to build a logical architecture that looks somewh
 
 The DbTwig function looks at the JSON parameters and determines the appropriate logic to delegate to.  This is the technique that allows you to condense API access down to one function in a specific package.
 
-Are you still with us? Good.  
+Are you still with us? Good.
 
-    * You've got all of your data in the database  
-    * You've got all of your business logic in the database too  
+    * You've got all of your data in the database
+    * You've got all of your business logic in the database too
     * You've got a single access point that all API requests are going to go through
 
-Now, you're going to revoke 'create session privilege' from your production application user and create a dedicated DbTwig user.  The DbTwig user will have no privileges other than the ability to connect to the database and it will own a synonym - **that's it!**  The synonym will point to the DbTwig package within your application schema; that's the extent of the DbTwig user's universe, the DbTwig package.  A package with one function to call a generic API and another function to log errors. That's all it can see. That's all it needs to see.
+Now, you're going to revoke 'create session privilege' from your production application user and create a dedicated DbTwig user.  The DbTwig user will have no privileges other than the ability to connect to the database and it will own a synonym - **that's it!**  The synonym will point to the DbTwig package within your application schema; that's the extent of the DbTwig user's universe.  A package with one function to call a generic API and another function to log errors. That's all it can see. That's all it needs to see.
 
-During production use, the only two accounts that can connect to the database are the DBA and the DbTwig user. Remember, the DbTwig user can't see anything.  All it gets to do is pass messages on from the middle-tier and return data from the database.  **This is how we create a hyper-secure environment!!!**  Now you can too.
+During production use, the only two accounts that can connect to the database are the DBA and the DbTwig user. Remember, the DbTwig user can't see anything.  All it gets to do is pass messages on from the middle-tier and return data from the database.  **This is how we create a hyper-secure environment!!!  Now you can too.**
 
 ## Pre-Requisite Knowledge
 
 If you are an Oracle programmer, familiar with PL/SQL, you're going to be able to pick up this technology within minutes.  It is made for the way Oracle programmers work and think.
 
-You'll also need to be familiar with JSON. If you're an Oracle programmer then you probably already know enough about JSON to get started. One skill you will need to acquire though is how JSON is integrated into the Oracle database. Oracle's JSON capabilities are very powerful. AsterionDB specifically leverages JSON in order to create a procedural interface for all data acquisition requests. In simple terms, we have PL/SQL functions that return JSON data - your data selected from the database.
+You'll also need to be familiar with JSON. Chances are, you probably already know enough about JSON to get started. One skill you will need to acquire though is knowing how to utilize the integrated JSON capabilities in the Oracle DB. Oracle's JSON capabilities are very powerful. AsterionDB specifically leverages JSON to create a procedural interface for all data acquisition requests. In simple terms, we have PL/SQL functions that return JSON data - the data your API selected from the database.
 
 So...you've got PL/SQL at the data-layer. For the presentation layer, you get to use whatever you want!  All you have to do is send and receive JSON data to a RESTAPI (i.e. DbTwig).
 
-## The AsterionDB Design Pattern
+## The AsterionDB Design Philosophy
+
+This is the essence of the AsterionDB design philosophy:
+
+    1. All data is to be stored in the database
+    2. All business logic is to be stored in the database
+    3. All schema owner's have connection privilege revoked
+    4. All access is by a dedicated, minimally provisioned and privileged middle-tier user
+
+Here's an architectural topology diagram:
+
+![DbTwig Topology Diagram](diagrams/bareDbTwig.png)
+
+As mentioned previously, the recent incorporation of JSON capabilities in Oracle is key to making it possible to put all business logic in the database. As powerful as the Oracle database is however, there are still instances where you will need to extend the logical capability of the database.  AsterionDB has a lot of experience in this regard.  Some examples of extended logical capabilities are:
+
+    1. Extracting meta-data from multimedia files
+    2. Transcoding media files
+    3. Sending emails from the database
+    4. Processing an image w/ OCR technology to extract text data
+    5. Controlling telecommunications devices
+    6. Sending SMS messages
+    7. Interacting with Google's OAuth server
+
+We also have solved the puzzle of how to store and manipulate unstructured data in the database. 
+
+DbTwig and AsterionDB's design philosophy are direct results of the development and discovery we encountered in solving the unstructured data riddle.
 
 
