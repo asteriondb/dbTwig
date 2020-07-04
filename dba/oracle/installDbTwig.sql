@@ -7,5 +7,5 @@ create table middle_tier_map
 );
 
 @@db_twig
-@@db_twig.plb
+@@db_twig.pls
 

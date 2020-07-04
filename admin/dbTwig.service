@@ -1,0 +1,16 @@
+[Unit]
+Description=DbTwig - Ultra-Thin MiddleTier Listener
+After=network.target
+
+[Service]
+Environment=DBTWIG_USER=dbtwig
+Environment=DBTWIG_PASSWORD=SecurityBySimplicity2020
+# Environment=DB_NAME=%TNS_DB_ENTRY%
+EnvironmentFile=/etc/sysconfig/asterion
+Type=simple
+User=node
+ExecStart=/usr/bin/node /home/asterion/asterion/oracle/dbTwig/middleTier/index.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

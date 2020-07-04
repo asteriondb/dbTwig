@@ -1,6 +1,8 @@
 const oracledb = require('oracledb');
 oracledb.autoCommit = true;
 
+var syslog = require('modern-syslog');
+
 const ORA_PACKAGE_STATE_DISCARDED = 4068;
 const SESSION_TIMEOUT = 20002;
 const USER_PASSWORD_ERROR = 20124;
@@ -51,8 +53,16 @@ var errorHandler = async function(connection, url, error, sqlText)
       console.error('Attempted to log this error object:');
       console.error({...systemParameters, ...errorParameters});
 
+      syslog.error('Unable to log a RestAPI error to the database.');
+      syslog.error(JSON.stringify(logError));
+      syslog.error('Attempted to log this error object:');
+      syslog.error(JSON.stringify({...systemParameters, ...errorParameters}));
+
       return {status: false, errorCode: errorParameters.errorCode, errorMessage: errorParameters.errorMessage};
     }
+
+    syslog.error(JSON.stringify({...systemParameters, ...errorParameters}));
+    console.error({...systemParameters, ...errorParameters});
 
     return {status: false, lob: result.outBinds.jsonData};
   }
@@ -157,7 +167,8 @@ exports.sendLobResponse = async function(lob, response)
   }
   catch (error)
   {
-    console.log(error);
+    syslog.error(JSON.stringify(error));
+    console.error(error);
   }
 }
 
@@ -170,7 +181,8 @@ exports.getJsonPayload = async function(lob)
     lob.setEncoding('utf8');  // set the encoding so we get a 'string' not a 'buffer'
     lob.on('error', function(err) 
     { 
-      console.log(err); 
+      syslog.error(JSON.stringify(err)); 
+      console.error(err); 
       reject();
     });
   
@@ -190,10 +202,11 @@ exports.getJsonPayload = async function(lob)
     await doStream;  
     return jsonPayload;
   }
-  catch (error)
+  catch (err)
   {
-    console.log(error);
-  }
+    syslog.error(JSON.stringify(err)); 
+    console.error(err); 
+}
 }
 
 exports.init = async function()
@@ -210,23 +223,24 @@ exports.init = async function()
     await oracledb.createPool(credentials);
     return true
   }
-  catch (error)
+  catch (err)
   {
-    console.error(error);
+    syslog.error(JSON.stringify(err)); 
+    console.error(err); 
     return false;
   }
 }
 
 exports.closePool = async function()
 {
-  console.log('Closing oracle connection pool....');
   try
   {
     await oracledb.getPool().close(10);
   }
-  catch (error)
+  catch (err)
   {
-    console.error(error);
+    syslog.error(JSON.stringify(err)); 
+    console.error(err); 
   }
 }
 

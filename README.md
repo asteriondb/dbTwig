@@ -25,13 +25,14 @@ Think about it, if all of your files are now stored in the database and there ar
     11. You will be writing less code and getting more done
     12. You will be reducing the number of components and technologies required to achieve your goals
     13. You will simplify troubleshooting and hot patching
-    14. You will be using a framework and an architecture that forces you to write secure applications
+    14. You will increase code reusability
+    15. You will be using a framework and an architecture that forces you to write secure applications
 
 ## DbTwig - The Basic Concept
 
 So, its really pretty simple.  AsterionDB has pioneered the ability to merge all data types within the Oracle database.  That means structured and unstructured data is managed equally, side-by-side, within the database.  A photograph that you previously had to store outside of the RDBMS is now just another data type that you manage and secure like anything else.  This has profound security implications.
 
-Naturally of course, if you have all of your data in the database, you're going to want all of your business logic there too.  As you might suspect, this also has very significant and profound implications. The recent integration of JSON capabilities in the Oracle database make it feasible to encorporate all business logic at the data-layer. Specifically, by moving all of your select statements into a package in the database, you can turn off schema visibility in the middle-tier. All requests for data are in the form of an API call that is satisfied entirely within the secure confines of the database. The middle-tier does not need to know the 'layout' of the data in order to find what it needs.  It just needs to know the appropriate API call to make. That's the trick that allows you to implement a single access point through DbTwig for all middle-tier requests. 
+Naturally of course, if you have all of your data in the database, you're going to want all of your business logic there too.  As you might suspect, this also has very significant and profound implications. The recent integration of JSON capabilities in the Oracle database make it feasible to encorporate all business logic at the data-layer. Specifically, by moving all of your select statements into a package in the database, you can turn off schema visibility in the middle-tier. All requests for data are in the form of an API call that is satisfied entirely within the secure confines of the database. The middle-tier does not need to know the 'layout' of the data in order to find what it needs.  It just needs to know the appropriate API call to make. 
 
 **Removing schema visibility is essential to being able to build a hyper-secure architecture.**
 
@@ -84,8 +85,77 @@ As mentioned previously, the recent incorporation of JSON capabilities in Oracle
     6. Sending SMS messages
     7. Interacting with Google's OAuth server
 
-We also have solved the puzzle of how to store and manipulate unstructured data in the database. 
-
 DbTwig and AsterionDB's design philosophy are direct results of the development and discovery we encountered in solving the unstructured data riddle.
 
+## DbTwig System Requirements
 
+DbTwig's system requirements are very simple:
+
+    * Oracle version 18 and above
+    * OracleLinux versions 7 & 8 (other RedHat derrivatives will work as well but OL is what we supports)
+    * Nginx
+    * NodeJS v10.x
+
+## DbTwig Components
+
+DbTwig is comprised of five components:
+
+    1. A middle-tier listener
+    2. A table in the database
+    3. A package in the database
+    4. A dedicated middle-tier user
+    5. A synonym to map the middle-tier user to the DbTwig package
+
+### The DbTwig Middle-Tier Listener
+
+The DbTwig middle-tier listener is a JavaScript NodeJS/Express based application.  It's job is to listen for HTTP requests and transform them into a database call to the DbTwig package. The DbTwig listener is implemented as a system service and managed using standard 'systemctl' commands. The DbTwig listener logs messages into the system message log file using 'syslog'.
+
+### The DbTwig Middle-Tier Map Table
+
+DbTwig relies upon a table in the database - middle_tier_map - to map incoming RESTAPI requests to the corresponding function or procedure to call.
+
+### The DbTwig Package
+
+The DbTwig package receives incoming RESTAPI requests at the data-layer, consults the middle_tier_map and calls the appropriate function or procedure.
+
+### The DbTwig Middle-Tier User
+
+DbTwig utilizes a dedicated, minimally provisioned and privileged database user for middle-tier connection purposes. This user owns a synonym that points to the DbTwig package in the application's schema. The DbTwig middle-tier user is granted execute privilege upon the DbTwig package.
+
+### The DbTwig Synonym
+
+The DbTwig middle-tier user owns a synonym that maps to the DbTwig package.
+
+## Installing DbTwig
+
+### DbTwig Database Components
+
+In the ./dbTwig/dba directory there is a file called installDbTwig.sql.  This file creates the middle-tier mapping table and loads the DbTwig package header & body into the database.  Depending upon your requirements, you may want to integrate this script into a master script that you use to install your application. Alternatively, you may run this once and be done with it. Run this script as **the owner of your application schema**.
+
+To setup the DbTwig user, connect to the database as a DBA.  Issue the following commands, edited appropriately for your requirements.  You can choose whatever username you want (i.e. something other than dbtwig) for the DbTwig user.
+
+    1. grant connect session to dbtwig identified by "choose-a-password";
+    2. create synonym dbtwig.db_twig for your_schema_owner.db_twig;
+    3. grant execute on your_schema_owner.db_twig to dbtwig;
+
+### DbTwig Middle-Tier Listener
+
+The middle-tier listener is contained in the ./dbTwig/middleTier subdirectory.  Go to that directory and from a command prompt type:
+
+    npm install
+
+to install all of the middle-tier dependencies.
+
+The listener has been integrated with systemd.  In the ./dbTwig/admin you will find two configuration files:
+
+    1. asterion - Edit this file as required and copy it to /etc/sysconfig
+    2. dbTwig.service - Edit this file as required and copy it to /usr/lib/systemd/system
+
+To start and enable the DbTwig listener type the following commands:
+
+    1. systemctl start dbTwig.service
+    2. systemctl enable dbTwig.service
+
+Check the system log file in /var/log/messages to verify proper operation of the DbTwig listener. You can also type:
+
+    * systemctl status dbTwig.service

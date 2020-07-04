@@ -1,6 +1,7 @@
 {
   "name": "db-twig-middle-tier",
-  "version": "0.0.1",
+  "version": "0.0.5",
+  "private": true,
   "description": "DbTwig - The UltraSlim Middle-Tier Framework",
   "main": "index.js",
   "scripts": {
@@ -12,6 +13,7 @@
     "axios": "^0.19.2",
     "busboy": "^0.3.1",
     "express": "^4.17.1",
+    "modern-syslog": "^1.2.0",
     "oracledb": "^4.2.0"
   }
 }

@@ -5,11 +5,12 @@ const axios = require('axios').default;
 
 var Busboy = require('busboy');
 
-const port = 3030
+var syslog = require('modern-syslog');
+
+const port = (undefined === process.env.DBTWIG_PORT ? 3030 : process.env.DBTWIG_PORT);
 
 const dbTwig = require('./dbTwig');
 
-const MIDDLE_TIER_VERSION = '0.0.1';
 const HTTP_SERVER_ERROR = 500;
 
 app.use(express.json());
@@ -181,8 +182,6 @@ async function handleUploadRequest(request, response)
         break;
 
       default:
-        console.log(fieldname);
-        console.log(val);
         break;
     }
   });
@@ -249,7 +248,7 @@ async function getSupportInfoRequest(request, response)
 
     jsonObject.databaseVersion = dbTwig.oracleServerVersionString(connection);
     jsonObject.databaseClientVersion = dbTwig.oracleClientVersionString;
-    jsonObject.middleTierVersion = MIDDLE_TIER_VERSION;
+    jsonObject.middleTierVersion = require('./package.json').version;
     
     jsonPayload = JSON.stringify(jsonObject);
   }
@@ -305,5 +304,8 @@ process
 
 if (!dbTwig.init()) process.exit(1);
 
+syslog.open('DbTwig', syslog.LOG_CONS||syslog.LOG_PERROR||syslog.LOG_PID);
+
+syslog.info('DbTwig Middle-Tier Server listening on port: ' + port);
 console.log('DbTwig Middle-Tier Server listening on port: ' + port);
 let server = app.listen(port, "127.0.0.1");
