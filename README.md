@@ -134,7 +134,7 @@ In the ./dbTwig/dba directory there is a file called installDbTwig.sql.  This fi
 
 To setup the DbTwig user, connect to the database as a DBA.  Issue the following commands, edited appropriately for your requirements.  You can choose whatever username you want (i.e. something other than dbtwig) for the DbTwig user.
 
-    1. grant connect session to dbtwig identified by "choose-a-password";
+    1. grant create session to dbtwig identified by "choose-a-password";
     2. create synonym dbtwig.db_twig for your_schema_owner.db_twig;
     3. grant execute on your_schema_owner.db_twig to dbtwig;
 
