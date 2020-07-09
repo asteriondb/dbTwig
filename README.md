@@ -159,3 +159,23 @@ To start and enable the DbTwig listener type the following commands:
 Check the system log file in /var/log/messages to verify proper operation of the DbTwig listener. You can also type:
 
     systemctl status dbTwig.service
+
+# Project Summary
+
+The goal of the DbTwig project is to provide an example of the thin execution layer utilized by the AsterionDB product set. AsterionDB's product design includes both structured and unstructured data in an Oracle database as well as the business Logic controlling access to that data 
+
+The initial releases of the AsterionDB Product followed a typical model of parsing RESTful API requests to perform function or procedure calls to stored logic in the database as well as issuing SELECT statements to obtain data. With Oralcle v18, the database was able to consume and emit JSON data.  This presented an opportunity to simplify the middle tier logic by packaging all parameters in a JSON string and similarly having the API return data in JSON format.
+
+During some refactoring that took place in May & June of 2020, it was discovered that placing routing logic in a database function precluded the need to express that logic in the middle tier.  This reduced hundreds of lines of useless boilerplate code, but more importantly, it became clear that only one function, a chokepoint, needed to be exposed to the middle tier.
+
+Thus, it was possible to have a dedicated database user that ONLY had the ability to Execute that chokepoint function.  The dedicated user does not own the tables or actual functions themselves.
+
+This open source project was carved out of the initial components leveraged by AsterionDB in order to provide an example of the principles involved with DbTwig.  As this project progresses, the intention is to create a generic framework/gateway to database resident business logic.
+
+## AsterionDB's Security Model
+
+In AsterionDB, session tracking and user authentication is performed within the business logic in the database. The actual database schema (User) that owns the tables and logic can be provisioned during normal production use so that it can not connect to the database (i.e. create session privilege revoked).  Because all session tracking is in the database, this allows each API call to be a self-validating transaction that carries all information necessary to guarantee session validity. 
+
+The DbTwig database user is just delegating the REST API request.  As a result, the password of the DbTwig database user is of no great consequence. There would be nothing that the DbTwig database user can do that is not already exposed by the REST API.
+
+Far too often the DbTwig database user's password needs to be around somewhere in clear text (or the crypto-key to unscramble it) providing a false sense of security from intrusions at the middle tier.  Reliance on the middle tier providing application level access or having direct access to the database objects, means that system itself needs to have a higher critical patch consideration than if all of that logic is secured within the database.  Changes to stored logic within the database are much more easily audited, especially when the schema itself is locked except for maintenance, than the traditional middle tier application layer.  To compound the problem, the middle tier nodes may be getting their execution code from a shared file appliance that requires its own critical patch considerations.
