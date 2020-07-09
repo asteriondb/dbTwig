@@ -146,7 +146,7 @@ The middle-tier listener is contained in the ./dbTwig/middleTier subdirectory.  
 
 to install all of the middle-tier dependencies.
 
-The listener has been integrated with systemd.  In the ./dbTwig/admin you will find two configuration files:
+The listener has been integrated with systemd.  In the ./dbTwig/admin directory you will find two configuration files:
 
     1. asterion - Edit this file as required and copy it to /etc/sysconfig
     2. dbTwig.service - Edit this file as required and copy it to /usr/lib/systemd/system
@@ -158,4 +158,4 @@ To start and enable the DbTwig listener type the following commands:
 
 Check the system log file in /var/log/messages to verify proper operation of the DbTwig listener. You can also type:
 
-    * systemctl status dbTwig.service
+    systemctl status dbTwig.service
