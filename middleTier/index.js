@@ -26,28 +26,30 @@ app.use(function(req, res, next)
 app.get('/objVaultAPI/tutorials/:entryPoint', handleTutorialsRequest);
 app.post('/objVaultAPI/tutorials/:entryPoint', handleTutorialsRequest);
 
-app.post('/objVaultAPI/uploadFiles', handleUploadRequest);
+app.post('/dbTwig/:serviceName/uploadFiles', handleUploadRequest);
 
-app.get('/objVaultAPI/getSupportInfo', getSupportInfoRequest);
+app.get('/dbTwig/:serviceName/getSupportInfo', getSupportInfoRequest);
 
-app.get('/ObjVaultAPI/oauthReply', handleOauthReply);
+app.get('/dbTwig/:serviceName/oauthReply', handleOauthReply);
 
-app.get('/objVaultAPI/:entryPoint', handleRequest);
-app.post('/objVaultAPI/:entryPoint', handleRequest);
+app.get('/dbTwig/:serviceName/:entryPoint', handleRequest);
+app.post('/dbTwig/:serviceName/:entryPoint', handleRequest);
 
 var os = require('os'), fs = require('fs');
 
-function getRequestData(request)
+function getRequestData(request, serverAddress)
 {
   return(
   {
     authorization: request.get('Authorization'), 
-    clientAddress: request.ip,
+    clientAddress: request.headers['x-forwarded-for'],
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
     body: request.body,
+    serviceName: request.params.serviceName,
     entryPoint: request.params.entryPoint,
-    originalUrl: request.originalUrl
+    originalUrl: request.originalUrl,
+    serverAddress: serverAddress
   });
 }
 
@@ -60,18 +62,19 @@ async function handleOauthReply(request, response)
   let requestData = 
   {
     authorization: request.get('Authorization'), 
-    clientAddress: request.ip,
+    clientAddress: request.headers['x-forwarded-for'],
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
     body: request.body,
     entryPoint: 'saveOauthReply',
-    originalUrl: request.originalUrl
+    originalUrl: request.originalUrl,
+    serverAddress: server.address().address
   };
 
   if (undefined !== request.query.error || undefined === request.query.code)
   {
     let connection = await dbTwig.getConnectionFromPool();
-    let result = await dbTwig.callDbTwig(server, connection, requestData);
+    let result = await dbTwig.callDbTwig(connection, requestData);
   
     if (!result.status) response.status(HTTP_SERVER_ERROR);
 
@@ -91,7 +94,7 @@ async function handleOauthReply(request, response)
   requestData.body = {authorizationCode: request.query.code};
 
   let connection = await dbTwig.getConnectionFromPool();
-  let result = await dbTwig.callDbTwig(server, connection, requestData);
+  let result = await dbTwig.callDbTwig(connection, requestData);
   
   var jsonPayload;
 
@@ -126,7 +129,7 @@ async function handleOauthReply(request, response)
 
   requestData.entryPoint = 'saveOauthReply';
 
-  result = await dbTwig.callDbTwig(server, connection, requestData);
+  result = await dbTwig.callDbTwig(connection, requestData);
 
   if (undefined !== result.lob)
     jsonPayload = await dbTwig.getJsonPayload(result.lob);
@@ -195,7 +198,7 @@ async function handleUploadRequest(request, response)
     request.params.entryPoint = 'createUploadedFile';
 
     let connection = await dbTwig.getConnectionFromPool();
-    let result = await dbTwig.callDbTwig(server, connection, getRequestData(request));
+    let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 
     status = result.status;
 
@@ -234,7 +237,7 @@ async function getSupportInfoRequest(request, response)
 {
   request.params.entryPoint = 'getSupportInfo';
   let connection = await dbTwig.getConnectionFromPool();
-  let result = await dbTwig.callDbTwig(server, connection, getRequestData(request));
+  let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 
   var jsonPayload;
   if (undefined !== result.lob)
@@ -248,7 +251,7 @@ async function getSupportInfoRequest(request, response)
 
     jsonObject.databaseVersion = dbTwig.oracleServerVersionString(connection);
     jsonObject.databaseClientVersion = dbTwig.oracleClientVersionString;
-    jsonObject.middleTierVersion = require('./package.json').version;
+    jsonObject.dbTwigListener = require('./package.json').version;
     
     jsonPayload = JSON.stringify(jsonObject);
   }
@@ -264,7 +267,7 @@ async function handleRequest(request, response)
 {
   let connection = await dbTwig.getConnectionFromPool();
 
-  let result = await dbTwig.callDbTwig(server, connection, getRequestData(request));
+  let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 
   if (!result.status) response.status(HTTP_SERVER_ERROR);
   if (undefined !== result.lob)
@@ -280,7 +283,7 @@ async function handleTutorialsRequest(request, response)
   let entryPoint = 'tutorials/' + request.params.entryPoint;
   request.params.entryPoint = entryPoint;
   let connection = await dbTwig.getConnectionFromPool();
-  let result = await dbTwig.callDbTwig(server, connection, getRequestData(request));
+  let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 
   if (!result.status) response.status(HTTP_SERVER_ERROR);
 

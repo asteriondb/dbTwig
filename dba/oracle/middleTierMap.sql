@@ -5,7 +5,3 @@ create table middle_tier_map
     constraint object_type_check check (object_type in ('function', 'procedure')),
   object_name                       varchar2(128) not null
 );
-
-@@db_twig
-@@db_twig.pls
-

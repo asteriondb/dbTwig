@@ -80,19 +80,20 @@ exports.getConnectionFromPool = async function()
   return await oracledb.getPool().getConnection()
 }
 
-exports.callDbTwig = async function(server, connection, requestData)
+exports.callDbTwig = async function(connection, requestData)
 {
   systemParameters.authorization = requestData.authorization;
   systemParameters.clientAddress = requestData.clientAddress;
   systemParameters.userAgent = requestData.userAgent;
   systemParameters.httpHost =  requestData.httpHost;
-  systemParameters.serverAddress = server.address().address;
+  systemParameters.serverAddress = requestData.serverAddress;
 
   let text = 'begin :jsonData := db_twig.call_rest_api(:jsonParameters); end;';
   let bindVars = 
   {
     jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
-    jsonParameters: JSON.stringify({...systemParameters, ...requestData.body, entryPoint: requestData.entryPoint})
+    jsonParameters: JSON.stringify({...systemParameters, ...requestData.body, serviceName: requestData.serviceName, 
+      entryPoint: requestData.entryPoint})
   }
 
   let oraError = 0;
@@ -215,7 +216,7 @@ exports.init = async function()
   {
     user: process.env.DBTWIG_USER, 
     password: process.env.DBTWIG_PASSWORD, 
-    connectString: process.env.DB_NAME
+    connectString: process.env.DATABASE_NAME
   };
 
   try

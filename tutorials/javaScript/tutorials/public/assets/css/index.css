@@ -1,0 +1,34 @@
+/******************************************************************************
+ *                                                                            *
+ *  Copyright (c) 2018, 2020 by AsterionDB Inc.                               *
+ *                                                                            *
+ *  All rights reserved.  No part of this work may be reproduced or otherwise *
+ *  incorporated into other works without the express written consent of      *
+ *  AsterionDB Inc.                                                           *
+ *                                                                            *
+ *****************************************************************************/
+
+/* Toolbar/menubar at top of screen... everything else has to be pushed down */
+body 
+{
+  padding-top: 4.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ReactTable's "No rows found" div is oddly shaped/positioned, apparently for when the table is rendered with
+ * no blank rows... if it is rendered with a fixed height and several blank rows, we probably don't need thesee
+ * changes (I think this is needed if we set MinRows very low) */
+ .rt-noData
+ {
+   height: 75%;
+   background-color: #cccccc !important;
+   white-space: nowrap;
+   /* these two lines center the text vertically */
+   display: flex !important;
+   align-items: center;
+ }
+ 

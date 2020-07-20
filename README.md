@@ -85,14 +85,12 @@ As mentioned previously, the recent incorporation of JSON capabilities in Oracle
     6. Sending SMS messages
     7. Interacting with Google's OAuth server
 
-DbTwig and AsterionDB's design philosophy are direct results of the development and discovery we encountered in solving the unstructured data riddle.
-
 ## DbTwig System Requirements
 
 DbTwig's system requirements are very simple:
 
     * Oracle version 18 and above
-    * OracleLinux versions 7 & 8 (other RedHat derrivatives will work as well but OL is what we supports)
+    * OracleLinux versions 7 & 8 (other RedHat derrivatives will work as well but OL is what we support)
     * Nginx
     * NodeJS v10.x
 

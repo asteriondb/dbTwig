@@ -13,38 +13,38 @@ package body db_twig as
 
     l_json_parameters                 json_object_t := json_object_t(p_json_parameters);
     l_plsql_text                      varchar2(1024);
-    l_object_type                     middle_tier_map.object_type%type;
-    l_object_name                     middle_tier_map.object_name%type;
+    l_object_type                     varchar2(9);
+    l_object_name                     varchar2(128);
     l_json_data                       clob;
-    l_entry_point                     middle_tier_map.entry_point%type := l_json_parameters.get_string('entryPoint');
-    l_object_owner                    user_users.username%type := l_json_parameters.get_string('databaseUsername');
-    l_fully_qualified_object          varchar2(257);
+    l_entry_point                     varchar2(128) := l_json_parameters.get_string('entryPoint');
+    l_service_name                    db_twig_services.service_name%type := l_json_parameters.get_string('serviceName');
+    l_service_owner                   db_twig_services.service_owner%type;
+    l_complete_object_name            varchar2(257);
 
   begin
 
-    select  object_type, object_name
-      into  l_object_type, l_object_name
-      from  middle_tier_map
-     where  entry_point = l_entry_point;
+    select  service_owner
+      into  l_service_owner
+      from  db_twig_services
+     where  service_name = l_service_name;
 
-    if l_object_owner is null then
+    execute immediate
+      'select  object_type, object_name ' ||
+      '  from  '||l_service_owner||'.middle_tier_map ' ||
+      ' where  entry_point = :entryPoint'
+      into l_object_type, l_object_name
+      using l_entry_point;
 
-      l_fully_qualified_object := l_object_name;
-
-    else
-
-      l_fully_qualified_object := l_object_owner||'.'||l_object_name;
-
-    end if;
+    l_complete_object_name := l_service_owner||'.'||l_object_name;
 
     if 'function' = l_object_type then
 
-      l_plsql_text := 'begin :l_json_data := '||l_fully_qualified_object||'(:l_json_parameters); end;';
+      l_plsql_text := 'begin :l_json_data := '||l_complete_object_name||'(:l_json_parameters); end;';
       execute immediate l_plsql_text using out l_json_data, p_json_parameters;
 
     else
 
-      l_plsql_text := 'begin '||l_fully_qualified_object||'(:l_json_parameters); end;';
+      l_plsql_text := 'begin '||l_complete_object_name||'(:l_json_parameters); end;';
       execute immediate l_plsql_text using p_json_parameters;
 
       l_json_data := s_json_response;
