@@ -7,7 +7,6 @@ const ORA_PACKAGE_STATE_DISCARDED = 4068;
 const SESSION_TIMEOUT = 20002;
 const USER_PASSWORD_ERROR = 20124;
 const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
-const CREATE_USER_SESSION = 'createUserSession';
 
 var systemParameters = 
 {
@@ -15,20 +14,19 @@ var systemParameters =
   clientAddress: null,
   serverAddress: null,
   userAgent: null,
-  httpHost: null,
-  debugMode: (undefined === process.env.DEBUG_DBTWIG ? 'N' : 'Y')
+  httpHost: null
 };
 
-var errorHandler = async function(connection, url, error, sqlText)
+var errorHandler = async function(connection, url, serviceName, error, sqlText)
 {
   let errorParameters =
   {
+    serviceName: serviceName,
     errorCode: error.errorNum,
     errorMessage: error.message,
     errorOffset: error.offset,
     sqlText: sqlText,
     scriptFilename: __filename,
-    functionName: 'callDbTwig',
     requestUri: url
   };
 
@@ -60,9 +58,6 @@ var errorHandler = async function(connection, url, error, sqlText)
 
       return {status: false, errorCode: errorParameters.errorCode, errorMessage: errorParameters.errorMessage};
     }
-
-    syslog.error(JSON.stringify({...systemParameters, ...errorParameters}));
-    console.error({...systemParameters, ...errorParameters});
 
     return {status: false, lob: result.outBinds.jsonData};
   }
@@ -107,7 +102,7 @@ exports.callDbTwig = async function(connection, requestData)
   {
     oraError = error.errorNum;
     
-    if (USER_PASSWORD_ERROR === oraError && CREATE_USER_SESSION === requestData.entryPoint)
+    if (USER_PASSWORD_ERROR === oraError)
     {
       msleep(5000);
       return {status: false, errorCode: oraError, errorMessage: USER_PASSWORD_ERROR_MSG};
@@ -115,7 +110,7 @@ exports.callDbTwig = async function(connection, requestData)
     
     if (ORA_PACKAGE_STATE_DISCARDED !== oraError)
     {
-      let obj = await errorHandler(connection, requestData.originalUrl, error, text);
+      let obj = await errorHandler(connection, requestData.originalUrl, requestData.serviceName, error, text);
       return obj;
     }
   }
@@ -124,11 +119,11 @@ exports.callDbTwig = async function(connection, requestData)
   {
     try
     {
-      const result = await connection.execute(text, bindVars);
+      result = await connection.execute(text, bindVars);
     }
     catch (error)
     {
-      let obj = await errorHandler(connection, requestData.originalUrl, error, text);
+      let obj = await errorHandler(connection, requestData.originalUrl, requestData.serviceName, error, text);
       return obj;
     }
   }

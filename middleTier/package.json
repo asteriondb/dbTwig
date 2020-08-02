@@ -1,6 +1,6 @@
 {
   "name": "db-twig-middle-tier",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "private": true,
   "description": "DbTwig - The UltraSlim Middle-Tier Framework",
   "main": "index.js",

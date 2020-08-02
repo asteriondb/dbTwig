@@ -67,6 +67,7 @@ async function handleOauthReply(request, response)
     httpHost: request.get('Host'),
     body: request.body,
     entryPoint: 'saveOauthReply',
+    serviceName: 'asterionDB',
     originalUrl: request.originalUrl,
     serverAddress: server.address().address
   };
