@@ -23,15 +23,87 @@ import AppLocalStorage from './AppLocalStorage.js'
 
 import PopupNotification from './PopupNotification'
 
-const utils = require('./utils.js');
-
 class Tutorial extends React.Component
 {
   "use strict"
 
   debouncedSaveColumnWidths = null;
-  columnKey = 'tutorials';
+  columnKey = 'reactExample';
 
+  buildURL = function(path, parameters)
+  {
+    let dbTwigHost = null;
+    let reactExample = '/dbTwig/reactExample';
+  
+    let dbTwigListener = (dbTwigHost !== null ? dbTwigHost + reactExample : window.location.protocol + '//' + window.location.hostname  + 
+      (8080 !== window.location.port && 443 !== window.location.port && 3001 !== window.location.port && 80 !== window.location.port ? 
+      '' : ':' + window.location.port) + reactExample);
+  
+     if (typeof parameters === 'undefined')
+       return dbTwigListener + path;
+     else
+       return dbTwigListener + path + parameters;
+  }
+
+/**
+  * Generic API fetch request and response/error handling
+  * By: Paul Lesniewski & Steve Guilford
+  *
+  * @param object request Request object defining API request
+  * @param function goodResponseHandler Function that will be called
+  *                                     upon success with good
+  *                                     response (will be provided
+  *                                     response and JSON args as
+  *                                     well as the "extra" parameter
+  *                                     value)
+  * @param function badResponseHandler Function that will be called
+  *                                    upon all non-fatal non-ok
+  *                                    responses, (including non-200
+  *                                    responses such as 404 which
+  *                                    have been served directly from
+  *                                    the web server and that the API
+  *                                    never sees) (will be provided
+  *                                    response and JSON args as well
+  *                                    as the "extra" parameter value)
+  * @param function errorHandler Function that will be called upon (fatal)
+  *                              error (currently only caused by lost
+  *                              connection) (will be given error message
+  *                              argument as well as the "extra" parameter
+  *                              value)
+  * @param mixed extra Any extra data that the caller needs to convey
+  *                    to the result handler functions
+  * @param boolean logoutErrorIsNonCritical When given as boolean true,
+  *                                         indicates that errors handled
+  *                                         by logoutBadResponse() (see
+  *                                         below) should NOT cause a
+  *                                         logout and redirect
+  *
+  */
+  callDbTwig = async function(request, goodResponseHandler, badResponseHandler, errorHandler, extra, logoutErrorIsNonCritical)
+  {
+    if (undefined !== request.body)
+    {
+      let body = await request.body.blob();
+      console.log(body);
+    }
+
+    let requestX = request;
+    let newHeader = new Headers({ 'Content-Type': 'application/json'});
+    requestX = new Request(request, { headers: newHeader});
+  
+    let self = this;
+
+    fetch(requestX).then(function(response)
+    {
+      self.fetchComplete(response, goodResponseHandler, badResponseHandler, extra, logoutErrorIsNonCritical, request);
+    }).catch(function(error)
+    {
+      console.log('Fatal error:', error);
+      console.log('Faulty request:', request);
+      errorHandler('Error: Lost connection to server', extra);
+    });
+  }
+ 
   componentDidMount()
   {
     this.fetchInsuranceClaims();
@@ -53,7 +125,7 @@ class Tutorial extends React.Component
     ];
 
     this.columnWidths = this.appLocalStorage.getColumnWidths(listColumns, this.columnKey);
-    this.debouncedSaveColumnWidths = utils.debounce(this.saveColumnWidths, 500);
+    this.debouncedSaveColumnWidths = this.debounce(this.saveColumnWidths, 500);
 
     this.state =
     {
@@ -74,11 +146,69 @@ class Tutorial extends React.Component
     this.toggleModal = this.toggleModal.bind(this);
   }
       
+  debounce = function(func, wait, immediate)
+  {
+  //TODO: change "var" to "let" where possible herein
+    var timeout;
+    return function()
+    {
+      var context = this, args = arguments;
+      var later = function()
+      {
+        timeout = null;
+        if (!immediate) func.apply(context, args);
+      };
+      var callNow = immediate && !timeout;
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+      if (callNow) func.apply(context, args);
+    };
+  }
+
+  /*
+  * DO NOT CALL DIRECTLY; Only intended for use with window.apiRequest - see above
+  */
+  fetchComplete(response, goodResponseHandler, badResponseHandler, extra, logoutErrorIsNonCritical, request)
+  {
+    if (!response.ok)
+    {
+      if (response.headers.has('Content-Type') && response.headers.get('Content-Type') === 'application/json; charset=utf-8')
+      {
+        return response.json().then(function(jsonData)
+        {
+          badResponseHandler(response, jsonData, extra);
+        });
+      }
+      else
+      {
+        badResponseHandler(response, { code: response.status, errorMessage: "Server response not understood.  Consult the system & framework error logs for further information." }, extra);
+      }
+    }     
+
+    if (response.ok)
+    {
+      if (response.headers.has('Content-Type') && response.headers.get('Content-Type') === 'application/json; charset=utf-8')
+      {
+        return response.json().then(function(jsonData)
+        {
+          goodResponseHandler(response, jsonData, extra);
+        });   
+      }
+      else
+      {
+        return response.text().then(function(text)
+        {
+          goodResponseHandler(response, text, extra);
+        });
+      }
+    }
+  }
+
   fetchInsuranceClaims()
   {
     let self = this;
 
-    utils.callDbTwig(new Request(utils.buildURL('/getInsuranceClaims')),
+    this.callDbTwig(new Request(this.buildURL('/getInsuranceClaims')),
       function(response, jsonData)
       {
         let selectedRow = null;
@@ -104,7 +234,7 @@ class Tutorial extends React.Component
     var bodyData = { databaseUsername: this.databaseUsername, claimId: claimId };
     let self = this;
 
-    utils.callDbTwig(new Request(utils.buildURL('/getInsuranceClaimDetail'), 
+    this.callDbTwig(new Request(this.buildURL('/getInsuranceClaimDetail'), 
         {method: "POST", body: JSON.stringify(bodyData)}),
       function(response, jsonData)
       {
