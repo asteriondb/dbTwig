@@ -7,14 +7,37 @@ rem
 rem  This SQL script drives the creation of all required objects for the DbTwig Middle Tier Framework
 rem  suite of tutorials.
 rem
-rem  Invocation: sqlplus /nolog @install $DBA_USER $DBA_PASSWORD $DATABASE_NAME $DBTWIG_USER $DBTWIG_TUTORIALS_USER $DBTWIG_TUTORIALS_PASSWORD $VAULT_USER
+rem  Invocation: sqlplus /nolog @install
 
 whenever sqlerror exit failure;
 
 set verify off
 spool install.log
 
-connect &1/"&2"@"&3";
+PROMPT To proceed, you will have to connect to the database as a DBA.
+PROMPT
+
+accept dba_user prompt "Enter a user name that can connect to the database as a DBA: "
+accept dba_pass prompt "Enter the DBA password: " hide
+
+connect &&dba_user/&&dba_pass;
+
+prompt
+accept dbtwig_user prompt "Enter the name of the user that owns the DbTwig schema [dbtwig]: " default dbtwig
+prompt
+
+prompt
+prompt We need to create a user to own the DbTwig Examples schema
+accept dbtwig_examples_user prompt "Enter the name of the DbTwig Examples schema owner [dbtwig_examples]: " default dbtwig_examples
+prompt
+
+prompt
+accept dbtwig_examples_password prompt "Enter the DbTwig Examples user's password: " hide
+prompt
+
+prompt
+accept vault_user prompt "Enter the name of the user that owns the AsterionDB schema [asteriondb_objvault]: " default asteriondb_objvault
+prompt
 
 set echo on
 
@@ -30,24 +53,28 @@ begin
       from  database_properties 
      where  property_name = 'DEFAULT_PERMANENT_TABLESPACE';
 
-    l_sql_text := 'create user &5 identified by "&6"';
+    l_sql_text := 'create user &&dbtwig_examples_user identified by "&&dbtwig_examples_password"';
     execute immediate l_sql_text;
 
-    l_sql_text := 'grant create session, create table, create procedure to &5';
+    l_sql_text := 'grant create session, create table, create procedure to &&dbtwig_examples_user';
     execute immediate l_sql_text;
 
-    l_sql_text := 'alter user &5 quota 50M on '||l_default_tablespace;
+    l_sql_text := 'alter user &&dbtwig_examples_user quota 50M on '||l_default_tablespace;
     execute immediate l_sql_text;
 
 end;
 .
 /
 
-alter session set current_schema = &4;
+grant execute on &&dbtwig_user..db_twig to &&dbtwig_examples_user;
 
-insert into db_twig_services values ('asterionDBTutorials', '&5');
+create synonym &&dbtwig_examples_user..db_twig for &&dbtwig_user..db_twig;
 
-alter session set current_schema = &5;
+alter session set current_schema = &&dbtwig_user;
+
+insert into db_twig_services values ('reactExample', '&&dbtwig_examples_user');
+
+alter session set current_schema = &&dbtwig_examples_user;
 
 create table insurance_claims     
 (claim_id 			                number(6) primary key,
@@ -102,14 +129,14 @@ end;
 
 commit;
 
-@@tutorials
-@@tutorials.pls
+@@react_example
+@@react_example.pls
 
-@@../../dba/middleTierMap
+@@../../../dba/middleTierMap
 
-insert into middle_tier_map values ('getInsuranceClaims', 'function', 'tutorials.get_insurance_claims');
-insert into middle_tier_map values ('getInsuranceClaimDetail', 'function', 'tutorials.get_insurance_claim_detail');
-insert into middle_tier_map values ('restApiError', 'function', 'tutorials.error_handler');
+insert into middle_tier_map values ('getInsuranceClaims', 'function', 'react_example.get_insurance_claims');
+insert into middle_tier_map values ('getInsuranceClaimDetail', 'function', 'react_example.get_insurance_claim_detail');
+insert into middle_tier_map values ('restApiError', 'function', 'react_example.error_handler');
 
 commit;
 
