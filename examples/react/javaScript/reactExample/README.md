@@ -1,68 +1,70 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# React Based DbTwig / AsterionDB Example WebApp #
 
-## Available Scripts
+## Introduction ##
 
-In the project directory, you can run:
+This React based example application will show you how to interface to DbTwig and AsterionDB.  It will also show you how to migrate an application from file-based to database oriented access.  The process really is quite simple and if you are already famliar with PL/SQL, you'll be able to follow along without any problems at all!
 
-### `npm start`
+This example focuses on the tasks involved in migrating an existing application.  Having a working knowlege of Oracle, JavaScript and React is a requirement.  It is not suitable for those that are just starting out with the aforementioned technologies.
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Specifically, in order to follow along with this example you will have to meet these pre-requisites:
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+  1.  Have a working installation of AsterionDB with an account that you can use to upload objects.
+  2.  Know how to connect to your AsterionDB database with SQL*Developer (or a similar tool).
+  3.  Working knowledge and familiarity with PL/SQL.
+  4.  Familiarity with the JSON standard (note: it's so simple, you can probably look at it and figure it out...).
+  5.  Working knowlege and familiarity with JavaScript, NodeJS and React.
 
-### `npm test`
+## Objective ##
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The object of this example application is to introduce you to DbTwig & AsterionDB.  In the process you will learn the following:
 
-### `npm run build`
+  1.  Create an AsterionDB Client Application API Access Key
+  2.  Upload objects into AsterionDB
+  3.  Access the Object-IDs for the objects you have uploaded to AsterionDB
+  4.  Modify an existing application to store Object-IDs instead of file pointers
+  5.  Use JSON to return a complex master-detail 'document'
+  6.  Generate a weblink by modifying a package in the database to interact with AsterionDB and DbTwig
+  7.  Decouple changes in the data-model from the client application
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+After installation, we will start out by accessing the React example application in it's unmodified state.  We will upload objects to AsterionDB, modify the example application and see, with just a few changes, how easy it is to migrate an application.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+## Installation ##
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The React example application is delivered using AsterionDB's Docker based delivery mechanism.  The installation process performs the following steps:
 
-### `npm run eject`
+  1.  Install system pre-requisites
+  2.  Download the React example application
+  3.  Build the JavaScript React example application
+  4.  Runs SQL*Plus to install the example application's schema objects
+  
+In order to install the React example application you will need to know your DBA username and password.  You will have to choose a password for the react example application's database user.  In addition, if the values differ from the defaults, you will need to know the usernames for your DbTwig & AsterionDB database users.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Running the following Docker command will download and install the React example application.  While connected to your compute node as the 'asterion' user, issue the following command to run the Docker installer for the React example application:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    docker container run --rm asteriondb/install reactExample | bash -s
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Accessing The React Example Application ##
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+The React example application is designed to run in a stand-alone manner using it's own dedicated HTTP port address.  This allows us to isolate the application and keep it from impacting any other production or development systems.
 
-## Learn More
+To run the React example application, you will change directories to the 'javaScript' subdirectory and run Node-JS's serve program.  While connected to your compute node as the 'asterion' user, type in the following commands:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  * cd /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
+  * serve -s build
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+This will run the Node-JS serve program and make the React example application available on port 5000.  To access the React example application, point your browser to:
 
-### Code Splitting
+  * http://localhost:5000
+    
+or
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+  * http://your.ip.address:5000
 
-### Analyzing the Bundle Size
+If something is already running on port 5000, you can change the default port number as shown below:
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+  * serve -l 5001 -s build
 
-### Making a Progressive Web App
+**Note that if you are accessing your compute node via an SSH tunnel, you'll need to add a mapping for port 5000.  Here's an example:**
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+  * ssh asterion@your.ip.address -L 8080:localhost:8080 -L 5000:localhost:5000
 
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify

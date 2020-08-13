@@ -32,7 +32,7 @@ accept dbtwig_examples_user prompt "Enter the name of the DbTwig Examples schema
 prompt
 
 prompt
-accept dbtwig_examples_password prompt "Enter the DbTwig Examples user's password: " hide
+accept dbtwig_examples_password prompt "Enter the DbTwig Examples user''s password: " hide
 prompt
 
 prompt
