@@ -32,12 +32,10 @@ class Tutorial extends React.Component
 
   buildURL = function(path, parameters)
   {
-    let dbTwigHost = null;
     let reactExample = '/dbTwig/reactExample';
   
-    let dbTwigListener = (dbTwigHost !== null ? dbTwigHost + reactExample : window.location.protocol + '//' + window.location.hostname  + 
-      (8080 !== window.location.port && 443 !== window.location.port && 3001 !== window.location.port && 80 !== window.location.port ? 
-      '' : ':' + window.location.port) + reactExample);
+    let dbTwigListener = (window.dbTwigHost !== null ? window.dbTwigHost + reactExample : 
+      window.location.protocol + '//' + window.location.hostname  + ':8080' + reactExample);
   
      if (typeof parameters === 'undefined')
        return dbTwigListener + path;
@@ -81,12 +79,6 @@ class Tutorial extends React.Component
   */
   callDbTwig = async function(request, goodResponseHandler, badResponseHandler, errorHandler, extra, logoutErrorIsNonCritical)
   {
-    if (undefined !== request.body)
-    {
-      let body = await request.body.blob();
-      console.log(body);
-    }
-
     let requestX = request;
     let newHeader = new Headers({ 'Content-Type': 'application/json'});
     requestX = new Request(request, { headers: newHeader});

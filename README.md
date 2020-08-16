@@ -123,7 +123,7 @@ The DbTwig middle-tier listener is a JavaScript NodeJS/Express based application
 
 The DbTwig Services table allows us to map an external DbTwig service name to the schema owner that implements the service.  The URL's used to access a DbTwig service and make RESTAPI calls are derived from the following example:
 
-  https://your.server.com/dbTwig/yourServiceName/entryPointName
+    https://your.server.com/dbTwig/yourServiceName/entryPointName
 
 The DbTwig Services table maps 'yourServiceName' to your schema name.
 
@@ -151,21 +151,137 @@ DbTwig is a core technology component within the AsterionDB product.  Installing
 
 As outlined above, DbTwig relies upon a mapping table within your application's schema to associate entryPointName's with the function or procedure to be called.  Execute the following script to create the middle_tier_map table:
 
-  /home/asterion/asterion/oracle/dbTwig/dba/middleTierMap.sql
+    /home/asterion/asterion/oracle/dbTwig/dba/middleTierMap.sql
 
 Typically, this script would be executed once when you are creating or first integrating your application with DbTwig.  If you are building a redistributable application that will install upon a target database, you may choose to call the middelTierMap.sql script from your application's installer.
 
 With the middle_tier_map table created you will grant select privileges to the DbTwig user:
 
-  grant select on middle_tier_map to dbtwig;
+    grant select on middle_tier_map to dbtwig;
 
-As pointed out the middle_tier_map maps your external URL's to the appropriate function or procedure to be called.  It is a best practice to put your functions and procedures within a package.  This package, which receives the JSON parameter package from DbTwig and the middle-tier, can then act as a delegater to other packages within your application.  Many applications can expose just one package while larger applications may find it best to expose a two or three.  In either case, you will grant execute access to your package(s) to the DbTwig user:
+The middle_tier_map table maps your external URL to the appropriate function or procedure to be called.  This allows us to hide our internal service and entry point names from the outside world.
 
-  grant execute on my_api_package to dbtwig;
+It is a best practice to put your functions and procedures within a package.  This package can then act as a delegater to other packages within your application.  It is also the only package that you need to expose to DbTwig.  Most applications can expose just one package while larger applications may find it best to expose a two or three.  In either case, you will grant execute access to your package(s) to the DbTwig user:
+
+    grant execute on my_api_package to dbtwig;
 
 Finally, you will tell DbTwig about your DbTwig Service by inserting a row into the db_twig_services table.  For security purposes, this left as a manual operation for your DBA to perform.  Connect to the database as a DBA and issue the following insert statement:
 
-  insert into dbtwig.db_twig_services('yourServiceName', 'yourSchemaName');
+    insert into dbtwig.db_twig_services('yourServiceName', 'yourSchemaName');
+
+## Designing Your RestAPI Package ##
+
+To review, the DbTwig paradigm calls for all functions and procedures to accept a JSON parameter string.  The JSON parameter string can be empty if the function or procedure does not require any parameters.  Functions will return information as a JSON string. Maintaining this function and procedure signature allows us to implement a simple, straightforward middle-tier.  
+
+  **Caveat:  The JSON parameter string is for input values to DbTwig.  It can not be used to return values from a procedure. All returned values must be sent in a JSON string from a function.**
+
+It is also a best practice to limit the number of packages exposed to DbTwig.  The package(s) exposed to DbTwig will be responsible for unpacking the JSON parameters, validating them against database-types variables and then delegating the call to the appropriate logic. Here's a simple example of a package header:
+
+```
+create or replace package example_package as
+
+  procedure create_insurance_claim
+  (
+    p_json_parameters                 clob
+  );
+
+  function get_insurance_claim_detail
+  (
+    p_json_parameters                 clob
+  )
+  return clob;
+
+end example_pakcage;
+```
+
+Here's an example of a corresponding package body:
+
+```
+create or replace package body example_program as
+
+  procedure create_insurance_claim
+  (
+    p_json_parameters                 clob
+  )
+  
+  is
+
+    l_json_object                     json_object_t := json_object_t(p_json_parameters);
+    l_insured_party_id                insurance_claims.insured_party_id%type := 
+      l_json_object_t.get_string('insuredPartyId');
+
+  begin
+
+    insert into insurance_claims
+      (insured_party_id,...)    
+    values
+      (l_insured_party_id,...);
+
+  end create_insurance_claim;
+
+  function get_insurance_claim_detail
+  (
+    p_json_parameters                 clob
+  )
+  return clob
+
+  as
+
+    l_json_object                     json_object_t := json_object_t(p_json_parameters);
+    l_claim_id                        insurance_claims.claim_id%type :=
+      l_json_object.get_number('claimId');
+    l_clob                            clob;
+
+  begin
+
+    select  json_object(
+              'insuredParty' is insured_party,
+              'accidentDate' is to_char(accident_date, 'dd-MON-yyyy'),
+              'accidentLocation' is accident_location,
+              'deductibleAmount' is deductible_amount,
+              'claimsAdjusterReport' is claims_adjuster_report,
+              'claimPhotos' is get_insurance_claim_photos(l_claim_id) format json
+              returning clob)
+      into  l_clob
+      from  insurance_claims
+     where  claim_id = l_claim_id;
+
+    return l_clob;
+
+  end get_insurance_claim_detail;
+
+end example_pakcage;  
+```
+It is important to note how we are extracting the JSON parameters into database typed variables when they are declared. Good programmers always verify incoming parameter types and value lengths as soon as possible.
+
+## Mapping A RestAPI Entry Point ##
+
+For each function and procedure that you expose via DbTwig you will have to create a mapping entry in the middle_tier_map table.  The middle_tier_map maps out the external entry point name in your URL with the corresponding function or procedure. To create the mapping entry, simply insert (or update) the appropriate row in the middle_tier_map table.  Here's an example:
+
+```
+insert into middle_tier_map
+  (entry_point, object_type, object_name)
+values
+  ('getInsuranceClaimDetail', 'function', 'example_package.get_insurance_claim_detail');
+
+insert into middle_tier_map
+  (entry_point, object_type, object_name)
+values
+  ('createInsuranceClaim', 'procedure', 'example_package.create_insurance_claim');
+```
+Developers will probably maintain the middle_tier_map table directly in SQL*Developer.
+
+## Calling Your API via DbTwig ##
+
+As mentioned prevously, the URL's used to access a DbTwig service and make RESTAPI calls are derived from the following example:
+
+    https://your.server.com/dbTwig/yourServiceName/entryPointName
+
+When building up a call to DbTwig, you will need to set the 'Content-Type' header to 'application/json'.  
+
+If the function or procedure that you are calling requires parameters you will include those in the JSON body attached to the HTTP request.
+
+DbTwig comes with integrated example applications. Please review the Readme.md's and the code for a practical demonstration of how a DbTwig RestAPI request can be made via HTTP.
 
 # Project Summary
 

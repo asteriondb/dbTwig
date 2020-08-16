@@ -4,8 +4,7 @@ rem  install.sql 	AsterionDB DbTwig Middle Tier Framework
 rem
 rem  Written By:  Steve Guilford
 rem
-rem  This SQL script drives the creation of all required objects for the DbTwig Middle Tier Framework
-rem  suite of tutorials.
+rem  This SQL script drives the creation of the React Example.
 rem
 rem  Invocation: sqlplus /nolog @install
 
@@ -27,12 +26,12 @@ accept dbtwig_user prompt "Enter the name of the user that owns the DbTwig schem
 prompt
 
 prompt
-prompt We need to create a user to own the DbTwig Examples schema
-accept dbtwig_examples_user prompt "Enter the name of the DbTwig Examples schema owner [dbtwig_examples]: " default dbtwig_examples
+prompt We need to create a user to own the React Example schema
+accept react_example_user prompt "Enter the name of the React Example schema owner [react_example]: " default react_example
 prompt
 
 prompt
-accept dbtwig_examples_password prompt "Enter the DbTwig Examples user''s password: " hide
+accept react_example_password prompt "Enter a password for the React Example user: " hide
 prompt
 
 prompt
@@ -53,28 +52,28 @@ begin
       from  database_properties 
      where  property_name = 'DEFAULT_PERMANENT_TABLESPACE';
 
-    l_sql_text := 'create user &&dbtwig_examples_user identified by "&&dbtwig_examples_password"';
+    l_sql_text := 'create user &&react_example_user identified by "&&react_example_password"';
     execute immediate l_sql_text;
 
-    l_sql_text := 'grant create session, create table, create procedure to &&dbtwig_examples_user';
+    l_sql_text := 'grant create session, create table, create procedure to &&react_example_user';
     execute immediate l_sql_text;
 
-    l_sql_text := 'alter user &&dbtwig_examples_user quota 50M on '||l_default_tablespace;
+    l_sql_text := 'alter user &&react_example_user quota 50M on '||l_default_tablespace;
     execute immediate l_sql_text;
 
 end;
 .
 /
 
-grant execute on &&dbtwig_user..db_twig to &&dbtwig_examples_user;
+grant execute on &&dbtwig_user..db_twig to &&react_example_user;
 
-create synonym &&dbtwig_examples_user..db_twig for &&dbtwig_user..db_twig;
+create synonym &&react_example_user..db_twig for &&dbtwig_user..db_twig;
 
 alter session set current_schema = &&dbtwig_user;
 
-insert into db_twig_services values ('reactExample', '&&dbtwig_examples_user');
+insert into db_twig_services values ('reactExample', '&&react_example_user');
 
-alter session set current_schema = &&dbtwig_examples_user;
+alter session set current_schema = &&react_example_user;
 
 create table insurance_claims     
 (claim_id 			                number(6) primary key,
@@ -139,6 +138,9 @@ insert into middle_tier_map values ('getInsuranceClaimDetail', 'function', 'reac
 insert into middle_tier_map values ('restApiError', 'function', 'react_example.error_handler');
 
 commit;
+
+grant select on middle_tier_map to &&dbtwig_user;
+grant execute on react_example to &&dbtwig_user;
 
 spool off;
 exit;
