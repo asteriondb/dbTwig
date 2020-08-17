@@ -4,7 +4,7 @@
 
 This React based example application will show you how to interface to DbTwig and AsterionDB.  It will also show you how to migrate an application from file-based to database oriented access.  The process really is quite simple and if you are already famliar with PL/SQL, you'll be able to follow along without any problems at all!
 
-This example focuses on the tasks involved in migrating an existing application.  Having a working knowlege of Oracle, JavaScript and React is a requirement.  It is not suitable for those that are just starting out with the aforementioned technologies.
+This example focuses on the tasks involved in migrating an existing application.  Having a working knowlege of Oracle, JavaScript and React is a requirement.  This examle is not suitable for those that are just starting out with the aforementioned technologies.
 
 Specifically, in order to follow along with this example you will have to meet these pre-requisites:
 
@@ -56,28 +56,28 @@ The React example application is designed to run in a stand-alone manner using i
 
 While connected to your compute node as the 'asterion' user, type in the following commands:
 
-  * cd /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
-  * serve -s build
+    cd /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
+    serve -s build
 
 This will run the Node-JS serve program and make the React example application available on port 5000.  To access the React example application, point your browser to:
 
-  * http://localhost:5000
+    http://localhost:5000
     
 or
 
-  * http://your.ip.address:5000
+    http://your.ip.address:5000
 
 or
 
-  * http://your.server.name:5000
+    http://your.server.name:5000
 
 If something is already running on port 5000, you can change the default port number as shown below:
 
-  * serve -l 5001 -s build
+    serve -l 5001 -s build
 
 If you are accessing your compute node via an SSH tunnel, you'll need to add a mapping for port 5000.  Here's an example:
 
-  * ssh asterion@your.ip.address -L 8080:localhost:8080 -L 5000:localhost:5000
+    ssh asterion@your.ip.address -L 8080:localhost:8080 -L 5000:localhost:5000
 
 If your AsterionDB installation is not listening on it's default port (i.e. 8080) you will have to modify the React example application's configuration and then rebuild it.  Here are the steps:
 
@@ -89,7 +89,6 @@ If your AsterionDB installation is not listening on it's default port (i.e. 8080
 ## The React Example Application - Serving Insecure File Based Assets ##
 
 The React example application is a simple insurance claims mock-up that mainly endeavours to show the integration of structured and unstructured information.  The initial screen should look similar to this:
-
 ![Initial React Example Screen](./initialScreen.png)
 As you can see, we have structured data (the details of the insurance claim) and unstructured data (PDF report, images) displayed together on the webpage.  You can also see the raw JSON returned by DbTwig.  The JSON data containes file pointers for the PDFs and images.
 
