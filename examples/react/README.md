@@ -2,17 +2,17 @@
 
 ## Introduction ##
 
-This React based example application will show you how to interface to DbTwig and AsterionDB.  It will also show you how to migrate an application from file-based to database oriented access.  The process really is quite simple and if you are already famliar with PL/SQL, you'll be able to follow along without any problems at all!
+This React based example application will show you how to interface to DbTwig and AsterionDB.  It will also show you how to migrate an application from file-based to database oriented access.  The process really is quite simple and if you are already famlliar with PL/SQL, you'll be able to follow along without any problems at all!
 
-This example focuses on the tasks involved in migrating an existing application.  Having a working knowlege of Oracle, JavaScript and React is a requirement.  This examle is not suitable for those that are just starting out with the aforementioned technologies.
+This example focuses on the tasks involved in migrating an existing application.  Having a working knowledge of Oracle, JavaScript and React is a requirement.  This example is not suitable for those that are just starting out with the aforementioned technologies.
 
-Specifically, in order to follow along with this example you will have to meet these pre-requisites:
+Specifically, in order to follow along with this example you will have to meet these prerequisites:
 
   1.  Have a working installation of AsterionDB with an account that you can use to upload objects.
   2.  Know how to connect to your AsterionDB database with SQL*Developer (or a similar tool).
   3.  Working knowledge and familiarity with PL/SQL.
   4.  Familiarity with the JSON standard (note: it's so simple, you can probably look at it and figure it out...).
-  5.  Working knowlege and familiarity with JavaScript, NodeJS and React.
+  5.  Working knowledge and familiarity with JavaScript, NodeJS and React.
   6.  Familiarity with DbTwig. We recommend that you consult the Readme.md for DbTwig.
 
 ## Objective ##
@@ -33,7 +33,7 @@ After installation, we will start out by accessing the React example application
 
 The React example application is delivered using AsterionDB's Docker based delivery mechanism.  The installation process performs the following steps:
 
-  1.  Install system pre-requisites
+  1.  Install system prerequisites
   2.  Download the React example application
   3.  Build the JavaScript React example application
   4.  Runs SQL*Plus to install the example application's schema objects
@@ -143,9 +143,9 @@ In SQL*Developer, open up the REACT_EXAMPLE package body and modify the line tha
     s_api_token                         varchar2(32) := 'BDQYL1XES2YTODAIBIGSJPVEEOYG05C6';
 ```
 
-### Modify the Pacakge to Generate Weblinks ###
+### Modify the Package to Generate Weblinks ###
 
-In the REACT_EXAMPLE pacakge body you will see how we have set things up for you so that you only have to uncomment and remove a few lines in order to generate weblinks. The first function you will modify is *get_insurance_claim_detail*. Modify the SELECT statement so it looks like this:
+In the REACT_EXAMPLE package body you will see how we have set things up for you so that you only have to uncomment and remove a few lines in order to generate weblinks. The first function you will modify is *get_insurance_claim_detail*. Modify the SELECT statement so it looks like this:
 
 ```
     select  json_object(
@@ -175,6 +175,36 @@ The second function you will modify is *get_insurance_claim_photos*. Modify the 
 ```
 ## The React Example Application - Serving Secure Assets ##
 
-If all of the modifications were made properly and you have accuratly copied over the Object-Ids, you can simply navigate to the other insurance claim record to see your changes take affect.
-
+If all of the modifications were made properly and you have accurately copied over the Object-Ids, you can simply navigate to the other insurance claim record to see your changes take affect.
 ![Serving Secure Assets](./secureServer.png)
+Take note of how the returned JSON data has changed. We are now returning a weblink to the secured asset that is being served by AsterionDB.  We have also included new data items showing the old 'insecure' locations for comparison.
+
+## Technical Highlights ##
+
+Now that you have worked through the example, we'd like to take a moment to point out several important technical highlights that bring great value and efficiency to your software development.
+
+### Efficient Code, Compile and Test Cycle ###
+
+First off, the cycle you just worked through involved making changes to the schema, stored logic and data in the database. You were then able to immediately test your changes by navigating to the next record in the web application. As you can see, most of your development cycle is reduced to making changes to stored logic in the database, re-compiling the logic and re-executing a RestAPI call. The DbTwig middle-tier is not only resilient but it also stays out of your way, it just does what it needs to do to act as an interface between the presentation and the data-layers. Since we are focusing on data-layer business logic, it is only fitting that we reduce our activity to managing code in the database and the presentation layer.
+
+### Built-In Hot Patching !!! ###
+
+Maybe you had a compiler error the first time you tried to test your changes. We've all been there, whether the error is due to syntax or logic itself. Regardless, we need a way to quickly make changes and restore service.
+
+The DbTwig architecture provides this capability right out of the box - by design! Since all of our logic is in the database and there are no dependencies in the middle-tier, as soon as we make our changes at the data-layer and recompile the code, the changes are placed into effect.
+
+You just saw this in action as described by the efficiency of our code, compile and test cycle. To provide another example, you should deliberately introduce a syntax error in the REACT_EXAMPLE package. This is to simulate an error in a production system. Reload the example web page or navigate to another record. You will see how an error is returned from the database. Now, fix your syntax error and reload or navigate to another record. You will see that your fix is in place and service has been restored.
+
+### Decoupled Data Representations ###
+
+One of the key design features of DbTwig is it's neutrality when it comes to the data-format of input parameters and returned data. In each case it only has to deal with a JSON string. What that effectively means is we can change the number and type of input parameters and change the data columns returned by a function or procedure without having to touch the middle-tier. It's all going to be described by the JSON string.
+
+You can see this in the fact that we are now returning the *oldClaimsAdjusterReport* and *oldMediaUrl* data items.
+
+### Decoupled Data and Presentaion Layer Development ###
+
+The decoupling of data representations presents another key advantage - a decoupling of release cycles for the presentation and data layers.  Simply put, if each layer looks for the presence of the new *data item* before triggering new logic, features that require changes to the number and types of input parameters or returned data elements can be designed, tested and implemented in isolation of each other. This can be a big benefit in team development.
+
+The nature of JSON allows us to 'easily' mock up some data during development. This allows each team - presentation and data layer development groups - to quickly create 'test' data. They can design and test their changes and post the results to the common repository. Each group will probably be working on their own branch.
+
+During the merge phase of branches, the mocked up data can be removed and futher integration and testing can be done with a complete cycle between the presentation and 
