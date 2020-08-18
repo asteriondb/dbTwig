@@ -1,7 +1,7 @@
 create or replace
 package body react_example as
 
-  s_api_token                         varchar2(32) := '43NMTHUHBH9HDTIMPBF0XLZT6E860ED5';
+  s_api_token                         varchar2(32) := '082F6NIOC7U96IJ45XBTPIS6MWF79EBU';
 
   function generate_object_weblink
   (

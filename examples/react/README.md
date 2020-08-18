@@ -94,7 +94,87 @@ As you can see, we have structured data (the details of the insurance claim) and
 
 ## Interacting with DbTwig ##
 
-As described in the DbTwig Readme.md file, 
+It is useful for you to open up the developer's console in your browser.  This will allow you to see the network traffic going back and forth between the browser and the server. You'll want to take a look at the network requests directed to DbTwig.
 
-alter table insurance_claims add report_id varchar2(32);
-alter table insurance_claim_photos add photo_id varchar2(32);
+The React example application makes two calls to DbTwig - one to get all of the insurance claims and the other to get the details for an insurance claim. You can look at the ReactExample.js file to see how we are parsing up the calls and specifying parameter values.
+
+## Modifying the React Example Application ##
+
+Initially, the React example application is setup to serve unstructured data from the file system.  You will find the PDFs and images in the following directories:
+
+  * /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample/public/assets/images
+  * /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample/public/assets/pdfs
+
+Within the example database we have a table that has file pointers to the unstructured assets.  We have a package in the database that contains a SELECT statement which will return the 'file pointer' to the web page.  What we want to do, in brief, is to alter the table to carry an object-id and modify the package to return a link to our asset stored in AsterionDB.  Pretty straightforward actually! Here's the layout of our steps:
+
+  1.  Upload the unstructured assets to AsterionDB
+  2.  Modify the example tables to carry an Object-Id
+  3.  Copy over our Object-Ids from AsterionDB to the example tables
+  4.  Generate an AsterionDB API Client Token
+  5.  Modify the example package to incorporate the AsterionDB API Client Token
+  6.  Modify the example package to generate weblinks for the unstructured assets
+
+### Upload Assets to AsterionDB ###
+
+From the 'Upload' tab in the AsterionDB web application, upload the PDFs and images. If you have direct access to the unstructured assets in the directories listed above you can simply upload the files from there.  Alternatively, you may have to download the images and PDFs directly from the React example application to a local directory and then upload the assets into AsterionDB.  Either way, once done, your screen will look similar to the following:
+![Uploaded Assets](./uploadedAssets.png)
+**Note how we have turned on the Object-Id column. This makes it easy for us to copy the Object-Id to the paste buffer.**
+
+### Modify the Tables ###
+
+Using SQL*Developer, issue the following SQL statements to modify the React example application's tables:
+
+    alter table insurance_claims add report_id varchar2(32);
+    alter table insurance_claim_photos add photo_id varchar2(32);
+
+### Copy the Object-Ids ###
+
+Now that we have a column to store our Object-Ids, we can copy over the corresponding values for each PDF and photograph in the insurance_claims and insurance_claim_photos tables. Having the Object-Id column makes it easy to copy the id value into your paste buffer.  Be sure to match the id value with the corresponding PDF or photo record in the tables.
+
+### Generate an AsterionDB API Client Token ###
+
+Returning to the AsterionDB web application, we will generate an API Client Token. This allows authorized applications to make calls to the AsterionDB API. Navigate to your profile page (i.e. Your User Name --> Manage Profile) and press the API Token button. Clicking on the generated token will copy it to your paste buffer.  Here's an example of the API Token screen:
+![API Token Screen](./apiToken.png)
+### Modify the Package to Incorporate the API Token ###
+
+In SQL*Developer, open up the REACT_EXAMPLE package body and modify the line that declares and sets the value of the S_API_TOKEN variable. Here's an example:
+
+```
+    s_api_token                         varchar2(32) := 'BDQYL1XES2YTODAIBIGSJPVEEOYG05C6';
+```
+
+### Modify the Pacakge to Generate Weblinks ###
+
+In the REACT_EXAMPLE pacakge body you will see how we have set things up for you so that you only have to uncomment and remove a few lines in order to generate weblinks. The first function you will modify is *get_insurance_claim_detail*. Modify the SELECT statement so it looks like this:
+
+```
+    select  json_object(
+              'insuredParty' is insured_party,
+              'accidentDate' is to_char(accident_date, 'dd-MON-yyyy'),
+              'accidentLocation' is accident_location,
+              'deductibleAmount' is deductible_amount,
+              'claimsAdjusterReport' is generate_object_weblink(report_id),
+              'oldClaimsAdjusterReport' is claims_adjuster_report,
+              'claimPhotos' is get_insurance_claim_photos(l_claim_id) format json
+              returning clob)
+      into  l_clob
+      from  insurance_claims
+     where  claim_id = l_claim_id;
+```
+
+The second function you will modify is *get_insurance_claim_photos*. Modify the SELECT statement so it looks like this:
+
+```
+    select  json_arrayagg(json_object(
+              'mediaUrl' is generate_object_weblink(photo_id),
+              'oldMediaUrl' is filename)
+              returning clob)
+      into  l_clob
+      from  insurance_claim_photos
+     where  claim_id = p_claim_id;
+```
+## The React Example Application - Serving Secure Assets ##
+
+If all of the modifications were made properly and you have accuratly copied over the Object-Ids, you can simply navigate to the other insurance claim record to see your changes take affect.
+
+![Serving Secure Assets](./secureServer.png)
