@@ -207,4 +207,4 @@ The decoupling of data representations presents another key advantage - a decoup
 
 The nature of JSON allows us to 'easily' mock up some data during development. This allows each team - presentation and data layer development groups - to quickly create 'test' data. They can design and test their changes and post the results to the common repository. Each group will probably be working on their own branch.
 
-During the merge phase of branches, the mocked up data can be removed and futher integration and testing can be done with a complete cycle between the presentation and 
+During the merge phase of branches, the mocked up data can be removed and futher integration and testing can be done with a complete cycle between the presentation and data layers.
