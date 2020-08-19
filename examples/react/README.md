@@ -42,7 +42,7 @@ In order to install the React example application you will need to gather the fo
 
   1.  DBA username and password
   2.  DbTwig schema username [dbtwig]
-  3.  DbTwig example schema username [dbtwig_examples] 
+  3.  React example schema username [react_example] 
   4.  Choose a password for the DbTwig example schema
   5.  AsterionDB schema username [asteriondb_objvault]
   
@@ -203,8 +203,34 @@ You can see this in the fact that we are now returning the *oldClaimsAdjusterRep
 
 ### Decoupled Data and Presentaion Layer Development ###
 
-The decoupling of data representations presents another key advantage - a decoupling of release cycles for the presentation and data layers.  Simply put, if each layer looks for the presence of the new *data item* before triggering new logic, features that require changes to the number and types of input parameters or returned data elements can be designed, tested and implemented in isolation of each other. This can be a big benefit in team development.
+The decoupling of data representations presents another key advantage - a decoupling of development, and possibly release, cycles for the presentation and data layers.  Simply put, if each layer looks for the presence of the new *data item* before triggering new logic, features that require changes to the number and types of input parameters or returned data elements can be designed, tested and implemented in isolation of each other. This can be a big benefit in team development.
 
 The nature of JSON allows us to 'easily' mock up some data during development. This allows each team - presentation and data layer development groups - to quickly create 'test' data. They can design and test their changes and post the results to the common repository. Each group will probably be working on their own branch.
 
 During the merge phase of branches, the mocked up data can be removed and futher integration and testing can be done with a complete cycle between the presentation and data layers.
+
+### Complex JSON Documents ###
+
+JSON object oriented capabilities makes it an ideal medium to describe complex documents. In the React example application, we use this feature and Oracle's ability to generate JSON content to build a master-detail document. The JSON document contains the detail of an insurance claim and all of the associated photographs. You can see how we do this by looking at the two modified functions - *get_insurance_claim_detail* and *get_insurance_claim_photos*.
+
+Here's an example of a complex JSON document:
+```
+{
+  "insuredParty": "Vincent Van Gogh",
+  "accidentDate": "27-JUL-1890",
+  "accidentLocation": "Auvers-sur-Oise, France",
+  "deductibleAmount": 9239.29,
+  "claimsAdjusterReport": "http://localhost:8080/streaming/stream_object?EUB46IREBLL9MKPTCIYX5W5JFLBJJ7HO",
+  "oldClaimsAdjusterReport": "assets/pdfs/vanGogh.pdf",
+  "claimPhotos": [
+    {
+      "mediaUrl": "http://localhost:8080/streaming/stream_object?UX5W49RRLA42LUCI8EJQLL8KZBZ1JHAL",
+      "oldMediaUrl": "assets/images/vincentVanGogh_1.jpg"
+    },
+    {
+      "mediaUrl": "http://localhost:8080/streaming/stream_object?PZ3ZW0G7662IF34OPCOJF8YNTGV9YRZY",
+      "oldMediaUrl": "assets/images/vincentVanGogh_2.jpg"
+    }
+  ]
+}
+```
