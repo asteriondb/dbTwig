@@ -1,7 +1,7 @@
 create or replace
 package body react_example as
 
-  s_api_token                         varchar2(32) := '082F6NIOC7U96IJ45XBTPIS6MWF79EBU';
+  s_api_token                         varchar2(32) := '<ASTERIONDB_API_TOKEN>';
 
   function generate_object_weblink
   (

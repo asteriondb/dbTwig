@@ -195,13 +195,13 @@ The DbTwig architecture provides this capability right out of the box - by desig
 
 You just saw this in action as described by the efficiency of our code, compile and test cycle. To provide another example, you should deliberately introduce a syntax error in the REACT_EXAMPLE package. This is to simulate an error in a production system. Reload the example web page or navigate to another record. You will see how an error is returned from the database. Now, fix your syntax error and reload or navigate to another record. You will see that your fix is in place and service has been restored.
 
-### Decoupled Data Representations ###
+### Decoupled Business and Presentation Logic ###
 
 One of the key design features of DbTwig is it's neutrality when it comes to the data-format of input parameters and returned data. In each case it only has to deal with a JSON string. What that effectively means is we can change the number and type of input parameters and change the data columns returned by a function or procedure without having to touch the middle-tier. It's all going to be described by the JSON string.
 
 You can see this in the fact that we are now returning the *oldClaimsAdjusterReport* and *oldMediaUrl* data items.
 
-### Decoupled Data and Presentaion Layer Development ###
+### Decoupled Data and Presentation Layer Development ###
 
 The decoupling of data representations presents another key advantage - a decoupling of development, and possibly release, cycles for the presentation and data layers.  Simply put, if each layer looks for the presence of the new *data item* before triggering new logic, features that require changes to the number and types of input parameters or returned data elements can be designed, tested and implemented in isolation of each other. This can be a big benefit in team development.
 
