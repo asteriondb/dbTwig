@@ -3,6 +3,9 @@ package body db_twig as
 
   s_json_response                     constant varchar2(23) := '{"response": "success"}';
 
+  PLSQL_COMPILER_ERROR                EXCEPTION;
+  pragma exception_init(PLSQL_COMPILER_ERROR, -6550);
+
   function call_rest_api
   (
     p_json_parameters                 clob
@@ -45,6 +48,7 @@ package body db_twig as
     else
 
       l_plsql_text := 'begin '||l_complete_object_name||'(:l_json_parameters); end;';
+
       execute immediate l_plsql_text using p_json_parameters;
 
       l_json_data := s_json_response;
@@ -52,6 +56,12 @@ package body db_twig as
     end if;
 
     return l_json_data;
+
+  exception
+
+  when PLSQL_COMPILER_ERROR then
+
+    raise_application_error(-20100, l_plsql_text);
 
   end call_rest_api;
 
