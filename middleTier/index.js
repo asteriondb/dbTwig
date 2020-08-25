@@ -271,10 +271,12 @@ async function handleRequest(request, response)
   let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 
   if (!result.status) response.status(HTTP_SERVER_ERROR);
-  if (undefined !== result.lob)
+  if (undefined !== result.lob && null !== result.lob)
     await dbTwig.sendLobResponse(result.lob, response);
   else
+  {
     response.send({errorCode: result.errorCode, errorMessage: result.errorMessage});
+  }
 
   dbTwig.closeConnection(connection);
 }
