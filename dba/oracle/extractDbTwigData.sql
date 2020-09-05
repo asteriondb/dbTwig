@@ -8,8 +8,9 @@ set termout off
 
 spool &1
 
-select  'insert into middle_tier_map values ('''||entry_point||''', '''||object_type||''', '''||object_name||''');'
-  from  middle_tier_map;
+select  'insert into middle_tier_map values ('''||entry_point||''', '''||object_type||''', '''||object_name||''', '''||object_group||''');'
+  from  middle_tier_map
+ where  object_group = '&2';
 
 spool off
 exit;
