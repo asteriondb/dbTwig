@@ -37,3 +37,10 @@ sqlplus $DBTWIG_USER/$DBTWIG_PASSWORD@local-dev @preWrapPackageBody db_twig ../d
 wrappedCheck ../dba/oracle/db_twig.pls
 $SQLPATH/end_package_input.sh >>../dba/oracle/db_twig.pls
 $SQLPATH/show_errors.sh db_twig >>../dba/oracle/db_twig.pls 
+
+sqlplus $DBTWIG_USER/$DBTWIG_PASSWORD@local-dev @extractPackageHeader react_example ../examples/react/dba
+sqlplus $DBTWIG_USER/$DBTWIG_PASSWORD@local-dev @preWrapPackageBody react_example ../examples/react/dba
+wrappedCheck /jjflash/git/asterionDB/dbTwig/examples/react/dba/react_example.pls
+$SQLPATH/end_package_input.sh >>../examples/react/dba/react_example.pls
+$SQLPATH/show_errors.sh react_example >>../examples/react/dba/react_example.pls 
+
