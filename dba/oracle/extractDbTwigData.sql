@@ -2,6 +2,7 @@
 SET LONG 20000
 SET LONGC 20000
 SET LINESIZE 20000
+set verify off
 
 set trimspool on
 set termout off
