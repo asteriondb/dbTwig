@@ -27,3 +27,4 @@ wrappedCheck /jjflash/git/asterionDB/dbTwig/examples/react/dba/react_example.pls
 $SQLPATH/end_package_input.sh >>../examples/react/dba/react_example.pls
 $SQLPATH/show_errors.sh react_example >>../examples/react/dba/react_example.pls 
 
+sqlplus dbtwig_tutorials/dbtwig_tutorials@local-dev @/jjflash/git/asterionDB/dbTwig/dba/oracle/extractDbTwigData /jjflash/git/asterionDB/dbTwig/examples/react/dba/dbTwigData.sql reactExample

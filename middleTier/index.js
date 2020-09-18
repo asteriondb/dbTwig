@@ -1,3 +1,13 @@
+/******************************************************************************
+ *                                                                            *
+ *  Copyright (c) 2018, 2020 by AsterionDB Inc.                               *
+ *                                                                            *
+ *  All rights reserved.  No part of this work may be reproduced or otherwise *
+ *  incorporated into other works without the express written consent of      *
+ *  AsterionDB Inc.                                                           *
+ *                                                                            *
+ *****************************************************************************/
+
 const express = require('express');
 var app = express();
 

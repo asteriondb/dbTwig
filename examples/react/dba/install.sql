@@ -133,9 +133,7 @@ commit;
 
 @@../../../dba/middleTierMap
 
-insert into middle_tier_map values ('getInsuranceClaims', 'function', 'react_example.get_insurance_claims');
-insert into middle_tier_map values ('getInsuranceClaimDetail', 'function', 'react_example.get_insurance_claim_detail');
-insert into middle_tier_map values ('restApiError', 'function', 'react_example.error_handler');
+@@dbTwigData
 
 commit;
 
