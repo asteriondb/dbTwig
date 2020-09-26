@@ -30,72 +30,8 @@ class Tutorial extends React.Component
   debouncedSaveColumnWidths = null;
   columnKey = 'reactExample';
 
-  buildURL = function(path, parameters)
-  {
-    let reactExample = '/dbTwig/reactExample';
-  
-    let dbTwigListener = (window.dbTwigHost !== null ? window.dbTwigHost + reactExample : 
-      window.location.protocol + '//' + window.location.hostname  + ':8080' + reactExample);
-  
-     if (typeof parameters === 'undefined')
-       return dbTwigListener + path;
-     else
-       return dbTwigListener + path + parameters;
-  }
+  dbTwig = require('./DbTwig.js');
 
-/**
-  * Generic API fetch request and response/error handling
-  * By: Paul Lesniewski & Steve Guilford
-  *
-  * @param object request Request object defining API request
-  * @param function goodResponseHandler Function that will be called
-  *                                     upon success with good
-  *                                     response (will be provided
-  *                                     response and JSON args as
-  *                                     well as the "extra" parameter
-  *                                     value)
-  * @param function badResponseHandler Function that will be called
-  *                                    upon all non-fatal non-ok
-  *                                    responses, (including non-200
-  *                                    responses such as 404 which
-  *                                    have been served directly from
-  *                                    the web server and that the API
-  *                                    never sees) (will be provided
-  *                                    response and JSON args as well
-  *                                    as the "extra" parameter value)
-  * @param function errorHandler Function that will be called upon (fatal)
-  *                              error (currently only caused by lost
-  *                              connection) (will be given error message
-  *                              argument as well as the "extra" parameter
-  *                              value)
-  * @param mixed extra Any extra data that the caller needs to convey
-  *                    to the result handler functions
-  * @param boolean logoutErrorIsNonCritical When given as boolean true,
-  *                                         indicates that errors handled
-  *                                         by logoutBadResponse() (see
-  *                                         below) should NOT cause a
-  *                                         logout and redirect
-  *
-  */
-  callDbTwig = async function(request, goodResponseHandler, badResponseHandler, errorHandler, extra, logoutErrorIsNonCritical)
-  {
-    let requestX = request;
-    let newHeader = new Headers({ 'Content-Type': 'application/json'});
-    requestX = new Request(request, { headers: newHeader});
-  
-    let self = this;
-
-    fetch(requestX).then(function(response)
-    {
-      self.fetchComplete(response, goodResponseHandler, badResponseHandler, extra, logoutErrorIsNonCritical, request);
-    }).catch(function(error)
-    {
-      console.log('Fatal error:', error);
-      console.log('Faulty request:', request);
-      errorHandler('Error: Lost connection to server', extra);
-    });
-  }
- 
   componentDidMount()
   {
     this.fetchInsuranceClaims();
@@ -103,7 +39,7 @@ class Tutorial extends React.Component
 
   constructor(props)
   {
-    super(props);
+    super();
 
     this.appLocalStorage = new AppLocalStorage();
 
@@ -136,6 +72,9 @@ class Tutorial extends React.Component
     this.selectionHandler = this.selectionHandler.bind(this);
     this.fetchInsuranceClaimDetail = this.fetchInsuranceClaimDetail.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
+
+    window.openAppModal = this.openAppModal.bind(this);
+    window.postNotification = this.postNotification.bind(this);
   }
       
   debounce = function(func, wait, immediate)
@@ -157,89 +96,27 @@ class Tutorial extends React.Component
     };
   }
 
-  /*
-  * DO NOT CALL DIRECTLY; Only intended for use with window.apiRequest - see above
-  */
-  fetchComplete(response, goodResponseHandler, badResponseHandler, extra, logoutErrorIsNonCritical, request)
+  async fetchInsuranceClaims()
   {
-    if (!response.ok)
+    let result = await this.dbTwig.callRestAPI('getInsuranceClaims');
+    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch insurance claims.');
+    let selectedRow = null;
+    if (result.jsonData.length)
     {
-      if (response.headers.has('Content-Type') && response.headers.get('Content-Type') === 'application/json; charset=utf-8')
-      {
-        return response.json().then(function(jsonData)
-        {
-          badResponseHandler(response, jsonData, extra);
-        });
-      }
-      else
-      {
-        badResponseHandler(response, { code: response.status, errorMessage: "Server response not understood.  Consult the system & framework error logs for further information." }, extra);
-      }
-    }     
-
-    if (response.ok)
-    {
-      if (response.headers.has('Content-Type') && response.headers.get('Content-Type') === 'application/json; charset=utf-8')
-      {
-        return response.json().then(function(jsonData)
-        {
-          goodResponseHandler(response, jsonData, extra);
-        });   
-      }
-      else
-      {
-        return response.text().then(function(text)
-        {
-          goodResponseHandler(response, text, extra);
-        });
-      }
+      selectedRow = 0;
+      this.fetchInsuranceClaimDetail(result.jsonData[0].claimId);
     }
+    this.setState({insuranceClaims: result.jsonData, selectedRow: selectedRow});
+
   }
 
-  fetchInsuranceClaims()
-  {
-    let self = this;
-
-    this.callDbTwig(new Request(this.buildURL('/getInsuranceClaims')),
-      function(response, jsonData)
-      {
-        let selectedRow = null;
-        if (jsonData.length)
-        {
-          selectedRow = 0;
-          self.fetchInsuranceClaimDetail(jsonData[0].claimId);
-        }
-        self.setState({insuranceClaims: jsonData, selectedRow: selectedRow});
-      },
-      function(response, jsonData)
-      {
-        self.openAppModal('Error fetching insurance claims', jsonData.errorMessage, true);
-      },
-      function(errorMessage)
-      {
-        self.postNotification('error', errorMessage);
-      });
-  }
-
-  fetchInsuranceClaimDetail(claimId)
+  async fetchInsuranceClaimDetail(claimId)
   {
     var bodyData = { databaseUsername: this.databaseUsername, claimId: claimId };
-    let self = this;
 
-    this.callDbTwig(new Request(this.buildURL('/getInsuranceClaimDetail'), 
-        {method: "POST", body: JSON.stringify(bodyData)}),
-      function(response, jsonData)
-      {
-        self.setState({insuranceClaimDetail: jsonData});
-      },
-      function(response, jsonData)
-      {
-        self.openAppModal('Error fetching insurance claim detail', jsonData.errorMessage, true);
-      },
-      function(errorMessage)
-      {
-        self.postNotification('error', errorMessage);
-      });
+    let result = await this.dbTwig.callRestAPI('getInsuranceClaimDetail', bodyData);
+    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch insurance claim detail');
+    this.setState({insuranceClaimDetail: result.jsonData});
   }
 
   openAppModal(modalTitle, modalMessage, closable)
@@ -253,12 +130,12 @@ class Tutorial extends React.Component
     });
   }
 
- postNotification(notificationType, notificationText)
- {
-   this.setState({ notificationText: notificationText, notificationType: notificationType });
- }
+  postNotification(notificationType, notificationText)
+  {
+    this.setState({ notificationText: notificationText, notificationType: notificationType });
+  }
 
- render()
+  render()
   {
     let modalFooter = null;
     if (this.state.closable)
