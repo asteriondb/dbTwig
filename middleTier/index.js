@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- *  Copyright (c) 2018, 2020 by AsterionDB Inc.                               *
+ *  Copyright (c) 2018, 2021 by AsterionDB Inc.                               *
  *                                                                            *
  *  All rights reserved.  No part of this work may be reproduced or otherwise *
  *  incorporated into other works without the express written consent of      *
@@ -32,9 +32,6 @@ app.use(function(req, res, next)
   res.contentType("application/json");
   next();
 });
-
-app.get('/objVaultAPI/tutorials/:entryPoint', handleTutorialsRequest);
-app.post('/objVaultAPI/tutorials/:entryPoint', handleTutorialsRequest);
 
 app.post('/dbTwig/:serviceName/uploadFiles', handleUploadRequest);
 
@@ -287,23 +284,6 @@ async function handleRequest(request, response)
   {
     response.send({errorCode: result.errorCode, errorMessage: result.errorMessage});
   }
-
-  dbTwig.closeConnection(connection);
-}
-
-async function handleTutorialsRequest(request, response)
-{
-  let entryPoint = 'tutorials/' + request.params.entryPoint;
-  request.params.entryPoint = entryPoint;
-  let connection = await dbTwig.getConnectionFromPool();
-  let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
-
-  if (!result.status) response.status(HTTP_SERVER_ERROR);
-
-  if (undefined !== result.lob)
-    await dbTwig.sendLobResponse(result.lob, response);
-  else
-    response.send({errorCode: result.errorCode, errorMessage: result.errorMessage});
 
   dbTwig.closeConnection(connection);
 }
