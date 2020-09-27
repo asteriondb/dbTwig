@@ -212,7 +212,7 @@ exports.getJsonPayload = async function(lob)
   {
     syslog.error(JSON.stringify(err)); 
     console.error(err); 
-}
+  }
 }
 
 exports.init = async function()

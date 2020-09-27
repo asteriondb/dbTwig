@@ -4,9 +4,10 @@ rem  install.sql 	AsterionDB DbTwig Middle Tier Framework
 rem
 rem  Written By:  Steve Guilford
 rem
-rem  This SQL script drives the creation of the React Example.
+rem  This SQL script drives the creation of the DbTwig React Example.
 rem
 rem  Invocation: sqlplus /nolog @install
+rem
 
 whenever sqlerror exit failure;
 
@@ -40,6 +41,16 @@ prompt
 
 set echo on
 
+rem
+rem  Note how we are granting privileges to the React Example schema.  In a 
+rem  production environment you would not be granting all of these privileges 
+rem  (normally).  As discussed in the DbTwig documentation, in a production 
+rem  environment the actual schema owners can not connect to the database and
+rem  have very few, if any, privileges granted to them.  But here, you are  
+rem  going to be doing development work.  Therefore, you will need to connect 
+rem  to the database as a regular developer would.
+rem
+
 declare
 
     l_sql_text                        clob;
@@ -65,11 +76,20 @@ end;
 .
 /
 
+rem
+rem  Setup the React Example user so that it can make calls to the AsterionDB 
+rem  API by using DbTwig.
+rem
+
 grant execute on &&dbtwig_user..db_twig to &&react_example_user;
 
 create synonym &&react_example_user..db_twig for &&dbtwig_user..db_twig;
 
 alter session set current_schema = &&dbtwig_user;
+
+rem
+rem  Setup DbTwig so that is knows about the reactExample service.
+rem
 
 insert into db_twig_services values ('reactExample', '&&react_example_user');
 
@@ -131,11 +151,23 @@ commit;
 @@react_example
 @@react_example.pls
 
+rem
+rem  Create the middle-tier map.
+rem
+
 @@../../../dba/middleTierMap
+
+rem
+rem  Insert our middle-tier map entries.
+rem
 
 @@dbTwigData
 
 commit;
+
+rem
+rem  Allow DbTwig to lookup our middle-tier map entries and execute our package.
+rem
 
 grant select on middle_tier_map to &&dbtwig_user;
 grant execute on react_example to &&dbtwig_user;

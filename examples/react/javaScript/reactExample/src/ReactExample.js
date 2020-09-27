@@ -1,10 +1,29 @@
 /******************************************************************************
  *                                                                            *
- *  Copyright (c) 2018, 2021 by AsterionDB Inc.                               *
+ *  Copyleft (:-) 2020, 2021 by AsterionDB Inc.                               *
  *                                                                            *
- *  All rights reserved.  No part of this work may be reproduced or otherwise *
- *  incorporated into other works without the express written consent of      *
- *  AsterionDB Inc.                                                           *
+ *  ReactExample.js - A simple little JScript React SPA that interacts with   *
+ *  DbTwig and AsterionDB.                                                    *
+ *                                                                            *
+ *  This software provides an example of how one interacts with DbTwig.       *
+ *                                                                            *
+ *  The entire point of this software is to show you how to integrate calls   *
+ *  to DbTwig into your application.
+ *                                                                            *
+ *  No rights claimed or implied. This software is not to be used in a        *
+ *  production setting without modifcation and customization by the end user. *
+ *  End user accepts all responsibilities by using this software as a basis   *
+ *  for development and instruction.                                          *
+ *                                                                            *
+ *  This software is not claimed to be, nor guaranteed to be free from defect *
+ *  or error.                                                                 *
+ *                                                                            *
+ *  This software is to be used by the end user as a basis for instruction    *
+ *  and as a template for implementation in production use cases.             *
+ *                                                                            *
+ *  End users are not required to post their modifications for others to use. *
+ *                                                                            *
+ *  This software is un-licensed and free to use in any manner you choose.    *
  *                                                                            *
  *****************************************************************************/
 
@@ -65,7 +84,6 @@ class Tutorial extends React.Component
       modalIsOpen: false,
       modalTitle: '',
       modalMessage: '',
-      closable: true,
       selectedRow: null
     }
 
@@ -79,17 +97,16 @@ class Tutorial extends React.Component
       
   debounce = function(func, wait, immediate)
   {
-  //TODO: change "var" to "let" where possible herein
-    var timeout;
+    let timeout;
     return function()
     {
-      var context = this, args = arguments;
-      var later = function()
+      let context = this, args = arguments;
+      let later = function()
       {
         timeout = null;
         if (!immediate) func.apply(context, args);
       };
-      var callNow = immediate && !timeout;
+      let callNow = immediate && !timeout;
       clearTimeout(timeout);
       timeout = setTimeout(later, wait);
       if (callNow) func.apply(context, args);
@@ -100,6 +117,7 @@ class Tutorial extends React.Component
   {
     let result = await this.dbTwig.callRestAPI('getInsuranceClaims');
     if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch insurance claims.');
+
     let selectedRow = null;
     if (result.jsonData.length)
     {
@@ -107,25 +125,23 @@ class Tutorial extends React.Component
       this.fetchInsuranceClaimDetail(result.jsonData[0].claimId);
     }
     this.setState({insuranceClaims: result.jsonData, selectedRow: selectedRow});
-
   }
 
   async fetchInsuranceClaimDetail(claimId)
   {
-    var bodyData = { databaseUsername: this.databaseUsername, claimId: claimId };
+    let bodyData = { databaseUsername: this.databaseUsername, claimId: claimId };
 
     let result = await this.dbTwig.callRestAPI('getInsuranceClaimDetail', bodyData);
     if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch insurance claim detail');
     this.setState({insuranceClaimDetail: result.jsonData});
   }
 
-  openAppModal(modalTitle, modalMessage, closable)
+  openAppModal(modalTitle, modalMessage)
   {
     this.setState(
     {
       modalTitle: modalTitle,
       modalMessage: modalMessage,
-      closable: closable,
       modalIsOpen: true,
     });
   }
@@ -137,14 +153,6 @@ class Tutorial extends React.Component
 
   render()
   {
-    let modalFooter = null;
-    if (this.state.closable)
-      modalFooter = (
-        <ModalFooter>
-          <Button color="secondary" onClick={this.toggleModal} autoFocus>OK</Button>
-        </ModalFooter>
-      );
-
     let columns =
     [
       {id: 'mediaUrl', accessor: 'mediaUrl',
@@ -171,7 +179,9 @@ class Tutorial extends React.Component
             <ModalBody>
               <Row><Col>{this.state.modalMessage}</Col></Row>
             </ModalBody>
-            {modalFooter}
+            <ModalFooter>
+              <Button color="secondary" onClick={this.toggleModal} autoFocus>OK</Button>
+            </ModalFooter>
           </Modal>
           <Row><Col sm='4' style={{textAlign: 'center'}}><h2>Insurance Claims</h2></Col><Col sm='8' style={{textAlign: 'center'}}><h2>Claim Details</h2></Col></Row>
           <Row >
@@ -228,9 +238,6 @@ class Tutorial extends React.Component
 
   toggleModal()
   {
-    // when modal footer is hidden, the modal should not be close-able
-    if (!this.state.closable) return; 
-
     this.setState(
     {
       modalIsOpen: !this.state.modalIsOpen
