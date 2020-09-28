@@ -51,6 +51,11 @@ class Tutorial extends React.Component
 
   dbTwig = require('./DbTwig.js');
 
+  clearNotifier()
+  {
+    this.setState({ notificationText: '' });
+  }
+
   componentDidMount()
   {
     this.fetchInsuranceClaims();
@@ -90,6 +95,7 @@ class Tutorial extends React.Component
     this.selectionHandler = this.selectionHandler.bind(this);
     this.fetchInsuranceClaimDetail = this.fetchInsuranceClaimDetail.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
+    this.clearNotifier = this.clearNotifier.bind(this);
 
     window.openAppModal = this.openAppModal.bind(this);
     window.postNotification = this.postNotification.bind(this);
