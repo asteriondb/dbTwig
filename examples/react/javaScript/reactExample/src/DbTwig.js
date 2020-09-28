@@ -28,7 +28,7 @@
  *****************************************************************************/
   
 //  Oracle reserves error numbers ranging from 20000 to 20999 for end-user use.
-//  (Actually, the values run from -20000 to -20999 in the database but by the
+//  Actually, the values run from -20000 to -20999 in the database but by the
 //  time they get all the way out from the database's error handlers, the values
 //  get converted to positive values.
 
@@ -48,20 +48,20 @@ const FatalErrorCeiling = 20099;
 //  export const UsernameExists = 20117;
 
 //  The standard URL format for the DbTwig middle-tier listener is 
-//  '/dbTwig/{db-twig-service}/'.  (Note the closing slash character)
+//  '/dbTwig/{db-twig-service}/'.  Note the closing slash character.
 
 const restAPI = '/dbTwig/reactExample/';
 
 //  Build an appropriate URL.  You can alter this to suite your needs.
 //  The global variable window.dbTwigHost is set in the configuration file
-//  ./public/assets/config.js (if you have one).
+//  ./public/assets/config.js, if you have one.
 
 function buildURL(path, parameters)
 {
 
   //  If window.dbTwigHost is set, use that value when constructing the URL.
-  //  Otherwise, use the current location, where the ReactExample is being
-  //  served from, as the location of the DbTwig middle-tier listener.
+  //  Otherwise, use the current location where the ReactExample is being
+  //  served from as the location of the DbTwig middle-tier listener.
 
   let apiURL = (window.dbTwigHost !== null ? 
     window.dbTwigHost + restAPI : 
