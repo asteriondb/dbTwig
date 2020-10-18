@@ -20,7 +20,7 @@ const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
 
 var systemParameters = 
 {
-  authorization: null,
+  sessionId: null,
   clientAddress: null,
   serverAddress: null,
   userAgent: null,
@@ -87,7 +87,7 @@ exports.getConnectionFromPool = async function()
 
 exports.callDbTwig = async function(connection, requestData)
 {
-  systemParameters.authorization = requestData.authorization;
+  systemParameters.sessionId = requestData.sessionId;
   systemParameters.clientAddress = requestData.clientAddress;
   systemParameters.userAgent = requestData.userAgent;
   systemParameters.httpHost =  requestData.httpHost;

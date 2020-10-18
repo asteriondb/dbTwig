@@ -24,7 +24,7 @@ package body react_example as
 
     l_json_object.put('entryPoint', 'generateObjectWeblink');
     l_json_object.put('serviceName', 'asterionDB');
-    l_json_object.put('authorization', 'Bearer '||s_api_token);
+    l_json_object.put('sessionId', s_api_token);
     l_json_object.put('contentDisposition', 'STREAM');
     l_json_object.put('objectId', l_object_id);
 
@@ -114,7 +114,7 @@ package body react_example as
 
   end get_insurance_claim_photos;
 
---  This function is called by DbTwig on behalf of the React Example Webb
+--  This function is called by DbTwig on behalf of the React Example Web
 --  Application.
 --
 --  Note that even though we do not need any parameters, we still have to

@@ -46,9 +46,11 @@ var os = require('os'), fs = require('fs');
 
 function getRequestData(request, serverAddress)
 {
+  let authorization = request.get('authorization');
+  
   return(
   {
-    authorization: request.get('Authorization'), 
+    sessionId: (undefined !== authorization ? authorization.split(" ")[1] : ""), 
     clientAddress: request.headers['x-forwarded-for'],
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
@@ -66,9 +68,11 @@ async function handleOauthReply(request, response)
   var origin = state.substr(0, state.lastIndexOf('/'));
   var sessionId = state.substr(state.lastIndexOf('/') + 1);
 
+  let authorization = request.get('authorization');
+
   let requestData = 
   {
-    authorization: request.get('Authorization'), 
+    sessionId: (undefined !== authorization ? authorization.split(" ")[1] : ""), 
     clientAddress: request.headers['x-forwarded-for'],
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
@@ -98,7 +102,7 @@ async function handleOauthReply(request, response)
   }
 
   requestData.entryPoint = 'getGmailAccessTokenParams';
-  requestData.authorization = 'Bearer ' + sessionId;
+  requestData.sessionId = sessionId;
   requestData.body = {authorizationCode: request.query.code};
 
   let connection = await dbTwig.getConnectionFromPool();
