@@ -87,6 +87,8 @@ exports.getConnectionFromPool = async function()
 
 exports.callDbTwig = async function(connection, requestData)
 {
+  //  Need logic here to throw an error if the client tries to stuff our system parameters in the bodyData.
+  
   systemParameters.sessionId = requestData.sessionId;
   systemParameters.clientAddress = requestData.clientAddress;
   systemParameters.userAgent = requestData.userAgent;
