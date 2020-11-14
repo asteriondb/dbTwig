@@ -34,8 +34,6 @@ var errorHandler = async function(connection, url, serviceName, error, sqlText)
     serviceName: serviceName,
     errorCode: error.errorNum,
     errorMessage: error.message,
-    errorOffset: error.offset,
-    sqlText: sqlText,
     scriptFilename: __filename,
     requestUri: url
   };
