@@ -17,6 +17,8 @@ const ORA_PACKAGE_STATE_DISCARDED = 4068;
 const SESSION_TIMEOUT = 20002;
 const USER_PASSWORD_ERROR = 20124;
 const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
+const ACCOUNT_LOCKED = 20125;
+const ACCOUNT_LOCKED_ERROR_MSG = 'This account has been locked.';
 
 var systemParameters = 
 {
@@ -116,6 +118,12 @@ exports.callDbTwig = async function(connection, requestData)
     {
       msleep(5000);
       return {status: false, errorCode: oraError, errorMessage: USER_PASSWORD_ERROR_MSG};
+    }
+    
+    if (ACCOUNT_LOCKED === oraError)
+    {
+      msleep(5000);
+      return {status: false, errorCode: oraError, errorMessage: ACCOUNT_LOCKED_ERROR_MSG};
     }
     
     if (ORA_PACKAGE_STATE_DISCARDED !== oraError)
