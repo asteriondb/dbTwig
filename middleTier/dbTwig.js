@@ -13,7 +13,11 @@ oracledb.autoCommit = true;
 
 var syslog = require('modern-syslog');
 
+const USER_ERROR_FLOOR = 20000;
+const USER_ERROR_CEILING = 20999;
+
 const ORA_PACKAGE_STATE_DISCARDED = 4068;
+
 const SESSION_TIMEOUT = 20002;
 const USER_PASSWORD_ERROR = 20124;
 const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
@@ -29,15 +33,14 @@ var systemParameters =
   httpHost: null
 };
 
-var errorHandler = async function(connection, url, serviceName, error, sqlText)
+var errorHandler = async function(connection, serviceName, error)
 {
   let errorParameters =
   {
     serviceName: serviceName,
     errorCode: error.errorNum,
     errorMessage: error.message,
-    scriptFilename: __filename,
-    requestUri: url
+    scriptFilename: __filename
   };
 
   if (SESSION_TIMEOUT != error.errorNum)
@@ -85,6 +88,23 @@ exports.getConnectionFromPool = async function()
   return await oracledb.getPool().getConnection()
 }
 
+var tryAndCatch = async function(connection, text, bindVars)
+{
+  let result = null;
+  let obj = {};
+
+  try
+  {
+    result = await connection.execute(text, bindVars);
+  }
+  catch (error)
+  {
+    return {status: false, error: error};
+  }
+
+  return {status: true, lob: result.outBinds.jsonData};
+}
+
 exports.callDbTwig = async function(connection, requestData)
 {
   //  Need logic here to throw an error if the client tries to stuff our system parameters in the bodyData.
@@ -103,50 +123,34 @@ exports.callDbTwig = async function(connection, requestData)
       entryPoint: requestData.entryPoint})
   }
 
-  let oraError = 0;
-  let result = null;
+  let result = await tryAndCatch(connection, text, bindVars);
 
-  try
+  if (result.status) return result;
+
+  if (ORA_PACKAGE_STATE_DISCARDED === result.error.errorNum)
   {
-    result = await connection.execute(text, bindVars);
-  }
-  catch (error)
-  {
-    oraError = error.errorNum;
-    
-    if (USER_PASSWORD_ERROR === oraError)
-    {
-      msleep(5000);
-      return {status: false, errorCode: oraError, errorMessage: USER_PASSWORD_ERROR_MSG};
-    }
-    
-    if (ACCOUNT_LOCKED === oraError)
-    {
-      msleep(5000);
-      return {status: false, errorCode: oraError, errorMessage: ACCOUNT_LOCKED_ERROR_MSG};
-    }
-    
-    if (ORA_PACKAGE_STATE_DISCARDED !== oraError)
-    {
-      let obj = await errorHandler(connection, requestData.originalUrl, requestData.serviceName, error, text);
-      return obj;
-    }
+    result = await tryAndCatch(connection, text, bindVars);
+    if (result.status) return result;
   }
 
-  if (ORA_PACKAGE_STATE_DISCARDED === oraError)
+  if (USER_PASSWORD_ERROR === result.error.errorNum)
   {
-    try
-    {
-      result = await connection.execute(text, bindVars);
-    }
-    catch (error)
-    {
-      let obj = await errorHandler(connection, requestData.originalUrl, requestData.serviceName, error, text);
-      return obj;
-    }
+    msleep(5000);
+    return {status: false, errorCode: result.error.errorNum, errorMessage: USER_PASSWORD_ERROR_MSG};
+  }
+  
+  if (ACCOUNT_LOCKED === result.error.errorNum)
+  {
+    msleep(5000);
+    return {status: false, errorCode: result.error.errorNum, errorMessage: ACCOUNT_LOCKED_ERROR_MSG};
+  }
+  
+  if (USER_ERROR_FLOOR <= result.error.errorNum && USER_ERROR_CEILING >= result.error.errorNum)
+  {
+    return {status: false, errorCode: result.error.errorNum, errorMessage: result.error.message};
   }
 
-  return {status: true, lob: result.outBinds.jsonData};
+  return errorHandler(connection, requestData.serviceName, result.error);
 }
 
 exports.oracleClientVersionString = oracledb.versionString;
