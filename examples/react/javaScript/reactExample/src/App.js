@@ -14,7 +14,7 @@ function App() {
         <CardBody>
           <ReactExample></ReactExample>
         </CardBody>
-        <CardFooter>ReactExample version: {versionNumber} Copyright &copy; 2020 by AsterionDB Inc. All Rights Reserved</CardFooter>
+        <CardFooter>ReactExample version: {versionNumber} Copyright &copy; 2021 by AsterionDB Inc. All Rights Reserved</CardFooter>
       </Card>
     </div>    
   );
