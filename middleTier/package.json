@@ -10,7 +10,7 @@
   "author": "Steve Guilford, AsterionDB Inc.",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "busboy": "^0.3.1",
     "express": "^4.17.1",
     "modern-syslog": "^1.2.0",
