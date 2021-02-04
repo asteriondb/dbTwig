@@ -55,7 +55,7 @@ create table db_twig_services
 );
 
 @@db_twig
-@@db_twig.pls
+@@db_twig.plb
 
 grant execute on db_twig to &5;
 

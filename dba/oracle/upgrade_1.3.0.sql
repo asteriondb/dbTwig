@@ -16,7 +16,7 @@ whenever sqlerror exit
 connect &&dba_user/&&dba_pass;
 
 prompt
-accept objvault prompt "Enter the name of the user that owns the DbTwig schema [dbtwig]: " default dbtwig
+accept dbtwig prompt "Enter the name of the user that owns the DbTwig schema [dbtwig]: " default dbtwig
 prompt
 
 alter session set current_schema = &&dbtwig;

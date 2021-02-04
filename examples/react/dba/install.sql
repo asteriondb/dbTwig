@@ -91,7 +91,7 @@ rem
 rem  Setup DbTwig so that is knows about the reactExample service.
 rem
 
-insert into db_twig_services values ('reactExample', '&&react_example_user');
+insert into db_twig_services (service_name, service_owner) values ('reactExample', '&&react_example_user');
 
 alter session set current_schema = &&react_example_user;
 
@@ -155,7 +155,7 @@ rem
 rem  Create the middle-tier map.
 rem
 
-@@../../../dba/middleTierMap
+@@~asterion/asterion/oracle/dbTwig/dba/middleTierMap
 
 rem
 rem  Insert our middle-tier map entries.
