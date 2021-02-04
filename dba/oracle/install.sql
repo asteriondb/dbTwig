@@ -49,7 +49,9 @@ alter session set current_schema = &4;
 create table db_twig_services
 (
   service_name                      varchar2(128) primary key,
-  service_owner                     varchar2(128) not null
+  service_owner                     varchar2(128) not null,
+  replace_error_stack               varchar2(1) default 'Y'
+    constraint replace_stack_chk check (replace_error_stack in ('Y', 'N')) not null
 );
 
 @@db_twig
