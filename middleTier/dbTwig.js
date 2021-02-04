@@ -75,7 +75,7 @@ var errorHandler = async function(connection, serviceName, error)
     return {status: false, lob: result.outBinds.jsonData};
   }
   else
-    return {status: false, errorCode: error.errorNum, errorMessage: error.errorMessage};
+    return {status: false, errorCode: error.errorNum, errorMessage: error.message};
 }
 
 var msleep = function(microSeconds) 
@@ -91,7 +91,6 @@ exports.getConnectionFromPool = async function()
 var tryAndCatch = async function(connection, text, bindVars)
 {
   let result = null;
-  let obj = {};
 
   try
   {
@@ -147,7 +146,16 @@ exports.callDbTwig = async function(connection, requestData)
   
   if (USER_ERROR_FLOOR <= result.error.errorNum && USER_ERROR_CEILING >= result.error.errorNum)
   {
-    return {status: false, errorCode: result.error.errorNum, errorMessage: result.error.message};
+    // This is a bit of a hack but it serves to allow us to trimout any remaining stack info in the error
+    // message that comes back from the DB if DbTwig is replacing stack info.
+
+    let errorMessage = result.error.message;
+    let x = errorMessage.indexOf('//');
+    let y = errorMessage.indexOf('\\');
+    
+    if (-1 != x) errorMessage = result.error.message.substring(x+2, y);
+
+    return {status: false, errorCode: result.error.errorNum, errorMessage: errorMessage};
   }
 
   return errorHandler(connection, requestData.serviceName, result.error);
