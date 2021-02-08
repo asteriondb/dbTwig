@@ -155,7 +155,7 @@ rem
 rem  Create the middle-tier map.
 rem
 
-@@~asterion/asterion/oracle/dbTwig/dba/middleTierMap
+@@/home/asterion/asterion/oracle/dbTwig/dba/middleTierMap
 
 rem
 rem  Insert our middle-tier map entries.
