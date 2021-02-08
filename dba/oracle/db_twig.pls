@@ -3,6 +3,9 @@ package body db_twig as
 
   s_json_response                     constant varchar2(23) := '{"response": "success"}';
 
+  s_user_error_max                    constant pls_integer := -20000;
+  s_user_error_min                    constant pls_integer := -20999;
+
   PLSQL_COMPILER_ERROR                EXCEPTION;
   pragma exception_init(PLSQL_COMPILER_ERROR, -6550);
 
@@ -23,11 +26,12 @@ package body db_twig as
     l_service_name                    db_twig_services.service_name%type := l_json_parameters.get_string('serviceName');
     l_service_owner                   db_twig_services.service_owner%type;
     l_complete_object_name            varchar2(257);
+    l_replace_error_stack             db_twig_services.replace_error_stack%type;
 
   begin
 
-    select  service_owner
-      into  l_service_owner
+    select  service_owner, replace_error_stack
+      into  l_service_owner, l_replace_error_stack
       from  db_twig_services
      where  service_name = l_service_name;
 
@@ -61,7 +65,19 @@ package body db_twig as
 
   when PLSQL_COMPILER_ERROR then
 
-    raise_application_error(-20100, l_plsql_text);
+    raise_application_error(-20100, l_plsql_text, false);
+
+  when others then
+
+    if 'Y' = l_replace_error_stack and sqlcode <= s_user_error_max and sqlcode >= s_user_error_min then
+
+      raise_application_error(sqlcode, '//'||substr(sqlerrm, instr(sqlerrm, ':')+2)||'\\', false);
+
+    else
+
+      raise;
+
+    end if;
 
   end call_rest_api;
 

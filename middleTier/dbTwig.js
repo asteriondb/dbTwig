@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- *  Copyright (c) 2018, 2020 by AsterionDB Inc.                               *
+ *  Copyright (c) 2018, 2021 by AsterionDB Inc.                               *
  *                                                                            *
  *  All rights reserved.  No part of this work may be reproduced or otherwise *
  *  incorporated into other works without the express written consent of      *
@@ -13,10 +13,16 @@ oracledb.autoCommit = true;
 
 var syslog = require('modern-syslog');
 
+const USER_ERROR_FLOOR = 20000;
+const USER_ERROR_CEILING = 20999;
+
 const ORA_PACKAGE_STATE_DISCARDED = 4068;
+
 const SESSION_TIMEOUT = 20002;
 const USER_PASSWORD_ERROR = 20124;
 const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
+const ACCOUNT_LOCKED = 20125;
+const ACCOUNT_LOCKED_ERROR_MSG = 'This account has been locked.';
 
 var systemParameters = 
 {
@@ -27,17 +33,14 @@ var systemParameters =
   httpHost: null
 };
 
-var errorHandler = async function(connection, url, serviceName, error, sqlText)
+var errorHandler = async function(connection, serviceName, error)
 {
   let errorParameters =
   {
     serviceName: serviceName,
     errorCode: error.errorNum,
     errorMessage: error.message,
-    errorOffset: error.offset,
-    sqlText: sqlText,
-    scriptFilename: __filename,
-    requestUri: url
+    scriptFilename: __filename
   };
 
   if (SESSION_TIMEOUT != error.errorNum)
@@ -72,7 +75,7 @@ var errorHandler = async function(connection, url, serviceName, error, sqlText)
     return {status: false, lob: result.outBinds.jsonData};
   }
   else
-    return {status: false, errorCode: error.errorNum, errorMessage: error.errorMessage};
+    return {status: false, errorCode: error.errorNum, errorMessage: error.message};
 }
 
 var msleep = function(microSeconds) 
@@ -83,6 +86,22 @@ var msleep = function(microSeconds)
 exports.getConnectionFromPool = async function()
 {
   return await oracledb.getPool().getConnection()
+}
+
+var tryAndCatch = async function(connection, text, bindVars)
+{
+  let result = null;
+
+  try
+  {
+    result = await connection.execute(text, bindVars);
+  }
+  catch (error)
+  {
+    return {status: false, error: error};
+  }
+
+  return {status: true, lob: result.outBinds.jsonData};
 }
 
 exports.callDbTwig = async function(connection, requestData)
@@ -103,44 +122,43 @@ exports.callDbTwig = async function(connection, requestData)
       entryPoint: requestData.entryPoint})
   }
 
-  let oraError = 0;
-  let result = null;
+  let result = await tryAndCatch(connection, text, bindVars);
 
-  try
+  if (result.status) return result;
+
+  if (ORA_PACKAGE_STATE_DISCARDED === result.error.errorNum)
   {
-    result = await connection.execute(text, bindVars);
+    result = await tryAndCatch(connection, text, bindVars);
+    if (result.status) return result;
   }
-  catch (error)
+
+  if (USER_PASSWORD_ERROR === result.error.errorNum)
   {
-    oraError = error.errorNum;
+    msleep(5000);
+    return {status: false, errorCode: result.error.errorNum, errorMessage: USER_PASSWORD_ERROR_MSG};
+  }
+  
+  if (ACCOUNT_LOCKED === result.error.errorNum)
+  {
+    msleep(5000);
+    return {status: false, errorCode: result.error.errorNum, errorMessage: ACCOUNT_LOCKED_ERROR_MSG};
+  }
+  
+  if (USER_ERROR_FLOOR <= result.error.errorNum && USER_ERROR_CEILING >= result.error.errorNum)
+  {
+    // This is a bit of a hack but it serves to allow us to trimout any remaining stack info in the error
+    // message that comes back from the DB if DbTwig is replacing stack info.
+
+    let errorMessage = result.error.message;
+    let x = errorMessage.indexOf('//');
+    let y = errorMessage.indexOf('\\');
     
-    if (USER_PASSWORD_ERROR === oraError)
-    {
-      msleep(5000);
-      return {status: false, errorCode: oraError, errorMessage: USER_PASSWORD_ERROR_MSG};
-    }
-    
-    if (ORA_PACKAGE_STATE_DISCARDED !== oraError)
-    {
-      let obj = await errorHandler(connection, requestData.originalUrl, requestData.serviceName, error, text);
-      return obj;
-    }
+    if (-1 != x) errorMessage = result.error.message.substring(x+2, y);
+
+    return {status: false, errorCode: result.error.errorNum, errorMessage: errorMessage};
   }
 
-  if (ORA_PACKAGE_STATE_DISCARDED === oraError)
-  {
-    try
-    {
-      result = await connection.execute(text, bindVars);
-    }
-    catch (error)
-    {
-      let obj = await errorHandler(connection, requestData.originalUrl, requestData.serviceName, error, text);
-      return obj;
-    }
-  }
-
-  return {status: true, lob: result.outBinds.jsonData};
+  return errorHandler(connection, requestData.serviceName, result.error);
 }
 
 exports.oracleClientVersionString = oracledb.versionString;

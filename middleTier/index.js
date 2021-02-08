@@ -207,7 +207,7 @@ async function handleUploadRequest(request, response)
   busBoy.on('file', async function(fieldname, file, filename, encoding, mimetype) 
   {
     request.body = jsonParms;
-    request.params.entryPoint = 'createUploadedFile';
+    request.params.entryPoint = 'createUploadedObject';
 
     let connection = await dbTwig.getConnectionFromPool();
     let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));

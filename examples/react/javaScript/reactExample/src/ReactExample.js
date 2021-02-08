@@ -176,7 +176,7 @@ class Tutorial extends React.Component
     return(
       <div>
         <Navbar className='bg-primary' dark fixed="top" expand="md" >
-          <NavbarBrand target="_blank" rel="noopener noreferrer" href="https://www.asteriondb.com"><img alt='AsterionDB' width={20} src='assets/images/asteriondb_logo.png' /> AsterionDB</NavbarBrand>
+          <NavbarBrand target="_blank" rel="noopener noreferrer" href="https://www.asteriondb.com"><img alt='AsterionDB' width={20} src='assets/images/icon150x150.png' /> AsterionDB</NavbarBrand>
         </Navbar>
         <Container fluid>
           <PopupNotification notificationText={this.state.notificationText} notificationType={this.state.notificationType} clearNotifier={this.clearNotifier}/>

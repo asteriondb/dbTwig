@@ -61,14 +61,12 @@ function buildURL(path, parameters)
 {
 
   //  If window.dbTwigHost is set, use that value when constructing the URL.
-  //  Otherwise, use the current location where the ReactExample is being
-  //  served from as the location of the DbTwig middle-tier listener.
+  //  Otherwise, use port 8080 at the current location from where the ReactExample 
+  //  is being served from as the location of the DbTwig middle-tier listener.
 
   let apiURL = (window.dbTwigHost !== null ? 
     window.dbTwigHost + restAPI : 
-    window.location.protocol + '//' + window.location.hostname  + 
-      (80 !== window.location.port || 443 !== window.location.port ? ':' + 
-      window.location.port : '') + restAPI);
+    window.location.protocol + '//' + window.location.hostname  + ':8080' + restAPI);
 
   if (typeof parameters === 'undefined')
     return apiURL + path;

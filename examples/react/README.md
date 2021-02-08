@@ -31,12 +31,11 @@ After installation, we will start out by accessing the React example application
 
 ## Installation ##
 
-The React example application is delivered using AsterionDB's Docker based delivery mechanism.  The installation process performs the following steps:
+The installation process performs the following steps:
 
   1.  Install system prerequisites
-  2.  Download the React example application
+  2.  Run SQL*Plus to install the example application's schema objects
   3.  Build the JavaScript React example application
-  4.  Runs SQL*Plus to install the example application's schema objects
   
 In order to install the React example application you will need to gather the following usernames and passwords:
 
@@ -45,10 +44,13 @@ In order to install the React example application you will need to gather the fo
   3.  React example schema username [react_example] 
   4.  Choose a password for the DbTwig example schema
   5.  AsterionDB schema username [asteriondb_objvault]
-  
-While connected to your compute node as the 'asterion' user, issue the following command to run the Docker installer for the React example application:
 
-    docker container run --rm asteriondb/install reactExample | bash -s
+If your AsterionDB installation is not listening on it's default port (i.e. 8080) you will have to modify the React example application's configuration.  Here are the steps:
+
+  1.  Open up /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample/public/assets/config.js in an editor
+  2.  Set the value of dbTwigHost appropriately (e.g. http://localhost:8888)
+
+From the ./asterion/oracle/dbTwig/examples/react subdirectory run the installation script install.sh to install the react example application.
 
 ## Accessing The React Example Application ##
 
@@ -85,6 +87,8 @@ If your AsterionDB installation is not listening on it's default port (i.e. 8080
   2.  Set the value of dbTwigHost appropriately (e.g. http://localhost:8888)
   3.  Set your current directory to /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
   4.  Rebuild the React application by typing 'npm run build'
+
+If you get a 404 error, it is most likely because you did not change to the ./examples/react/javaScript/reactExample subdirectory before you ran the serve program.
 
 ## The React Example Application - Serving Insecure File Based Assets ##
 
