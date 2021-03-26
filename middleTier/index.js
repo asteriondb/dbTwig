@@ -244,7 +244,7 @@ async function handleUploadRequest(request, response)
 
     if (!status) jsonResponse = {...jsonResponse, ...JSON.parse(jsonPayload)};
     
-    msleep(500);
+    msleep(1000);
     response.send(JSON.stringify(jsonResponse));
   });
 
