@@ -90,11 +90,19 @@ package body db_twig as
   is
 
     l_json_parameters                 json_object_t := json_object_t(p_json_parameters);
+    l_service_name                    db_twig_services.service_name%type := l_json_parameters.get_string('serviceName');
     l_json_data                       clob;
+    l_replace_error_stack             db_twig_services.replace_error_stack%type;
 
   begin
 
+    select  replace_error_stack
+      into  l_replace_error_stack
+      from  db_twig_services
+     where  service_name = l_service_name;
+
     l_json_parameters.put('entryPoint', 'restApiError');
+    l_json_parameters.put('replaceErrorStack', l_replace_error_stack);
     l_json_data := call_rest_api(l_json_parameters.to_string);
 
     return l_json_data;

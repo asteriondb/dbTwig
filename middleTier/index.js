@@ -44,6 +44,11 @@ app.post('/dbTwig/:serviceName/:entryPoint', handleRequest);
 
 var os = require('os'), fs = require('fs');
 
+var msleep = function(microSeconds) 
+{
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, microSeconds);
+}
+
 function getRequestData(request, serverAddress)
 {
   let authorization = request.get('authorization');
@@ -239,6 +244,7 @@ async function handleUploadRequest(request, response)
 
     if (!status) jsonResponse = {...jsonResponse, ...JSON.parse(jsonPayload)};
     
+    msleep(1000);
     response.send(JSON.stringify(jsonResponse));
   });
 
