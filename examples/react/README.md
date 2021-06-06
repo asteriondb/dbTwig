@@ -45,11 +45,6 @@ In order to install the React example application you will need to gather the fo
   4.  Choose a password for the DbTwig example schema
   5.  AsterionDB schema username [asteriondb_objvault]
 
-If your AsterionDB installation is not listening on it's default port (i.e. 8080) you will have to modify the React example application's configuration.  Here are the steps:
-
-  1.  Open up /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample/public/assets/config.js in an editor
-  2.  Set the value of dbTwigHost appropriately (e.g. http://localhost:8888)
-
 From the ./asterion/oracle/dbTwig/examples/react subdirectory run the installation script install.sh to install the react example application.
 
 ## Accessing The React Example Application ##
