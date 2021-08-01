@@ -269,7 +269,7 @@ async function getSupportInfoRequest(request, response)
 
     jsonObject.databaseVersion = dbTwig.oracleServerVersionString(connection);
     jsonObject.databaseClientVersion = dbTwig.oracleClientVersionString;
-    jsonObject.dbTwigListener = require('./package.json').version;
+    jsonObject.dbTwigListener = require('./package.json').gitTag + '-' + require('./package.json').gitBranch;
     
     jsonPayload = JSON.stringify(jsonObject);
   }

@@ -1,6 +1,7 @@
 {
   "name": "db-twig-middle-tier",
-  "version": "1.3.0",
+  "gitTag": "master",
+  "gitBranch": "build-box",
   "private": true,
   "description": "DbTwig - The UltraSlim Middle-Tier Framework",
   "main": "index.js",
