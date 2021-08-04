@@ -1,6 +1,7 @@
 {
   "name": "react-example",
-  "version": "master-build-box",
+  "version": "0.0.0",
+  "versionComment": "Semantic versioning is stupid.  Provide a placeholder value",
   "gitTag": "master",
   "gitBranch": "build-box",
   "private": true,

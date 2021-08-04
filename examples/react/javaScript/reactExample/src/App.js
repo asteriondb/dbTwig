@@ -6,7 +6,7 @@ import { Card, CardBody, CardFooter } from 'reactstrap'
 import ReactExample from './ReactExample';
 
 function App() {
-  var versionNumber = require('../package.json').version
+  var versionNumber = 'tag: ' + require('../package.json').gitTag + ' branch: ' + require('../package.json').gitBranch;
 
   return (
     <div>
