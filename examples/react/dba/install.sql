@@ -91,7 +91,7 @@ rem
 rem  Setup DbTwig so that is knows about the reactExample service.
 rem
 
-insert into db_twig_services (service_name, service_owner) values ('reactExample', '&&react_example_user', 'Y');
+insert into db_twig_services (service_name, service_owner, replace_error_stack) values ('reactExample', '&&react_example_user', 'Y');
 
 alter session set current_schema = &&react_example_user;
 
