@@ -32,3 +32,4 @@ $SQLPATH/end_package_input.sh >>$GIT_HOME/dbTwig/examples/react/dba/react_exampl
 $SQLPATH/show_errors.sh react_example >>$GIT_HOME/dbTwig/examples/react/dba/react_example.pls 
 
 sqlplus $TUTORIAL_USER/$TUTORIAL_PASS@$DB_NAME @$GIT_HOME/dbTwig/dba/extractDbTwigData $GIT_HOME/dbTwig/examples/react/dba/dbTwigData.sql reactExample
+
