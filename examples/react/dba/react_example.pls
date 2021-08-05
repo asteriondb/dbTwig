@@ -46,6 +46,10 @@ package body react_example as
 --  We have also provided the needed modifications as commented out
 --  SELECT items to help speed up the process of converting this example
 --  so that it is accessing unstructured data from AsterionDB.
+--
+--  Execute the following SQL statement to modify the insurance_claims table:
+--
+--    alter table insurance_claims add report_id varchar2(32);
 
   function get_insurance_claim_detail
   (
@@ -125,9 +129,6 @@ package body react_example as
 --  Note that even though we do not need any parameters, we still have to
 --  provide the required function/procedure signature.
 --
---  Execute the following SQL statement to modify the insurance_claims table:
---
---    alter table insurance_claims add report_id varchar2(32);
 
   function get_insurance_claims
   (
