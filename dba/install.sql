@@ -54,6 +54,14 @@ create table db_twig_services
     constraint replace_stack_chk check (replace_error_stack in ('Y', 'N')) not null
 );
 
+create table db_twig_errors
+(
+  error_timestamp                   timestamp default systimestamp at time zone 'utc' not null,
+  error_code                        number(6) not null,
+  json_parameters                   clob,
+  error_message                     clob
+);
+
 @@db_twig
 @@db_twig.plb
 

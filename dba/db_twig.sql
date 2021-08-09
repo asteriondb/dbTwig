@@ -7,12 +7,6 @@ package db_twig as
   )
   return clob;
 
-  function rest_api_error
-  (
-    p_json_parameters                 clob
-  )
-  return clob;
-
 end db_twig;
 .
 /

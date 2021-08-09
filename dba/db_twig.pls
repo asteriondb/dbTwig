@@ -9,6 +9,28 @@ package body db_twig as
   PLSQL_COMPILER_ERROR                EXCEPTION;
   pragma exception_init(PLSQL_COMPILER_ERROR, -6550);
 
+  procedure rest_api_error
+  (
+    p_error_code                      db_twig_errors.error_code%type,
+    p_json_parameters                 db_twig_errors.json_parameters%type default null,
+    p_error_message                   db_twig_errors.error_message%type default null
+  )
+
+  is
+
+    PRAGMA AUTONOMOUS_TRANSACTION;
+
+  begin
+
+    insert into db_twig_errors
+      (error_code, json_parameters, error_message)
+    values
+      (p_error_code, p_json_parameters, p_error_message);
+
+    commit;
+
+  end rest_api_error;
+
   function call_rest_api
   (
     p_json_parameters                 clob
@@ -67,6 +89,11 @@ package body db_twig as
 
     raise_application_error(-20100, l_plsql_text, false);
 
+  when no_data_found then
+
+    rest_api_error(sqlcode, p_json_parameters, sqlerrm);
+    raise_application_error(-20100, 'Invalid service name or entry point parameter values.', false);
+
   when others then
 
     if 'Y' = l_replace_error_stack and sqlcode <= s_user_error_max and sqlcode >= s_user_error_min then
@@ -80,34 +107,6 @@ package body db_twig as
     end if;
 
   end call_rest_api;
-
-  function rest_api_error
-  (
-    p_json_parameters                 clob
-  )
-  return clob
-
-  is
-
-    l_json_parameters                 json_object_t := json_object_t(p_json_parameters);
-    l_service_name                    db_twig_services.service_name%type := l_json_parameters.get_string('serviceName');
-    l_json_data                       clob;
-    l_replace_error_stack             db_twig_services.replace_error_stack%type;
-
-  begin
-
-    select  replace_error_stack
-      into  l_replace_error_stack
-      from  db_twig_services
-     where  service_name = l_service_name;
-
-    l_json_parameters.put('entryPoint', 'restApiError');
-    l_json_parameters.put('replaceErrorStack', l_replace_error_stack);
-    l_json_data := call_rest_api(l_json_parameters.to_string);
-
-    return l_json_data;
-
-  end rest_api_error;
 
 end db_twig;
 /
