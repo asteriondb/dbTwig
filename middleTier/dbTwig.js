@@ -237,6 +237,8 @@ exports.getJsonPayload = async function(lob)
 
 exports.init = async function()
 {
+  console.log(process.env);
+  
   let credentials = 
   {
     user: process.env.DBTWIG_USER, 

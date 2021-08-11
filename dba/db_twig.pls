@@ -87,7 +87,7 @@ package body db_twig as
 
   when PLSQL_COMPILER_ERROR then
 
-    raise_application_error(-20100, l_plsql_text, false);
+    raise_application_error(-20100, l_plsql_text, true);
 
   when no_data_found then
 

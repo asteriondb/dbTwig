@@ -42,6 +42,8 @@ app.get('/dbTwig/:serviceName/oauthReply', handleOauthReply);
 app.get('/dbTwig/:serviceName/:entryPoint', handleRequest);
 app.post('/dbTwig/:serviceName/:entryPoint', handleRequest);
 
+app.get('/dbTwig/:serviceName', handleRequest);
+
 var os = require('os'), fs = require('fs');
 
 var msleep = function(microSeconds) 
@@ -53,6 +55,8 @@ function getRequestData(request, serverAddress)
 {
   let authorization = request.get('authorization');
   
+  console.log(request.params.entryPoint);
+
   return(
   {
     sessionId: (undefined !== authorization ? authorization.split(" ")[1] : ""), 
@@ -61,7 +65,7 @@ function getRequestData(request, serverAddress)
     httpHost: request.get('Host'),
     body: request.body,
     serviceName: request.params.serviceName,
-    entryPoint: request.params.entryPoint,
+    entryPoint: undefined === request.params.entryPoint ? '/' : request.params.entryPoint,
     originalUrl: request.originalUrl,
     serverAddress: serverAddress
   });
