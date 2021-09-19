@@ -49,20 +49,26 @@ package body db_twig as
     l_service_owner                   db_twig_services.service_owner%type;
     l_complete_object_name            varchar2(257);
     l_replace_error_stack             db_twig_services.replace_error_stack%type;
+    l_session_validation_procedure    db_twig_services.session_validation_procedure%type;
 
   begin
 
-    select  service_owner, replace_error_stack
-      into  l_service_owner, l_replace_error_stack
+    select  service_owner, replace_error_stack, session_validation_procedure
+      into  l_service_owner, l_replace_error_stack, l_session_validation_procedure
       from  db_twig_services
      where  service_name = l_service_name;
 
-    execute immediate
+    l_plsql_text :=
       'select  object_type, object_name ' ||
       '  from  '||l_service_owner||'.middle_tier_map ' ||
-      ' where  entry_point = :entryPoint'
+      ' where  entry_point = :entryPoint';
+
+    execute immediate l_plsql_text
       into l_object_type, l_object_name
       using l_entry_point;
+
+    execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(:l_object_type, :l_object_name, :l_json_parameters); end;'
+      using l_object_type, l_object_name, p_json_parameters;
 
     l_complete_object_name := l_service_owner||'.'||l_object_name;
 
