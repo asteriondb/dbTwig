@@ -4,8 +4,8 @@ Upgrade Notes
 
 */
 
-define  s_git_tag  = 'main'
-define  s_git_branch = 'moveSessionCheck'
+define  s_git_tag  = 'rc2022.03'
+define  s_git_branch = 'main'
 
 spool upgrade-&s_git_tag-&s_git_branch..log
 
