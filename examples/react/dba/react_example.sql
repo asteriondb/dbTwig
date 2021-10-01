@@ -40,6 +40,16 @@ package react_example as
   )
   return clob;
 
+-- This is just a placeholder procedure in order to satisfy DbTwig's requirements
+-- for a session_validation_procedure.
+
+  procedure validate_session
+  (
+    p_object_type                     middle_tier_map.object_type%type,
+    p_object_name                     middle_tier_map.object_name%type,
+    p_json_parameters                 clob
+  );
+
 end react_example;
 .
 /

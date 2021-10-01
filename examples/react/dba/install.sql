@@ -91,9 +91,25 @@ rem
 rem  Setup DbTwig so that is knows about the reactExample service.
 rem
 
-insert into db_twig_services (service_name, service_owner, replace_error_stack) values ('reactExample', '&&react_example_user', 'Y');
+insert into db_twig_services 
+  (service_name, service_owner, replace_error_stack, session_validation_procedure) 
+values ('reactExample', '&&react_example_user', 'Y', 'react_example.validate_session');
 
 alter session set current_schema = &&react_example_user;
+
+rem
+rem  Create the middle-tier map.
+rem
+
+@@../../../dba/middleTierMap
+
+rem
+rem  Insert our middle-tier map entries.
+rem
+
+@@dbTwigData
+
+commit;
 
 create table insurance_claims     
 (claim_id 			                number(6) primary key,
@@ -150,20 +166,6 @@ commit;
 
 @@react_example
 @@react_example.pls
-
-rem
-rem  Create the middle-tier map.
-rem
-
-@@/home/asterion/asterion/oracle/dbTwig/dba/middleTierMap
-
-rem
-rem  Insert our middle-tier map entries.
-rem
-
-@@dbTwigData
-
-commit;
 
 rem
 rem  Allow DbTwig to lookup our middle-tier map entries and execute our package.
