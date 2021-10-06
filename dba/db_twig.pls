@@ -53,10 +53,19 @@ package body db_twig as
 
   begin
 
-    select  service_owner, replace_error_stack, session_validation_procedure
-      into  l_service_owner, l_replace_error_stack, l_session_validation_procedure
-      from  db_twig_services
-     where  service_name = l_service_name;
+    begin
+
+      select  service_owner, replace_error_stack, session_validation_procedure
+        into  l_service_owner, l_replace_error_stack, l_session_validation_procedure
+        from  db_twig_services
+       where  service_name = l_service_name;
+
+    exception when no_data_found then
+
+      rest_api_error(sqlcode, p_json_parameters, sqlerrm);
+      raise_application_error(-20100, 'Invalid service name or entry point parameter values.', false);
+
+    end;
 
     l_plsql_text :=
       'select  object_type, object_name ' ||
@@ -94,11 +103,6 @@ package body db_twig as
   when PLSQL_COMPILER_ERROR then
 
     raise_application_error(-20100, l_plsql_text, true);
-
-  when no_data_found then
-
-    rest_api_error(sqlcode, p_json_parameters, sqlerrm);
-    raise_application_error(-20100, 'Invalid service name or entry point parameter values.', false);
 
   when others then
 
