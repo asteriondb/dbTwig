@@ -15,7 +15,8 @@ spool install.log
 
 connect &1/"&2"@"&3";
 
-set echo on
+set termout off
+set echo off
 
 declare
 
@@ -64,7 +65,7 @@ create table db_twig_errors
 );
 
 @@db_twig
-@@db_twig.plb
+@@db_twig.pls
 
 grant execute on db_twig to &5;
 

@@ -31,9 +31,9 @@ import React from 'react'
 
 import { Navbar, NavbarBrand, Container, Col, Row, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 
-import ReactTable from 'react-table-6'
+import ReactTable from 'react-table-legacy'
 
-import "react-table-6/react-table.css";
+import "react-table-legacy/react-table.css";
 import './css/index.css';
 
 import ReactJson from 'react-json-view'

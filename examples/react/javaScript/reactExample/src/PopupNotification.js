@@ -9,10 +9,9 @@
  *****************************************************************************/
 
 import React from 'react'
-import { ToastContainer } from 'react-toastr';
+import { ToastContainer, toast } from 'react-toastify';
 
-import './css/animate.min.css'
-import './css/toastr.min.css'
+import 'react-toastify/dist/ReactToastify.min.css';
 
 class PopupNotification extends React.Component
 {
@@ -23,23 +22,19 @@ class PopupNotification extends React.Component
       switch (this.props.notificationType)
       {
         case 'success':
-          this.refs.popupNotification.success(this.props.notificationText, '',
-            {"showAnimation": "animated fadeInUp", "hideAnimation": "animated fadeOutUp"});
+          toast.success(this.props.notificationText);
           break;
 
         case 'info':
-          this.refs.popupNotification.info(this.props.notificationText, '',
-            {"showAnimation": "animated fadeInUp", "hideAnimation": "animated fadeOutUp"});
+          toast.info(this.props.notificationText);
           break;
 
         case 'warning':
-          this.refs.popupNotification.warning(this.props.notificationText, '',
-            {"showAnimation": "animated fadeInUp", "hideAnimation": "animated fadeOutUp"});
+          toast.warning(this.props.notificationText);
           break;
 
         case 'error':
-          this.refs.popupNotification.error(this.props.notificationText, '',
-            {"showAnimation": "animated fadeInUp", "hideAnimation": "animated fadeOutUp"});
+          toast.error(this.props.notificationText);
           break;
 
         default:
@@ -54,11 +49,7 @@ class PopupNotification extends React.Component
   render()
   {
     return(
-      <ToastContainer
-        ref='popupNotification'
-        className="toast-top-right"
-        newestOnTop={false} 
-      />
+      <ToastContainer />
     );
   }
 }
