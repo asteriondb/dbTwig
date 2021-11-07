@@ -54,7 +54,7 @@ The React example application is designed to run in a stand-alone manner using i
 While connected to your compute node as the 'asterion' user, type in the following commands:
 
     cd /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
-    serve -s build
+    serve -l 5000 -s build
 
 This will run the Node-JS serve program and make the React example application available on port 5000.  To access the React example application, point your browser to:
 
