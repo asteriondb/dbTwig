@@ -29,6 +29,14 @@ The object of this example application is to give you a realistic introduction t
 
 After installation, we will start out by accessing the React example application in it's unmodified state.  We will upload objects to AsterionDB, modify the example application and see, with just a few changes, how easy it is to migrate an application.
 
+## Connect To Your Compute Instance ##
+
+You will need to connect to your compute instance from your local computer using an SSH tunnel.  Use the following SSH command:
+```
+  ssh asterion@your.ip.address -L 8080:localhost:8080 -L 5000:localhost:5000
+```
+This will open up tunnels for ports 8080 and 5000.
+
 ## Installation ##
 
 The installation process performs the following steps:
@@ -40,13 +48,19 @@ The installation process performs the following steps:
 In order to install the React example application you will need to gather the following usernames and passwords:
 
   1.  DBA username and password
-  2.  DbTwig schema username [dbtwig]
-  3.  React example schema username [react_example] 
-  4.  Choose a password for the DbTwig example schema
-  5.  AsterionDB schema username [asteriondb_objvault]
+  2.  Choose a password for the DbTwig example schema
+
+You can accept the default values for:
+
+  1.  DbTwig schema username [dbtwig]
+  2.  React example schema username [react_example] 
+  3.  AsterionDB schema username [asteriondb_objvault]
 
 From the **./asterion/oracle/dbTwig/examples/react** subdirectory run the installation script **install.sh** to install the react example application.
 
+  cd /home/asterion/asterion/oracle/dbTwig/examples/react
+  ./install.sh
+  
 ## Accessing The React Example Application ##
 
 The React example application is designed to run in a stand-alone manner using it's own dedicated HTTP port address and server.  This allows us to isolate the application and keep it from impacting any other production or development systems.
@@ -67,21 +81,6 @@ or
 or
 
     http://your.server.name:5000
-
-If something is already running on port 5000, you can change the default port number as shown below:
-
-    serve -l 5001 -s build
-
-If you are accessing your compute node via an SSH tunnel, you'll need to add a mapping for port 5000.  Here's an example:
-
-    ssh asterion@your.ip.address -L 8080:localhost:8080 -L 5000:localhost:5000
-
-If your AsterionDB installation is not listening on it's default port (i.e. 8080) you will have to modify the React example application's configuration and then rebuild it.  Here are the steps:
-
-  1.  Open up /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample/public/assets/config.js in an editor
-  2.  Set the value of dbTwigHost appropriately (e.g. http://localhost:8888)
-  3.  Set your current directory to /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
-  4.  Rebuild the React application by typing 'npm run build'
 
 If you get a 404 error, it is most likely because you did not change to the ./examples/react/javaScript/reactExample subdirectory before you ran the serve program.
 
