@@ -57,19 +57,19 @@ You can accept the default values for:
   3.  AsterionDB schema username [asteriondb_objvault]
 
 From the **./asterion/oracle/dbTwig/examples/react** subdirectory run the installation script **install.sh** to install the react example application.
-
+```
   cd /home/asterion/asterion/oracle/dbTwig/examples/react
   ./install.sh
-  
+```  
 ## Accessing The React Example Application ##
 
 The React example application is designed to run in a stand-alone manner using it's own dedicated HTTP port address and server.  This allows us to isolate the application and keep it from impacting any other production or development systems.
 
 While connected to your compute node as the 'asterion' user, type in the following commands:
-
+```
     cd /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
     serve -l 5000 -s build
-
+```
 This will run the Node-JS serve program and make the React example application available on port 5000.  To access the React example application, point your browser to:
 
     http://localhost:5000
