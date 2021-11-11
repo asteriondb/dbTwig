@@ -120,9 +120,15 @@ Within the example database we have a table that has file pointers to the unstru
 
 ### Upload Assets to AsterionDB ###
 
-From the 'Upload' tab in the AsterionDB web application, upload the PDFs and images. If you have direct access to the unstructured assets in the directories listed above you can simply upload the files from there.  Alternatively, you may have to download the images and PDFs directly from the React example application to a local directory and then upload the assets into AsterionDB.  Either way, once done, your screen will look similar to the following:
+Download the PDFs and images to a local directory.  Then, using the 'Upload' tab in the AsterionDB web application, upload the PDFs and images.  Your screen will look similar to the following:
 ![Uploaded Assets](./uploadedAssets.png)
 **Note how we have turned on the Object-Id column. This makes it easy for us to copy the Object-Id to the paste buffer.**
+
+### Configuring SQL*Developer ###
+
+If you used the cloud helper script as part of AsterionDB's *Getting Started Guide or Video* then you will have a copy of the database wallet in your cloud-shell's home directory.  Using the Oracle Cloud Shell, download the database wallet file - wallet.zip - to a local directory on your computer.
+
+Create a connection entry for the React Demo schema; the username is react_example.  Connect to the database using the React Demo schema username.
 
 ### Modify the Tables ###
 
