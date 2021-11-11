@@ -4,6 +4,12 @@
 
 This React based example application will show you how to interface to DbTwig and AsterionDB.  It will also show you how to migrate an application from file-based to database oriented access.  The process really is quite simple and if you are already famlliar with PL/SQL, you'll be able to follow along without any problems at all!
 
+This example program and documentation is oriented for use by individuals that have installed AsterionDB in the Oracle Cloud Infrastructure.  Consult these links:
+
+Documentation: [Getting Started With AsterionDB](https://asteriondb.com/getting-started/)
+
+Video: [Installation & Getting Started Video](https://asteriondb.com/getting-started-video/)
+
 This example focuses on the tasks involved in migrating an existing application.  Having a working knowledge of Oracle and PL/SQL is a requirement.  This example is not suitable for those that are just starting out with the aforementioned technologies.
 
 Specifically, in order to follow along with this example you will have to meet these prerequisites:
