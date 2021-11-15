@@ -55,12 +55,10 @@ function getRequestData(request, serverAddress)
 {
   let authorization = request.get('authorization');
   
-  console.log(request.params.entryPoint);
-
   return(
   {
     sessionId: (undefined !== authorization ? authorization.split(" ")[1] : ""), 
-    clientAddress: request.headers['x-forwarded-for'],
+    clientAddress: request.headers['x-real-ip'] ? request.headers['x-real-ip'] : request.headers['x-forwarded-for'],
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
     body: request.body,
