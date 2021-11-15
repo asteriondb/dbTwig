@@ -4,6 +4,12 @@
 
 This React based example application will show you how to interface to DbTwig and AsterionDB.  It will also show you how to migrate an application from file-based to database oriented access.  The process really is quite simple and if you are already famlliar with PL/SQL, you'll be able to follow along without any problems at all!
 
+This example program and documentation is oriented for use by individuals that have installed AsterionDB in the Oracle Cloud Infrastructure.  Consult these links:
+
+Documentation: [Getting Started With AsterionDB](https://asteriondb.com/getting-started/)
+
+Video: [Installation & Getting Started Video](https://asteriondb.com/getting-started-video/)
+
 This example focuses on the tasks involved in migrating an existing application.  Having a working knowledge of Oracle and PL/SQL is a requirement.  This example is not suitable for those that are just starting out with the aforementioned technologies.
 
 Specifically, in order to follow along with this example you will have to meet these prerequisites:
@@ -29,6 +35,14 @@ The object of this example application is to give you a realistic introduction t
 
 After installation, we will start out by accessing the React example application in it's unmodified state.  We will upload objects to AsterionDB, modify the example application and see, with just a few changes, how easy it is to migrate an application.
 
+## Connect To Your Compute Instance ##
+
+You will need to connect to your compute instance from your local computer using an SSH tunnel.  Use the following SSH command:
+```
+  ssh asterion@your.ip.address -L 8080:localhost:8080 -L 5000:localhost:5000
+```
+This will open up tunnels for ports 8080 and 5000.
+
 ## Installation ##
 
 The installation process performs the following steps:
@@ -40,22 +54,28 @@ The installation process performs the following steps:
 In order to install the React example application you will need to gather the following usernames and passwords:
 
   1.  DBA username and password
-  2.  DbTwig schema username [dbtwig]
-  3.  React example schema username [react_example] 
-  4.  Choose a password for the DbTwig example schema
-  5.  AsterionDB schema username [asteriondb_objvault]
+  2.  Choose a password for the DbTwig example schema
+
+You can accept the default values for:
+
+  1.  DbTwig schema username [dbtwig]
+  2.  React example schema username [react_example] 
+  3.  AsterionDB schema username [asteriondb_objvault]
 
 From the **./asterion/oracle/dbTwig/examples/react** subdirectory run the installation script **install.sh** to install the react example application.
-
+```
+  cd /home/asterion/asterion/oracle/dbTwig/examples/react
+  ./install.sh
+```  
 ## Accessing The React Example Application ##
 
 The React example application is designed to run in a stand-alone manner using it's own dedicated HTTP port address and server.  This allows us to isolate the application and keep it from impacting any other production or development systems.
 
 While connected to your compute node as the 'asterion' user, type in the following commands:
-
+```
     cd /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
     serve -l 5000 -s build
-
+```
 This will run the Node-JS serve program and make the React example application available on port 5000.  To access the React example application, point your browser to:
 
     http://localhost:5000
@@ -67,21 +87,6 @@ or
 or
 
     http://your.server.name:5000
-
-If something is already running on port 5000, you can change the default port number as shown below:
-
-    serve -l 5001 -s build
-
-If you are accessing your compute node via an SSH tunnel, you'll need to add a mapping for port 5000.  Here's an example:
-
-    ssh asterion@your.ip.address -L 8080:localhost:8080 -L 5000:localhost:5000
-
-If your AsterionDB installation is not listening on it's default port (i.e. 8080) you will have to modify the React example application's configuration and then rebuild it.  Here are the steps:
-
-  1.  Open up /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample/public/assets/config.js in an editor
-  2.  Set the value of dbTwigHost appropriately (e.g. http://localhost:8888)
-  3.  Set your current directory to /home/asterion/asterion/oracle/dbTwig/examples/react/javaScript/reactExample
-  4.  Rebuild the React application by typing 'npm run build'
 
 If you get a 404 error, it is most likely because you did not change to the ./examples/react/javaScript/reactExample subdirectory before you ran the serve program.
 
@@ -115,9 +120,15 @@ Within the example database we have a table that has file pointers to the unstru
 
 ### Upload Assets to AsterionDB ###
 
-From the 'Upload' tab in the AsterionDB web application, upload the PDFs and images. If you have direct access to the unstructured assets in the directories listed above you can simply upload the files from there.  Alternatively, you may have to download the images and PDFs directly from the React example application to a local directory and then upload the assets into AsterionDB.  Either way, once done, your screen will look similar to the following:
+Download the PDFs and images to a local directory.  Then, using the 'Upload' tab in the AsterionDB web application, upload the PDFs and images.  Your screen will look similar to the following:
 ![Uploaded Assets](./uploadedAssets.png)
 **Note how we have turned on the Object-Id column. This makes it easy for us to copy the Object-Id to the paste buffer.**
+
+### Configuring SQL*Developer ###
+
+If you used the cloud helper script as part of AsterionDB's *Getting Started Guide or Video* then you will have a copy of the database wallet in your cloud-shell's home directory.  Using the Oracle Cloud Shell, download the database wallet file - wallet.zip - to a local directory on your computer.
+
+Create a connection entry for the React Demo schema; the username is react_example.  Connect to the database using the React Demo schema username.
 
 ### Modify the Tables ###
 
