@@ -23,7 +23,7 @@ while [ "${DBA_PASSWORD}" == '' ]; do
 done
 
 
-sqlplus ${DBA_USER}/${DBA_PASSWORD} @devSetup ${DBTWIG_USER} ${DBTWIG_PASS}<<EOF
+sqlplus ${DBA_USER}/${DBA_PASSWORD}@${DB_NAME} @devSetup ${DBTWIG_USER} ${DBTWIG_PASS}<<EOF
 exit
 EOF
 
