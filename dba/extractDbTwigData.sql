@@ -15,4 +15,3 @@ select  'insert into middle_tier_map values ('''||entry_point||''', '''||object_
  where  object_group = '&2';
 
 spool off
-exit;

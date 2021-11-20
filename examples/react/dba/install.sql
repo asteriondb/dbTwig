@@ -27,12 +27,12 @@ accept dbtwig_user prompt "Enter the name of the user that owns the DbTwig schem
 prompt
 
 prompt
-prompt We need to create a user to own the React Example schema
-accept react_example_user prompt "Enter the name of the React Example schema owner [react_example]: " default react_example
+prompt We need to create a user to own the DbTwig Example schema
+accept tutorials_user prompt "Enter the name of the DbTwig Example schema owner [dbtwig_tutorials]: " default dbtwig_tutorials
 prompt
 
 prompt
-accept react_example_password prompt "Enter a password for the React Example user: " hide
+accept tutorials_password prompt "Enter a password for the DbTwig Example schema owner: " hide
 prompt
 
 prompt
@@ -63,13 +63,13 @@ begin
       from  database_properties 
      where  property_name = 'DEFAULT_PERMANENT_TABLESPACE';
 
-    l_sql_text := 'create user &&react_example_user identified by "&&react_example_password"';
+    l_sql_text := 'create user &&tutorials_user identified by "&&tutorials_password"';
     execute immediate l_sql_text;
 
-    l_sql_text := 'grant create session, create table, create procedure to &&react_example_user';
+    l_sql_text := 'grant create session, create table, create procedure to &&tutorials_user';
     execute immediate l_sql_text;
 
-    l_sql_text := 'alter user &&react_example_user quota 50M on '||l_default_tablespace;
+    l_sql_text := 'alter user &&tutorials_user quota 50M on '||l_default_tablespace;
     execute immediate l_sql_text;
 
 end;
@@ -81,21 +81,21 @@ rem  Setup the React Example user so that it can make calls to the AsterionDB
 rem  API by using DbTwig.
 rem
 
-grant execute on &&dbtwig_user..db_twig to &&react_example_user;
+grant execute on &&dbtwig_user..db_twig to &&tutorials_user;
 
-create synonym &&react_example_user..db_twig for &&dbtwig_user..db_twig;
+create synonym &&tutorials_user..db_twig for &&dbtwig_user..db_twig;
 
 alter session set current_schema = &&dbtwig_user;
 
 rem
-rem  Setup DbTwig so that is knows about the reactExample service.
+rem  Setup DbTwig so that it knows about the reactExample service.
 rem
 
 insert into db_twig_services 
   (service_name, service_owner, replace_error_stack, session_validation_procedure) 
-values ('reactExample', '&&react_example_user', 'Y', 'react_example.validate_session');
+values ('reactExample', '&&tutorials_user', 'Y', 'react_example.validate_session');
 
-alter session set current_schema = &&react_example_user;
+alter session set current_schema = &&tutorials_user;
 
 rem
 rem  Create the middle-tier map.
@@ -164,8 +164,8 @@ end;
 
 commit;
 
-@@react_example
-@@react_example.pls
+@react_example
+@react_example.pls
 
 rem
 rem  Allow DbTwig to lookup our middle-tier map entries and execute our package.
