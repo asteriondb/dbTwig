@@ -118,7 +118,7 @@ exports.callDbTwig = async function(connection, requestData)
   let bindVars = 
   {
     jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
-    jsonParameters: JSON.stringify({...systemParameters, ...requestData.body, serviceName: requestData.serviceName, 
+    jsonParameters: JSON.stringify({...systemParameters, ...requestData.body, query: requestData.query, serviceName: requestData.serviceName, 
       entryPoint: requestData.entryPoint})
   }
 

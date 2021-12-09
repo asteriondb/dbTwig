@@ -28,7 +28,7 @@ prompt
 
 prompt
 prompt We need to create a user to own the DbTwig Example schema
-accept tutorials_user prompt "Enter the name of the DbTwig Example schema owner [dbtwig_tutorials]: " default dbtwig_tutorials
+accept tutorials_user prompt "Enter the name of the DbTwig Example schema owner [react_example]: " default react_example
 prompt
 
 prompt
