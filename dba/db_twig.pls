@@ -63,7 +63,7 @@ package body db_twig as
     exception when no_data_found then
 
       rest_api_error(sqlcode, p_json_parameters, sqlerrm);
-      raise_application_error(-20100, 'Invalid service name or entry point parameter values.', false);
+      raise_application_error(-20100, 'Invalid service name parameter value.', false);
 
     end;
 
@@ -72,49 +72,62 @@ package body db_twig as
       '  from  '||l_service_owner||'.middle_tier_map ' ||
       ' where  entry_point = :entryPoint';
 
-    execute immediate l_plsql_text
-      into l_object_type, l_object_name
-      using l_entry_point;
+    begin
+
+      execute immediate l_plsql_text
+        into l_object_type, l_object_name
+        using l_entry_point;
+
+    exception when no_data_found then
+
+      rest_api_error(sqlcode, p_json_parameters, sqlerrm);
+      raise_application_error(-20100, 'Invalid entry point parameter value.', false);
+
+    end;
 
     execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(:l_object_type, :l_object_name, :l_json_parameters); end;'
       using l_object_type, l_object_name, p_json_parameters;
 
     l_complete_object_name := l_service_owner||'.'||l_object_name;
 
-    if 'function' = l_object_type then
+    begin
 
-      l_plsql_text := 'begin :l_json_data := '||l_complete_object_name||'(:l_json_parameters); end;';
-      execute immediate l_plsql_text using out l_json_data, p_json_parameters;
+      if 'function' = l_object_type then
 
-    else
+        l_plsql_text := 'begin :l_json_data := '||l_complete_object_name||'(:l_json_parameters); end;';
+        execute immediate l_plsql_text using out l_json_data, p_json_parameters;
 
-      l_plsql_text := 'begin '||l_complete_object_name||'(:l_json_parameters); end;';
+      else
 
-      execute immediate l_plsql_text using p_json_parameters;
+        l_plsql_text := 'begin '||l_complete_object_name||'(:l_json_parameters); end;';
 
-      l_json_data := s_json_response;
+        execute immediate l_plsql_text using p_json_parameters;
 
-    end if;
+        l_json_data := s_json_response;
+
+      end if;
+
+    exception
+
+    when PLSQL_COMPILER_ERROR then
+
+      raise_application_error(-20100, l_plsql_text, true);
+
+    when others then
+
+      if 'Y' = l_replace_error_stack and sqlcode <= s_user_error_max and sqlcode >= s_user_error_min then
+
+        raise_application_error(sqlcode, '//'||substr(sqlerrm, instr(sqlerrm, ':')+2)||'\\', false);
+
+      else
+
+        raise;
+
+      end if;
+
+    end;
 
     return l_json_data;
-
-  exception
-
-  when PLSQL_COMPILER_ERROR then
-
-    raise_application_error(-20100, l_plsql_text, true);
-
-  when others then
-
-    if 'Y' = l_replace_error_stack and sqlcode <= s_user_error_max and sqlcode >= s_user_error_min then
-
-      raise_application_error(sqlcode, '//'||substr(sqlerrm, instr(sqlerrm, ':')+2)||'\\', false);
-
-    else
-
-      raise;
-
-    end if;
 
   end call_rest_api;
 
