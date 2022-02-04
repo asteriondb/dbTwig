@@ -85,7 +85,7 @@ package body db_twig as
 
     end;
 
-    execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(:l_object_type, :l_object_name, :l_json_parameters); end;'
+    execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(:object_type, :object_name, json_object_t(:p_json_parameters)); end;'
       using l_object_type, l_object_name, p_json_parameters;
 
     l_complete_object_name := l_service_owner||'.'||l_object_name;
@@ -94,12 +94,12 @@ package body db_twig as
 
       if 'function' = l_object_type then
 
-        l_plsql_text := 'begin :l_json_data := '||l_complete_object_name||'(:l_json_parameters); end;';
+        l_plsql_text := 'begin :l_json_data := '||l_complete_object_name||'(json_object_t(:p_json_parameters)); end;';
         execute immediate l_plsql_text using out l_json_data, p_json_parameters;
 
       else
 
-        l_plsql_text := 'begin '||l_complete_object_name||'(:l_json_parameters); end;';
+        l_plsql_text := 'begin '||l_complete_object_name||'(json_object_t(:p_json_parameters)); end;';
 
         execute immediate l_plsql_text using p_json_parameters;
 

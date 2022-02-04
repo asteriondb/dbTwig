@@ -30,7 +30,7 @@ update  db_twig_services
 alter table db_twig_services modify session_validation_procedure not null;
 
 @@db_twig
-@@db_twig.plb
+@@db_twig.pls
 
 REM  ...and here
 
