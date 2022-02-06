@@ -214,6 +214,7 @@ async function handleUploadRequest(request, response)
 
   var status;
   var jsonPayload;
+  var result;
 
   busBoy.on('file', async function(fieldname, file, filename, encoding, mimetype) 
   {
@@ -221,7 +222,7 @@ async function handleUploadRequest(request, response)
     request.params.entryPoint = 'createUploadedObject';
 
     let connection = await dbTwig.getConnectionFromPool();
-    let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
+    result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 
     status = result.status;
 
@@ -233,7 +234,17 @@ async function handleUploadRequest(request, response)
     if (status)
     {
       let jsonObject = JSON.parse(jsonPayload);
-      file.pipe(fs.createWriteStream(jsonObject.filename));
+      result = file.pipe(fs.createWriteStream(jsonObject.filename))
+        .on('error', function(e)
+        {
+          let jsonResponse = {uuid: fileId, success: 0, errorMessage: e.message.substring(0, e.message.indexOf(','))};
+          response.send(JSON.stringify(jsonResponse));
+        })
+        .on('close', function(x)
+        {
+          let jsonResponse = {uuid: fileId, success: 1};
+          response.send(JSON.stringify(jsonResponse));
+        });
     }
     else
     {
@@ -242,16 +253,6 @@ async function handleUploadRequest(request, response)
     }
       
     dbTwig.closeConnection(connection);
-  });
-
-  busBoy.on('finish', function() 
-  {
-    let jsonResponse = {uuid: fileId, success: status ? 1 : 0};
-
-    if (!status) jsonResponse = {...jsonResponse, ...JSON.parse(jsonPayload)};
-    
-    msleep(1000);
-    response.send(JSON.stringify(jsonResponse));
   });
 
   return request.pipe(busBoy);
