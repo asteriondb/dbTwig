@@ -229,7 +229,8 @@ async function handleUploadRequest(request, response)
     if (undefined !== result.lob)
       jsonPayload = await dbTwig.getJsonPayload(result.lob);
     else
-      jsonPayload = JSON.stringify({errorCode: result.errorCode, errorMessage: result.errorMessage});
+//      jsonPayload = JSON.stringify({errorCode: result.errorCode, errorMessage: result.errorMessage});
+      response.send(JSON.stringify({errorCode: result.errorCode, errorMessage: result.errorMessage}));
 
     if (status)
     {
