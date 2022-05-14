@@ -4,7 +4,7 @@
 
 set -e
 
-cd $GIT_HOME/dbTwig/dba
+cd $GIT_HOME/dbTwig/devops
 
 sqlplus $DBTWIG_USER/$DBTWIG_PASS@$DB_NAME @extractObjects $GIT_HOME
 
