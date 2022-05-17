@@ -38,6 +38,7 @@ var errorHandler = async function(connection, serviceName, error)
   let errorParameters =
   {
     serviceName: serviceName,
+    entryPoint: 'restApiError',
     errorCode: error.errorNum,
     errorMessage: error.message,
     scriptFilename: __filename
@@ -45,7 +46,7 @@ var errorHandler = async function(connection, serviceName, error)
 
   if (SESSION_TIMEOUT != error.errorNum)
   {
-    let text = 'begin :jsonData := db_twig.rest_api_error(:jsonParameters); end;';
+    let text = 'begin :jsonData := db_twig.call_rest_api(:jsonParameters); end;';
     let bindVars = 
     {
       jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
