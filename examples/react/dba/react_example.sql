@@ -18,7 +18,7 @@ package react_example as
 
   function get_insurance_claim_detail
   (
-    p_json_parameters                 clob
+    p_json_parameters                 json_object_t
   )
   return clob;
 
@@ -36,7 +36,7 @@ package react_example as
 
   function get_insurance_claims
   (
-    p_json_parameters                 clob
+    p_json_parameters                 json_object_t
   )
   return clob;
 
@@ -47,7 +47,7 @@ package react_example as
   (
     p_object_type                     middle_tier_map.object_type%type,
     p_object_name                     middle_tier_map.object_name%type,
-    p_json_parameters                 clob
+    p_json_parameters                 json_object_t
   );
 
 end react_example;

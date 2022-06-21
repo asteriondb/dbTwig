@@ -53,19 +53,18 @@ package body react_example as
 
   function get_insurance_claim_detail
   (
-    p_json_parameters                 clob
+    p_json_parameters                 json_object_t
   )
   return clob
 
   as
 
-    l_json_object                     json_object_t := json_object_t(p_json_parameters);
     l_claim_id                        insurance_claims.claim_id%type;
     l_clob                            clob;
 
   begin
 
-    l_claim_id := l_json_object.get_number('claimId');
+    l_claim_id := p_json_parameters.get_number('claimId');
 
     select  json_object(
               'insuredParty' is insured_party,
@@ -132,7 +131,7 @@ package body react_example as
 
   function get_insurance_claims
   (
-    p_json_parameters	              clob
+    p_json_parameters	              json_object_t
   )
   return clob
 
@@ -161,7 +160,7 @@ package body react_example as
   (
     p_object_type                     middle_tier_map.object_type%type,
     p_object_name                     middle_tier_map.object_name%type,
-    p_json_parameters                 clob
+    p_json_parameters                 json_object_t
   )
 
   is
