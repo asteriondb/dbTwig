@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- *  Copyleft (:-) 2020, 2021 by AsterionDB Inc.                               *
+ *  Copyleft (:-) 2020, 2022 by AsterionDB Inc.                               *
  *                                                                            *
  *  DbTwig client-layer adapter.                                              *
  *                                                                            *

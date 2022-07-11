@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- *  Copyleft (:-) 2020, 2021 by AsterionDB Inc.                               *
+ *  Copyleft (:-) 2020, 2022 by AsterionDB Inc.                               *
  *                                                                            *
  *  ReactExample.js - A simple little JScript React SPA that interacts with   *
  *  DbTwig and AsterionDB.                                                    *
@@ -44,7 +44,6 @@ import PopupNotification from './PopupNotification'
 
 class Tutorial extends React.Component
 {
-  "use strict"
 
   debouncedSaveColumnWidths = null;
   columnKey = 'reactExample';

@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- *  Copyright (c) 2018, 2021 by AsterionDB Inc.                               *
+ *  Copyright (c) 2018, 2022 by AsterionDB Inc.                               *
  *                                                                            *
  *  All rights reserved.  No part of this work may be reproduced or otherwise *
  *  incorporated into other works without the express written consent of      *
@@ -13,7 +13,7 @@ var app = express();
 
 const axios = require('axios').default;
 
-var Busboy = require('busboy');
+const busboyP = require('busboy');
 
 var syslog = require('modern-syslog');
 
@@ -169,7 +169,7 @@ async function handleUploadRequest(request, response)
 
   let jsonParms = {gatewayName: os.hostname()};
 
-  var busBoy = new Busboy({ headers: request.headers });
+  const busBoy = busboyP({ headers: request.headers });
 
   busBoy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated)
   {

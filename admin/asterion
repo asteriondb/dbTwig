@@ -1,0 +1,10 @@
+# /etc/sysconfig/asterion
+
+ORACLE_HOME=...
+LD_LIBRARY_PATH=/usr/local/lib:$ORACLE_HOME/lib
+ASTERION=/home/asterion/asterion/oracle
+RUNTIME_USER=asteriondb_runtime 
+RUNTIME_PASSWORD=#SecurityBySimplicity2020#
+DBTWIG_USER=dbtwig_listener 
+DBTWIG_PASSWORD=#SecurityBySimplicity2020#
+
