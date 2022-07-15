@@ -29,7 +29,7 @@
 
 import React from 'react'
 
-import { Navbar, NavbarBrand, Container, Col, Row, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import { Input, Navbar, NavbarBrand, Container, Col, Row, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 
 import ReactTable from 'react-table-legacy'
 
@@ -54,7 +54,7 @@ class Tutorial extends React.Component
   {
     this.setState({ notificationText: '' });
   }
-
+  
   componentDidMount()
   {
     this.fetchInsuranceClaims();
@@ -62,7 +62,7 @@ class Tutorial extends React.Component
 
   constructor(props)
   {
-    super();
+    super();  
 
     this.appLocalStorage = new AppLocalStorage();
 
@@ -88,14 +88,17 @@ class Tutorial extends React.Component
       modalIsOpen: false,
       modalTitle: '',
       modalMessage: '',
-      selectedRow: null
+      selectedRow: null,
+      claimNote: ''
     }
 
     this.selectionHandler = this.selectionHandler.bind(this);
     this.fetchInsuranceClaimDetail = this.fetchInsuranceClaimDetail.bind(this);
+    this.saveClaimNote = this.saveClaimNote.bind(this);
+    this.setClaimNotes = this.setClaimNotes.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
     this.clearNotifier = this.clearNotifier.bind(this);
-
+  
     window.openAppModal = this.openAppModal.bind(this);
     window.postNotification = this.postNotification.bind(this);
   }
@@ -212,6 +215,14 @@ class Tutorial extends React.Component
                 />
               </Col></Row>
               <Row style={{paddingTop: '10px'}}><Col><ReactJson src={this.state.insuranceClaimDetail}/></Col></Row>
+              <Row style={{paddingTop: '10px'}}>
+                <Col>
+                  <Input type="text" id="claimNote" placeholder="Enter some text..." value={this.state.claimNote} onChange={this.setClaimNotes}/>
+                </Col>
+                <Col sm={1}>
+                  <Button onClick={this.saveClaimNote} color="primary">Save</Button>
+                </Col>
+              </Row>
             </Col>
             <Col sm='8'>
               <Row><Col sm='3'>Insured Party</Col><Col>{(undefined !== this.state.insuranceClaimDetail ? this.state.insuranceClaimDetail.insuredParty : null)}</Col></Row>
@@ -225,9 +236,26 @@ class Tutorial extends React.Component
               </Row>
             </Col>
           </Row>
+          <Row>
+          </Row>
         </Container>
       </div>
     );
+  }
+
+  async saveClaimNote()
+  {
+    var bodyData = {};
+
+    bodyData.claimNote = this.state.claimNote;
+    bodyData.claimId = this.state.insuranceClaims[this.state.selectedRow].claimId;
+    let result = await this.dbTwig.callRestAPI('saveClaimNote', bodyData);
+    if ('success' !== result.status)
+    {
+      return this.dbTwig.apiErrorHandler(result, 'Error saving claim note.');
+    } 
+
+    this.setState({claimNote: ''});
   }
 
   saveColumnWidths(resizedColumns)
@@ -239,6 +267,11 @@ class Tutorial extends React.Component
   {
     this.setState({selectedRow: rowInfo.index});
     this.fetchInsuranceClaimDetail(rowInfo.row.claimId);
+  }
+
+  setClaimNotes(event)
+  {
+    this.setState({claimNote: event.target.value});
   }
 
   toggleModal()

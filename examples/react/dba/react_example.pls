@@ -153,6 +153,31 @@ package body react_example as
 
   end get_insurance_claims;
 
+-- Simple code that shows you how to unpack the parameter object and insert
+-- values into the DB.
+
+  procedure save_claim_note
+  (
+    p_json_parameters                 json_object_t
+  )
+
+  is
+
+    l_claim_note                      insurance_claim_notes.claim_note%type :=
+      p_json_parameters.get_string('claimNote');
+    l_claim_id                        insurance_claim_notes.claim_id%type :=
+      p_json_parameters.get_number('claimId');
+
+  begin
+
+    insert into insurance_claim_notes
+      (claim_id, claim_note)
+    values
+      (l_claim_id, l_claim_note);
+
+  end save_claim_note;
+
+
 -- This is just a placeholder procedure in order to satisfy DbTwig's requirements
 -- for a session_validation_procedure.
 

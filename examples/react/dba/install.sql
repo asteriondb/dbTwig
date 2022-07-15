@@ -124,6 +124,11 @@ create table insurance_claim_photos
    references insurance_claims(claim_id),
  filename 		                    varchar2(128));
 
+create table insurance_claim_notes
+(claim_id                           number(6)
+   references insurance_claims(claim_id),
+ claim_note                         varchar2(256));
+
 create sequence tutorials_seq minvalue 1 maxvalue 999999 cycle start with 1;
 
 begin

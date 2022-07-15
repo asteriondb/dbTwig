@@ -40,6 +40,14 @@ package react_example as
   )
   return clob;
 
+--  This procedure shows you how you can accept a value from your UI and insert
+--  that into the DB. Nothing too fancy here.
+
+  procedure save_claim_note
+  (
+    p_json_parameters                 json_object_t
+  );
+
 -- This is just a placeholder procedure in order to satisfy DbTwig's requirements
 -- for a session_validation_procedure.
 
