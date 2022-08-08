@@ -183,8 +183,7 @@ package body react_example as
 
   procedure validate_session
   (
-    p_object_type                     middle_tier_map.object_type%type,
-    p_object_name                     middle_tier_map.object_name%type,
+    p_entry_point                     middle_tier_map.entry_point%type,
     p_json_parameters                 json_object_t
   )
 

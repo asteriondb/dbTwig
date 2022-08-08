@@ -85,8 +85,8 @@ package body db_twig as
 
     end;
 
-    execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(:object_type, :object_name, json_object_t(:p_json_parameters)); end;'
-      using l_object_type, l_object_name, p_json_parameters;
+    execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(:entry_point, json_object_t(:p_json_parameters)); end;'
+      using l_entry_point, p_json_parameters;
 
     l_complete_object_name := l_service_owner||'.'||l_object_name;
 

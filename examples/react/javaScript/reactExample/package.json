@@ -1,6 +1,6 @@
 {
   "name": "react-example",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "versionComment": "Semantic versioning is stupid.  Provide a placeholder value",
   "gitTag": "rc2022.03",
   "gitBranch": "main",
