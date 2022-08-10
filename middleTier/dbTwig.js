@@ -8,10 +8,10 @@
  *                                                                            *
  *****************************************************************************/
 
+const {logger} = require('./index');
+
 const oracledb = require('oracledb');
 oracledb.autoCommit = true;
-
-var syslog = require('modern-syslog');
 
 const USER_ERROR_FLOOR = 20000;
 const USER_ERROR_CEILING = 20999;
@@ -65,10 +65,10 @@ var errorHandler = async function(connection, serviceName, error)
       console.error('Attempted to log this error object:');
       console.error({...systemParameters, ...errorParameters});
 
-      syslog.error('Unable to log a RestAPI error to the database.');
-      syslog.error(JSON.stringify(logError));
-      syslog.error('Attempted to log this error object:');
-      syslog.error(JSON.stringify({...systemParameters, ...errorParameters}));
+      logger.log('error', 'Unable to log a RestAPI error to the database.');
+      logger.log('error', logError);
+      logger.log('error', 'Attempted to log this error object:');
+      logger.log('error', {...systemParameters, ...errorParameters});
 
       return {status: false, errorCode: errorParameters.errorCode, errorMessage: errorParameters.errorMessage};
     }
@@ -194,7 +194,7 @@ exports.sendLobResponse = async function(lob, response)
   }
   catch (error)
   {
-    syslog.error(JSON.stringify(error));
+    logger.log('error', error);
     console.error(error);
   }
 }
@@ -208,7 +208,7 @@ exports.getJsonPayload = async function(lob)
     lob.setEncoding('utf8');  // set the encoding so we get a 'string' not a 'buffer'
     lob.on('error', function(err) 
     { 
-      syslog.error(JSON.stringify(err)); 
+      logger.log('error', err); 
       console.error(err); 
       reject();
     });
@@ -231,7 +231,7 @@ exports.getJsonPayload = async function(lob)
   }
   catch (err)
   {
-    syslog.error(JSON.stringify(err)); 
+    logger.log('error', err); 
     console.error(err); 
   }
 }
@@ -252,7 +252,7 @@ exports.init = async function()
   }
   catch (err)
   {
-    syslog.error(JSON.stringify(err)); 
+    logger.log('error', err); 
     console.error(err); 
     return false;
   }
@@ -266,7 +266,7 @@ exports.closePool = async function()
   }
   catch (err)
   {
-    syslog.error(JSON.stringify(err)); 
+    logger.log('error', err); 
     console.error(err); 
   }
 }

@@ -15,9 +15,52 @@ const axios = require('axios').default;
 
 const busboyP = require('busboy');
 
-var syslog = require('modern-syslog');
-
 const port = (undefined === process.env.DBTWIG_PORT ? 3030 : process.env.DBTWIG_PORT);
+
+const {format, createLogger, transports} = require('winston');
+
+let errorLog = process.env.HOME + '/asterion/oracle/logs/db-twig-error.log';
+let combinedLog = process.env.HOME + '/asterion/oracle/logs/db-twig-combined.log';
+
+const logger = createLogger(
+{
+  level: 'info',
+  format: format.combine(
+    format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    format.errors({ stack: true }),
+    format.splat(),
+    format.json()
+  ),
+  defaultMeta: { service: 'dbTwig' },
+  transports: [
+    //
+    // - Write to all logs with level `info` and below to `quick-start-combined.log`.
+    // - Write all logs error (and below) to `quick-start-error.log`.
+    //
+    new transports.File({ filename: errorLog, level: 'error' }),
+    new transports.File({ filename: combinedLog })
+  ]
+});
+
+exports.logger = logger;
+
+//
+// If we're not in production then **ALSO** log to the `console`
+// with the colorized simple format.
+//
+if (process.env.NODE_ENV !== 'production') 
+{
+  logger.add(new transports.Console(
+  {
+    format: format.combine
+    (
+      format.colorize(),
+      format.simple()
+    )
+  }));
+}
 
 const dbTwig = require('./dbTwig');
 
@@ -318,8 +361,7 @@ process
 
 if (!dbTwig.init()) process.exit(1);
 
-syslog.open('DbTwig', syslog.LOG_CONS||syslog.LOG_PERROR||syslog.LOG_PID);
 
-syslog.info('DbTwig Middle-Tier Server listening on port: ' + port);
+logger.log('info', 'Yo....DbTwig Middle-Tier Server listening on port: %d', port);
 console.log('DbTwig Middle-Tier Server listening on port: ' + port);
 let server = app.listen(port, "127.0.0.1");
