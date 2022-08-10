@@ -362,6 +362,6 @@ process
 if (!dbTwig.init()) process.exit(1);
 
 
-logger.log('info', 'Yo....DbTwig Middle-Tier Server listening on port: %d', port);
+logger.log('info', 'DbTwig Middle-Tier Server listening on port: %d', port);
 console.log('DbTwig Middle-Tier Server listening on port: ' + port);
 let server = app.listen(port, "127.0.0.1");
