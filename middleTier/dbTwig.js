@@ -46,7 +46,7 @@ var errorHandler = async function(connection, serviceName, error)
 
   if (SESSION_TIMEOUT != error.errorNum)
   {
-    let text = 'declare json_data clob; begin json_data := db_twig.call_rest_api(:jsonParameters); :jsonData := json_data; end;';
+    let text = 'declare json_data clob := null; begin json_data := db_twig.call_rest_api(:jsonParameters); :jsonData := json_data; end;';
     let bindVars = 
     {
       jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
@@ -115,7 +115,7 @@ exports.callDbTwig = async function(connection, requestData)
   systemParameters.httpHost =  requestData.httpHost;
   systemParameters.serverAddress = requestData.serverAddress;
 
-  let text = 'declare json_data clob; begin json_data := db_twig.call_rest_api(:jsonParameters); :jsonData := json_data; end;';
+  let text = 'declare json_data clob := null; begin json_data := db_twig.call_rest_api(:jsonParameters); :jsonData := json_data; end;';
   let bindVars = 
   {
     jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
