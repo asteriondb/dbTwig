@@ -8,7 +8,6 @@
 dba/oracle/db_twig.plb
 dba/oracle/install.log
 diagrams/dbTwig.odp
-examples/
 middleTier/.vscode/
 middleTier/node_modules/
 /dba/db_twig.plb
