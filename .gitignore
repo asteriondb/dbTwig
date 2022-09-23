@@ -12,3 +12,4 @@ middleTier/.vscode/
 middleTier/node_modules/
 /dba/db_twig.plb
 /dba/devSetup.log
+/examples/react/dba/install.log
