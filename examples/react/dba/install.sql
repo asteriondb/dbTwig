@@ -91,6 +91,9 @@ rem
 rem  Setup DbTwig so that it knows about the reactExample service.
 rem
 
+delete  from db_twig_services
+ where  service_name = 'reactExample';
+
 insert into db_twig_services 
   (service_name, service_owner, replace_error_stack, session_validation_procedure) 
 values ('reactExample', '&&tutorials_user', 'Y', 'react_example.validate_session');

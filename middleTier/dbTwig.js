@@ -8,7 +8,7 @@
  *                                                                            *
  *****************************************************************************/
 
-const {logger} = require('./index');
+const {logger} = require('index');
 
 const oracledb = require('oracledb');
 oracledb.autoCommit = true;
