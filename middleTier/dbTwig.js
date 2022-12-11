@@ -29,11 +29,6 @@ var systemParameters =
   httpHost: null
 };
 
-var errorHandler = async function(connection, serviceName, error)
-{
-    return {status: false, errorCode: error.errorNum, errorMessage: error.message};
-}
-
 var msleep = function(microSeconds) 
 {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, microSeconds);
