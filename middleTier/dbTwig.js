@@ -8,7 +8,7 @@
  *                                                                            *
  *****************************************************************************/
 
-const {logger} = require('index');
+const {logger} = require('./index');
 
 const oracledb = require('oracledb');
 oracledb.autoCommit = true;
@@ -35,47 +35,6 @@ var systemParameters =
 
 var errorHandler = async function(connection, serviceName, error)
 {
-  let errorParameters =
-  {
-    serviceName: serviceName,
-    entryPoint: 'restApiError',
-    errorCode: error.errorNum,
-    errorMessage: error.message,
-    scriptFilename: __filename
-  };
-
-  if (SESSION_TIMEOUT != error.errorNum)
-  {
-    let text = 'declare json_data clob := null; begin json_data := db_twig.call_rest_api(:jsonParameters); :jsonData := json_data; end;';
-    let bindVars = 
-    {
-      jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
-      jsonParameters: JSON.stringify({...systemParameters, ...errorParameters})
-    }
-
-    let result = null;
-    try
-    {
-      result = await connection.execute(text, bindVars);
-    }
-    catch (logError)
-    {
-      console.error('Unable to log a RestAPI error to the database.');
-      console.error(logError);
-      console.error('Attempted to log this error object:');
-      console.error({...systemParameters, ...errorParameters});
-
-      logger.log('error', 'Unable to log a RestAPI error to the database.');
-      logger.log('error', logError);
-      logger.log('error', 'Attempted to log this error object:');
-      logger.log('error', {...systemParameters, ...errorParameters});
-
-      return {status: false, errorCode: errorParameters.errorCode, errorMessage: errorParameters.errorMessage};
-    }
-
-    return {status: false, lob: result.outBinds.jsonData};
-  }
-  else
     return {status: false, errorCode: error.errorNum, errorMessage: error.message};
 }
 
@@ -145,21 +104,7 @@ exports.callDbTwig = async function(connection, requestData)
     return {status: false, errorCode: result.error.errorNum, errorMessage: ACCOUNT_LOCKED_ERROR_MSG};
   }
   
-  if (USER_ERROR_FLOOR <= result.error.errorNum && USER_ERROR_CEILING >= result.error.errorNum)
-  {
-    // This is a bit of a hack but it serves to allow us to trimout any remaining stack info in the error
-    // message that comes back from the DB if DbTwig is replacing stack info.
-
-    let errorMessage = result.error.message;
-    let x = errorMessage.indexOf('//');
-    let y = errorMessage.indexOf('\\');
-    
-    if (-1 != x) errorMessage = result.error.message.substring(x+2, y);
-
-    return {status: false, errorCode: result.error.errorNum, errorMessage: errorMessage};
-  }
-
-  return errorHandler(connection, requestData.serviceName, result.error);
+  return {status: false, errorCode: result.error.errorNum, errorMessage: result.error.message};
 }
 
 exports.oracleClientVersionString = oracledb.versionString;

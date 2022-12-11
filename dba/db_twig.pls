@@ -9,7 +9,7 @@ package body db_twig as
   PLSQL_COMPILER_ERROR                EXCEPTION;
   pragma exception_init(PLSQL_COMPILER_ERROR, -6550);
 
-  procedure rest_api_error
+  procedure db_twig_error
   (
     p_error_code                      db_twig_errors.error_code%type,
     p_json_parameters                 db_twig_errors.json_parameters%type default null,
@@ -29,7 +29,30 @@ package body db_twig as
 
     commit;
 
-  end rest_api_error;
+  end db_twig_error;
+
+  function restapi_error
+  (
+    p_service_owner                   db_twig_services.service_owner%type,
+    p_api_error_handler               db_twig_services.api_error_handler%type,
+    p_error_code                      db_twig_errors.error_code%type,
+    p_json_parameters                 db_twig_errors.json_parameters%type
+  )
+  return json_object_t
+
+  is
+
+    l_sql_text                        clob;
+    l_json_object                     json_object_t;
+
+  begin
+
+    l_sql_text := 'begin :result := '||p_service_owner||'.'||p_api_error_handler||'(:errorCode, :jsonParameters); end;';
+    execute immediate l_sql_text using out l_json_object, p_error_code, p_json_parameters;
+
+    return l_json_object;
+
+  end restapi_error;
 
   function call_rest_api
   (
@@ -43,27 +66,30 @@ package body db_twig as
     l_plsql_text                      varchar2(1024);
     l_object_type                     varchar2(9);
     l_object_name                     varchar2(128);
-    l_json_data                       clob;
+    l_json_string                     clob;
+    l_json_data                       json_object_t;
     l_entry_point                     varchar2(128) := l_json_parameters.get_string('entryPoint');
     l_service_name                    db_twig_services.service_name%type := l_json_parameters.get_string('serviceName');
     l_service_owner                   db_twig_services.service_owner%type;
     l_complete_object_name            varchar2(257);
     l_replace_error_stack             db_twig_services.replace_error_stack%type;
     l_session_validation_procedure    db_twig_services.session_validation_procedure%type;
+    l_api_error_handler               db_twig_services.api_error_handler%type;
+    l_error_text                      clob;
 
   begin
 
     begin
 
-      select  service_owner, replace_error_stack, session_validation_procedure
-        into  l_service_owner, l_replace_error_stack, l_session_validation_procedure
+      select  service_owner, replace_error_stack, session_validation_procedure, api_error_handler
+        into  l_service_owner, l_replace_error_stack, l_session_validation_procedure, l_api_error_handler
         from  db_twig_services
        where  service_name = l_service_name;
 
     exception when no_data_found then
 
-      rest_api_error(sqlcode, p_json_parameters, sqlerrm);
-      raise_application_error(-20100, 'Invalid service name parameter value.', false);
+      db_twig_error(sqlcode, p_json_parameters, sqlerrm);
+      raise_application_error(-20100, 'Invalid service name', false);
 
     end;
 
@@ -80,8 +106,8 @@ package body db_twig as
 
     exception when no_data_found then
 
-      rest_api_error(sqlcode, p_json_parameters, sqlerrm);
-      raise_application_error(-20100, 'Invalid entry point parameter value.', false);
+      db_twig_error(sqlcode, p_json_parameters, sqlerrm);
+      raise_application_error(-20100, 'Invalid entry point', false);
 
     end;
 
@@ -94,8 +120,8 @@ package body db_twig as
 
       if 'function' = l_object_type then
 
-        l_plsql_text := 'begin :l_json_data := '||l_complete_object_name||'(json_object_t(:p_json_parameters)); end;';
-        execute immediate l_plsql_text using out l_json_data, p_json_parameters;
+        l_plsql_text := 'begin :l_json_string := '||l_complete_object_name||'(json_object_t(:p_json_parameters)); end;';
+        execute immediate l_plsql_text using out l_json_string, p_json_parameters;
 
       else
 
@@ -103,7 +129,7 @@ package body db_twig as
 
         execute immediate l_plsql_text using p_json_parameters;
 
-        l_json_data := s_json_response;
+        l_json_string := s_json_response;
 
       end if;
 
@@ -115,19 +141,24 @@ package body db_twig as
 
     when others then
 
-      if 'Y' = l_replace_error_stack and sqlcode <= s_user_error_max and sqlcode >= s_user_error_min then
+      l_json_data := restapi_error(l_service_owner, l_api_error_handler, sqlcode, p_json_parameters);
 
-        raise_application_error(sqlcode, '//'||substr(sqlerrm, instr(sqlerrm, ':')+2)||'\\', false);
+      if 'Y' = l_replace_error_stack then
+
+        l_error_text := 'Please reference error ID '||l_json_data.get_string('errorId')||' when contacting support.'||chr(10)||
+          'ORA-'||utl_call_stack.error_number(1)||': '||utl_call_stack.error_msg(1);
+        raise_application_error(sqlcode, l_error_text, false);
 
       else
 
-        raise;
+        l_error_text := utl_call_stack.error_msg(1)||chr(10)||'Please reference error ID '||l_json_data.get_string('errorId')||' when contacting support.';
+        raise_application_error(sqlcode, l_error_text, true);
 
       end if;
 
     end;
 
-    return l_json_data;
+    return l_json_string;
 
   end call_rest_api;
 

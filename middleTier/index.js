@@ -62,7 +62,7 @@ if (process.env.NODE_ENV !== 'production')
   }));
 }
 
-const dbTwig = require('dbTwig');
+const dbTwig = require('./dbTwig');
 
 const HTTP_SERVER_ERROR = 500;
 
