@@ -1,13 +1,14 @@
 create or replace
 package body react_example as
 
---  Store your AsterionDB API Token here.
+  s_api_token                         varchar2(32) := '<ASTERIONDB_API_TOKEN>';   --  Store your AsterionDB API Token here.
 
-  s_api_token                         varchar2(32) := '<ASTERIONDB_API_TOKEN>';
+/*
 
---  Applications that interface to AsterionDB as an API client send and
---  receive JSON data.  Create a JSON object that will hold our parameters
---  and make a call to DbTwig to generate a weblink.
+  Applications that interface to AsterionDB as an API client send and receive JSON data. Create a JSON object that will hold
+  our parameters and make a call to DbTwig to generate a weblink.
+
+*/
 
   function generate_object_weblink
   (
@@ -33,23 +34,23 @@ package body react_example as
 
   end generate_object_weblink;
 
---  This function is called by DbTwig on behalf of the React Example Web
---  Application.
---
---  We are using Oracle's built-in capabilities to generate a JSON string
---  directly from a SELECT statement.
---
---  Note how we are generating the claimPhotos item.  By embedding a
---  function within the SELECT statement, we can generate master/detail
---  information in a single call.
---
---  We have also provided the needed modifications as commented out
---  SELECT items to help speed up the process of converting this example
---  so that it is accessing unstructured data from AsterionDB.
---
---  Execute the following SQL statement to modify the insurance_claims table:
---
---    alter table insurance_claims add report_id varchar2(32);
+/*
+
+  This function is called by DbTwig on behalf of the React Example Web Application.
+
+  We are using Oracle's built-in capabilities to generate a JSON string directly from a SELECT statement.
+
+  Note how we are generating the claimPhotos item.  By embedding a function within the SELECT statement,
+  we can generate master/detail information in a single call.
+
+  We have also provided the needed modifications as commented out SELECT items to help speed up the process
+  of converting this example so that it is accessing unstructured data from AsterionDB.
+
+  Execute the following SQL statement to modify the insurance_claims table:
+
+    alter table insurance_claims add report_id varchar2(32);
+
+*/
 
   function get_insurance_claim_detail
   (
@@ -84,18 +85,19 @@ package body react_example as
 
   end get_insurance_claim_detail;
 
---  This function is called by get_insurance_claim_detail.  It will provide all
---  of the photographs associated with an insurance claim by returning a JSON
---  string.
---
---  We have provided the needed modifications as commented out SELECT items to
---  help speed up the process of converting this example so that it is
---  accessing unstructured data from AsterionDB.
---
---  Execute the following SQL statement to modify the insurance_claim_photos table:
---
---    alter table insurance_claim_photos add photo_id varchar2(32);
+/*
 
+  This function is called by get_insurance_claim_detail.  It will provide all of the photographs associated with
+  an insurance claim by returning a JSON string.
+
+  We have provided the needed modifications as commented out SELECT items to help speed up the process of converting
+  this example so that it is accessing unstructured data from AsterionDB.
+
+  Execute the following SQL statement to modify the insurance_claim_photos table:
+
+    alter table insurance_claim_photos add photo_id varchar2(32);
+
+*/
 
   function get_insurance_claim_photos
   (
@@ -122,12 +124,13 @@ package body react_example as
 
   end get_insurance_claim_photos;
 
---  This function is called by DbTwig on behalf of the React Example Web
---  Application.
---
---  Note that even though we do not need any parameters, we still have to
---  provide the required function/procedure signature.
---
+/*
+
+  This function is called by DbTwig on behalf of the React Example Web Application.
+
+  Note that even though we do not need any parameters, we still have to provide the required function/procedure signature.
+
+*/
 
   function get_insurance_claims
   (
@@ -153,8 +156,37 @@ package body react_example as
 
   end get_insurance_claims;
 
--- Simple code that shows you how to unpack the parameter object and insert
--- values into the DB.
+/*
+
+  This function is called directly by DbTwig upon encountering an exception.
+
+*/
+
+  function restapi_error
+  (
+    p_json_parameters                 json_object_t
+  )
+  return json_object_t
+
+  is
+
+    l_json_object                     json_object_t := json_object_t;
+    l_error_id                        varchar2(12) := 'random-value';
+
+  begin
+
+-- Do something here such as log the error in a table, create a real errorId. Get error stack info by calling utl_call_stack.
+
+    l_json_object.put('errorId', l_error_id);
+    return l_json_object;
+
+  end restapi_error;
+
+/*
+
+ Simple code that shows you how to unpack the parameter object and insert values into the DB.
+
+*/
 
   procedure save_claim_note
   (
@@ -177,9 +209,11 @@ package body react_example as
 
   end save_claim_note;
 
+/*
 
--- This is just a placeholder procedure in order to satisfy DbTwig's requirements
--- for a session_validation_procedure.
+ This is just a placeholder procedure in order to satisfy DbTwig's requirements  for a session_validation_procedure.
+
+*/
 
   procedure validate_session
   (

@@ -13,12 +13,8 @@ const {logger} = require('./index');
 const oracledb = require('oracledb');
 oracledb.autoCommit = true;
 
-const USER_ERROR_FLOOR = 20000;
-const USER_ERROR_CEILING = 20999;
-
 const ORA_PACKAGE_STATE_DISCARDED = 4068;
 
-const SESSION_TIMEOUT = 20002;
 const USER_PASSWORD_ERROR = 20124;
 const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
 const ACCOUNT_LOCKED = 20125;

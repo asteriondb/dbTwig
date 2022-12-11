@@ -35,7 +35,6 @@ package body db_twig as
   (
     p_service_owner                   db_twig_services.service_owner%type,
     p_api_error_handler               db_twig_services.api_error_handler%type,
-    p_error_code                      db_twig_errors.error_code%type,
     p_json_parameters                 db_twig_errors.json_parameters%type
   )
   return json_object_t
@@ -47,8 +46,8 @@ package body db_twig as
 
   begin
 
-    l_sql_text := 'begin :result := '||p_service_owner||'.'||p_api_error_handler||'(:errorCode, :jsonParameters); end;';
-    execute immediate l_sql_text using out l_json_object, p_error_code, p_json_parameters;
+    l_sql_text := 'begin :result := '||p_service_owner||'.'||p_api_error_handler||'(:jsonParameters); end;';
+    execute immediate l_sql_text using out l_json_object, p_json_parameters;
 
     return l_json_object;
 
@@ -141,17 +140,22 @@ package body db_twig as
 
     when others then
 
-      l_json_data := restapi_error(l_service_owner, l_api_error_handler, sqlcode, p_json_parameters);
+      l_json_data := restapi_error(l_service_owner, l_api_error_handler, p_json_parameters);
+
+      if l_json_data.get_string('errorId') is not null then
+
+        l_error_text := 'Please reference error ID '||l_json_data.get_string('errorId')||' when contacting support.'||chr(10);
+
+      end if;
 
       if 'Y' = l_replace_error_stack then
 
-        l_error_text := 'Please reference error ID '||l_json_data.get_string('errorId')||' when contacting support.'||chr(10)||
-          'ORA-'||utl_call_stack.error_number(1)||': '||utl_call_stack.error_msg(1);
+        l_error_text := l_error_text||'ORA-'||utl_call_stack.error_number(1)||': '||utl_call_stack.error_msg(1);
         raise_application_error(sqlcode, l_error_text, false);
 
       else
 
-        l_error_text := utl_call_stack.error_msg(1)||chr(10)||'Please reference error ID '||l_json_data.get_string('errorId')||' when contacting support.';
+        l_error_text := utl_call_stack.error_msg(1)||chr(10)||l_error_text;
         raise_application_error(sqlcode, l_error_text, true);
 
       end if;

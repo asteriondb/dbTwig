@@ -95,8 +95,8 @@ delete  from db_twig_services
  where  service_name = 'reactExample';
 
 insert into db_twig_services 
-  (service_name, service_owner, replace_error_stack, session_validation_procedure) 
-values ('reactExample', '&&tutorials_user', 'Y', 'react_example.validate_session');
+  (service_name, service_owner, replace_error_stack, session_validation_procedure, api_error_handler) 
+values ('reactExample', '&&tutorials_user', 'Y', 'react_example.validate_session', 'react_example.restapi_error');
 
 alter session set current_schema = &&tutorials_user;
 
