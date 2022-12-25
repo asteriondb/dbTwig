@@ -75,6 +75,7 @@ package body db_twig as
     l_session_validation_procedure    db_twig_services.session_validation_procedure%type;
     l_api_error_handler               db_twig_services.api_error_handler%type;
     l_error_text                      clob;
+    l_error_code                      pls_integer;
 
   begin
 
@@ -148,15 +149,22 @@ package body db_twig as
 
       end if;
 
+      l_error_code := sqlcode;
+      if s_user_error_min > l_error_code or s_user_error_max < l_error_code then
+
+        l_error_code := -20100;
+
+      end if;
+
       if 'Y' = l_replace_error_stack then
 
         l_error_text := l_error_text||'ORA-'||utl_call_stack.error_number(1)||': '||utl_call_stack.error_msg(1);
-        raise_application_error(sqlcode, l_error_text, false);
+        raise_application_error(l_error_code, l_error_text, false);
 
       else
 
         l_error_text := utl_call_stack.error_msg(1)||chr(10)||l_error_text;
-        raise_application_error(sqlcode, l_error_text, true);
+        raise_application_error(l_error_code, l_error_text, true);
 
       end if;
 
