@@ -3,12 +3,14 @@ package db_twig as
 
 /*
 
+Calling API Components via DbTwig - Required Parameters
+-----------------------------------------------------------------------------------------------------------------------------------
 There are two ways to call services using DbTwig:
 
-  1 - Use an HTTP based interface (i.e. a web browser)
-  2 - Use a PL/SQL based interface with an API Key
+  1 - Use an HTTP based interface (i.e. a web browser calling the HTTPS DbTwig listener)
+  2 - Use a PL/SQL based interface with an API Key - for calls between services in the database
 
-When using the HTTP based interface, the following parameters must be embedded within the JSON parameter string:
+When using the HTTP based interface, the following parameters must be embedded within the p_json_parameters string:
 
   sessionId                   The sessionID of the restAPI client
   clientAddress               The IP address of the restAPI client
@@ -26,22 +28,37 @@ When using a PL/SQL based interface, the following parameter must be embeded wit
 
 JSON value keys are case sensitive.
 
-Exception Handling:
+Session Validation
 -----------------------------------------------------------------------------------------------------------------------------------
-Functions and procedures may return an exception upon detecting an error.  It is the caller's responsibility to handle the
-exception in accordance to the expectations of the client.  While some clients may be able to process the exception directly, others
-will expect an HTTP conformant error.
+The DbTwig middle-tier logic performs session validation by calling the session validation procedure for a registered service
+(i.e. db_twig_services.session_validation_procedure). It is the responsibility of the service's session validation procedcure to
+perform any required checks and validations.
 
-The error code value associated with the exception may be Oracle specific or AsterionDB specific.  Valid AsterionDB error code
-values are between -20000 and -20999.
+The signature of a session validation procedure is:
 
-AsterionDB specific errors are raised and logged directly by the data-layer logic.  Oracle specific errors are not caught by
-data layer logic.  For Oracle specific errors it is the caller's responsibility to call restapi.restapi_error in
-order to log the error information to the AsterionDB error log. The data returned by restapi_error will contain a properly
-formatted error message.
+  procedure validate_session
+  (
+    p_entry_point                     middle_tier_map.entry_point%type,
+    p_json_parameters                 json_object_t
+  );
 
-There is a setting in the AsterionDB profile that enables extended error information. Enabling this option is very useful in
-development and debugging situations.
+Note - You do not have to use the same procedure name as shown above.
+
+Exception Handling
+-----------------------------------------------------------------------------------------------------------------------------------
+The call_rest_api function will catch any exceptions thrown by the called API component. Upon catching an exception, DbTwig will
+call the error handler (i.e. db_twig_services.api_error_handler) registered for the service. It is the responsibility of the
+error handler to perform any logic required and return an 'error-id' string in a JSON object.
+
+The signature of the error handler function is:
+
+  function restapi_error
+  (
+    p_json_parameters                 api_errors.json_parameters%type
+  )
+  return json_object_t;
+
+Note - You do not have to use the same function name as shown above.
 
 */
 
