@@ -10,19 +10,11 @@ There are two ways to call services using DbTwig:
   1 - Use an HTTP based interface (i.e. a web browser calling the HTTPS DbTwig listener)
   2 - Use a PL/SQL based interface with an API Key - for calls between services in the database
 
-When using the HTTP based interface, the following parameters must be embedded within the p_json_parameters string:
+When using the HTTP based interface, the session-id is specified in the 'authorization' request header field as a
+'Bearer Authorization' token (e.g. Bearer 9YAZOHVGXQ0MFKCXYJWJZT5X61Z5O8LL). You will need to include this header field when you
+build your HTTP request.
 
-  sessionId                   The sessionID of the restAPI client
-  clientAddress               The IP address of the restAPI client
-  userAgent                   The restAPI client's user-agent
-
-Here is an example of a basic JSON parameter string:
-
-  {"sessionId":"9YAZOHVGXQ0MFKCXYJWJZT5X61Z5O8LL", "clientAddress":"127.0.0.1", "userAgent":"..."}
-
-When using a PL/SQL based interface, the following parameter must be embeded within the JSON parameter string:
-
-  sessionId                   The API Key (token) granted to the caller
+When using a PL/SQL based interface, the session-id is embeded within the JSON parameter string:
 
   {"sessionId":"J3A9DKDKJGDGKDKADFWJZASG9334O8LD"}
 
