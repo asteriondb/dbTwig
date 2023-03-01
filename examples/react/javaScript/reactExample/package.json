@@ -2,7 +2,7 @@
   "name": "react-example",
   "version": "1.0.0",
   "versionComment": "Semantic versioning is stupid.  Provide a placeholder value",
-  "gitTag": "rc2022.09",
+  "gitTag": "2023.03",
   "gitBranch": "main",
   "private": true,
   "dependencies": {

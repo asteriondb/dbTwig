@@ -223,7 +223,7 @@ async function handleUploadRequest(request, response)
         break;
 
       case 'qqfilename':
-        jsonParms.sourcePath =val;
+        jsonParms.sourcePath = val;
         break;
 
       case 'qqtotalfilesize':
