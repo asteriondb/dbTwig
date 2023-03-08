@@ -36,7 +36,7 @@ accept tutorials_password prompt "Enter a password for the DbTwig Example schema
 prompt
 
 prompt
-accept vault_user prompt "Enter the name of the user that owns the AsterionDB schema [asteriondb_objvault]: " default asteriondb_objvault
+accept vault_user prompt "Enter the name of the user that owns the AsterionDB schema [asteriondb_dgbunker]: " default asteriondb_dgbunker
 prompt
 
 set echo on

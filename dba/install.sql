@@ -16,7 +16,7 @@ spool install.log
 connect &1/"&2"@"&3";
 
 set termout off
-set echo off
+set echo on
 
 declare
 
