@@ -3,6 +3,72 @@ package body react_example as
 
   s_api_token                         varchar2(32) := '<ASTERIONDB_API_TOKEN>';   --  Store your AsterionDB API Token here.
 
+  function get_number_parameter_value                                             -- Parameter getter/checker w/ default value
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,                       -- Set to false to allow the parameter to not be required
+    p_default_value                   number default null                         -- Set to a default value other than null when parameter is not required
+  )
+  return number
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_number(p_key);
+
+    else
+
+      if p_required_parameter then
+
+        raise_application_error(-20000, 'A required parameter was not specified.');
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_number_parameter_value;
+
+  function get_string_parameter_value                                             -- Parameter getter/checker w/ default value
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,                       -- Set to false to allow the parameter to not be required
+    p_default_value                   varchar2 default null                       -- Set to a default value other than null when parameter is not required
+  )
+  return varchar2
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_string(p_key);
+
+    else
+
+      if p_required_parameter then
+
+        raise_application_error(-20000, 'A required parameter was not specified.');
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_string_parameter_value;
+
 /*
 
   Applications that interface to AsterionDB as an API client send and receive JSON data. Create a JSON object that will hold
@@ -60,12 +126,10 @@ package body react_example as
 
   as
 
-    l_claim_id                        insurance_claims.claim_id%type;
+    l_claim_id                        insurance_claims.claim_id%type := get_number_parameter_value(p_json_parameters, 'claimId');
     l_clob                            clob;
 
   begin
-
-    l_claim_id := p_json_parameters.get_number('claimId');
 
     select  json_object(
               'insuredParty' is insured_party,
@@ -195,10 +259,8 @@ package body react_example as
 
   is
 
-    l_claim_note                      insurance_claim_notes.claim_note%type :=
-      p_json_parameters.get_string('claimNote');
-    l_claim_id                        insurance_claim_notes.claim_id%type :=
-      p_json_parameters.get_number('claimId');
+    l_claim_note                      insurance_claim_notes.claim_note%type := get_string_parameter_value(p_json_parameters, 'claimNote');
+    l_claim_id                        insurance_claims.claim_id%type := get_number_parameter_value(p_json_parameters, 'claimId');
 
   begin
 
