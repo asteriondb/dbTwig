@@ -218,15 +218,11 @@ async function handleUploadRequest(request, response)
   {
     switch (fieldname)
     {
-      case 'qquuid':
-        fileId = val;
-        break;
-
-      case 'qqfilename':
+      case 'name':
         jsonParms.sourcePath = val;
         break;
 
-      case 'qqtotalfilesize':
+      case 'size':
         jsonParms.filesize = val;
         break;
 
@@ -238,16 +234,8 @@ async function handleUploadRequest(request, response)
         jsonParms.newVersion = val;
         break;
 
-      case 'creation_date':
-        jsonParms.creationDate = val;
-        break;
-
-      case 'modification_date':
+      case 'lastModified':
         jsonParms.modificationDate = val;
-        break;
-
-      case 'access_date':
-        jsonParms.accessDate = val;
         break;
 
       default:
@@ -255,7 +243,6 @@ async function handleUploadRequest(request, response)
     }
   });
 
-  var status;
   var jsonPayload;
   var result;
 
@@ -267,35 +254,42 @@ async function handleUploadRequest(request, response)
     let connection = await dbTwig.getConnectionFromPool();
     result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 
-    status = result.status;
-
-    if (undefined !== result.lob)
-      jsonPayload = await dbTwig.getJsonPayload(result.lob);
-    else
-//      jsonPayload = JSON.stringify({errorCode: result.errorCode, errorMessage: result.errorMessage});
-      response.send(JSON.stringify({errorCode: result.errorCode, errorMessage: result.errorMessage}));
-
-    if (status)
-    {
-      let jsonObject = JSON.parse(jsonPayload);
-      result = file.pipe(fs.createWriteStream(jsonObject.filename))
-        .on('error', function(e)
-        {
-          let jsonResponse = {uuid: fileId, success: 0, errorMessage: e.message.substring(0, e.message.indexOf(','))};
-          response.send(JSON.stringify(jsonResponse));
-        })
-        .on('close', function(x)
-        {
-          let jsonResponse = {uuid: fileId, success: 1};
-          response.send(JSON.stringify(jsonResponse));
-        });
-    }
-    else
+    if (!result.status)
     {
       response.status(HTTP_SERVER_ERROR);
-      file.resume();
+      response.send(JSON.stringify({success: 0, errorCode: result.errorCode, errorMessage: result.errorMessage}));      
     }
-      
+    else
+    {
+      jsonPayload = await dbTwig.getJsonPayload(result.lob);
+      let onError = false;
+      if (result.status)
+      {
+        let jsonObject = JSON.parse(jsonPayload);
+        result = file.pipe(fs.createWriteStream(jsonObject.filename))
+          .on('error', function(e)
+          {
+            response.status(HTTP_SERVER_ERROR);
+            let jsonResponse = {uuid: fileId, success: 0, errorMessage: e.message.substring(0, e.message.indexOf(','))};
+            response.send(JSON.stringify(jsonResponse));
+            onError = true;
+          })
+          .on('close', function(x)
+          {
+            if (!onError)
+            {
+              let jsonResponse = {uuid: fileId, success: 1};
+              response.send(JSON.stringify(jsonResponse));
+            }
+          });
+      }
+      else
+      {
+        response.status(HTTP_SERVER_ERROR);
+        file.resume();
+      }
+    }
+
     dbTwig.closeConnection(connection);
   });
 
