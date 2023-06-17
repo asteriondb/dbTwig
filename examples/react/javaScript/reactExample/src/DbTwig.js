@@ -50,7 +50,7 @@ const FatalErrorCeiling = 20099;
 //  The standard URL format for the DbTwig middle-tier listener is 
 //  '/dbTwig/{db-twig-service}/'.  Note the closing slash character.
 
-const restAPI = '/dbTwig/reactExample/';
+const restAPI = '/dbTwig/dbTwigExample/';
 
 //  Build an appropriate URL.  You can alter this to suite your needs.
 //  The global variable window.dbTwigHost is set in the configuration file

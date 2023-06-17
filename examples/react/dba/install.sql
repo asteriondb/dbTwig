@@ -28,7 +28,7 @@ prompt
 
 prompt
 prompt We need to create a user to own the DbTwig Example schema
-accept tutorials_user prompt "Enter the name of the DbTwig Example schema owner [react_example]: " default react_example
+accept tutorials_user prompt "Enter the name of the DbTwig Example schema owner [dbtwig_example]: " default dbtwig_example
 prompt
 
 prompt
@@ -88,15 +88,15 @@ create synonym &&tutorials_user..db_twig for &&dbtwig_user..db_twig;
 alter session set current_schema = &&dbtwig_user;
 
 rem
-rem  Setup DbTwig so that it knows about the reactExample service.
+rem  Setup DbTwig so that it knows about the dbTwigExample service.
 rem
 
 delete  from db_twig_services
- where  service_name = 'reactExample';
+ where  service_name = 'dbTwigExample';
 
 insert into db_twig_services 
   (service_name, service_owner, replace_error_stack, session_validation_procedure, api_error_handler) 
-values ('reactExample', '&&tutorials_user', 'Y', 'react_example.validate_session', 'react_example.restapi_error');
+values ('dbTwigExample', '&&tutorials_user', 'Y', 'dbtwig_example.validate_session', 'dbtwig_example.restapi_error');
 
 alter session set current_schema = &&tutorials_user;
 
@@ -114,57 +114,57 @@ rem
 
 commit;
 
-create table insurance_claims     
-(claim_id 			                number(6) primary key,
- insured_party 		                varchar2(60),
- accident_date 		                date,
- deductible_amount 		            number(8,2),
- accident_location       	        varchar2(128),
- claims_adjuster_report 	        varchar2(128));
+create table maintenance_manuals
+(manual_id 			                number(6) primary key,
+ manufacturer 		                varchar2(60),
+ in_service_from	                date,
+ revision_number                    number(8),
+ maintenance_division    	        varchar2(128),
+ maintenance_manual_filename        varchar2(128));
 
-create table insurance_claim_photos
-(claim_id 		                    number(6)
-   references insurance_claims(claim_id),
+create table major_assembly_photos
+(manual_id		                    number(6)
+   references maintenance_manuals(manual_id),
  filename 		                    varchar2(128));
 
-create table insurance_claim_notes
-(claim_id                           number(6)
-   references insurance_claims(claim_id),
- claim_note                         varchar2(256));
+create table technician_notes
+(manual_id                          number(6)
+   references maintenance_manuals(manual_id),
+ tech_note                          varchar2(256));
 
 create sequence tutorials_seq minvalue 1 maxvalue 999999 cycle start with 1;
 
 begin
 
-  insert into insurance_claims
-    (claim_id, insured_party, accident_location, accident_date, deductible_amount, claims_adjuster_report)
+  insert into maintenance_manuals
+    (manual_id, manufacturer, maintenance_division, in_service_from, revision_number, maintenance_manual_filename)
   values
-    (tutorials_seq.nextval, 'Vincent Van Gogh', 'Auvers-sur-Oise, France', '27-JUL-1890', 9239.29, 'assets/pdfs/vanGogh.pdf');
+    (tutorials_seq.nextval, 'General Electric', 'Compressor Servicing', '27-JUL-2010', 100, 'assets/pdfs/compressor.pdf');
 
-  insert into insurance_claims
-    (claim_id, insured_party, accident_location, accident_date, deductible_amount, claims_adjuster_report)
+  insert into maintenance_manuals
+    (manual_id, manufacturer, maintenance_division, in_service_from, revision_number, maintenance_manual_filename)
   values
-    (tutorials_seq.nextval, 'James Dean', 'Cholame, California', '30-SEP-1955', 5553.12, 'assets/pdfs/jamesDean.pdf');
+    (tutorials_seq.nextval, 'Teledyne', 'Turbine Servicing', '30-SEP-2012', 22, 'assets/pdfs/turbine.pdf');
 
-  insert into insurance_claim_photos
-    select  claim_id, 'assets/images/vincentVanGogh_1.jpg'
-      from  insurance_claims
-     where  insured_party = 'Vincent Van Gogh';
+  insert into major_assembly_photos
+    select  manual_id, 'assets/images/compressor_1.jpg'
+      from  maintenance_manuals
+     where  manufacturer = 'General Electric';
 
-  insert into insurance_claim_photos
-    select  claim_id, 'assets/images/vincentVanGogh_2.jpg'
-      from  insurance_claims
-     where  insured_party = 'Vincent Van Gogh';
+  insert into major_assembly_photos
+    select  manual_id, 'assets/images/compressor_2.jpg'
+      from  maintenance_manuals
+     where  manufacturer = 'General Electric';
 
-  insert into insurance_claim_photos
-    select  claim_id, 'assets/images/jamesDean_1.jpg'
-      from  insurance_claims
-     where  insured_party = 'James Dean';
+  insert into major_assembly_photos
+    select  manual_id, 'assets/images/turbine_1.jpg'
+      from  maintenance_manuals
+     where  manufacturer = 'Teledyne';
 
-  insert into insurance_claim_photos
-    select  claim_id, 'assets/images/jamesDean_2.jpg'
-      from  insurance_claims
-     where  insured_party = 'James Dean';
+  insert into major_assembly_photos
+    select  manual_id, 'assets/images/turbine_2.jpg'
+      from  maintenance_manuals
+     where  manufacturer = 'Teledyne';
 
 end;
 .

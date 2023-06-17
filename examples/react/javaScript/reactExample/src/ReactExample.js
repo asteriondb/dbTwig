@@ -36,7 +36,7 @@ import ReactTable from 'react-table-legacy'
 import "react-table-legacy/react-table.css";
 import './css/index.css';
 
-import ReactJson from 'react-json-view'
+// import ReactJson from 'react-json-view'
 
 import AppLocalStorage from './AppLocalStorage.js'
 
@@ -57,7 +57,7 @@ class Tutorial extends React.Component
   
   componentDidMount()
   {
-    this.fetchInsuranceClaims();
+    this.fetchMaintenanceManuals();
   }
 
   constructor(props)
@@ -68,11 +68,11 @@ class Tutorial extends React.Component
 
     let listColumns =
     [
-      {Header: 'Insured Party', id: 'insuredParty', accessor: 'insuredParty',
+      {Header: 'Manufacturer', id: 'manufacturer', accessor: 'manufacturer',
         Cell: row => <div><span title='Click for details....'>{row.value}</span></div>},
-      {Header: 'Accident Date', id: 'accidentDate', accessor: 'accidentDate',
+      {Header: 'In Service From', id: 'inServiceFrom', accessor: 'inServiceFrom',
         Cell: row => <div><span title='Click for details....'>{row.value}</span></div>},
-      {accessor: 'claimId', show: false}
+      {accessor: 'manualId', show: false}
     ];
 
     this.columnWidths = this.appLocalStorage.getColumnWidths(listColumns, this.columnKey);
@@ -82,20 +82,20 @@ class Tutorial extends React.Component
     {
       notificationText: '',
       notificationType: 'info',
-      insuranceClaims: [],
-      insuranceClaimDetail: undefined,
+      maintenanceManuals: [],
+      manualDetail: undefined,
       listColumns: listColumns,
       modalIsOpen: false,
       modalTitle: '',
       modalMessage: '',
       selectedRow: null,
-      claimNote: ''
+      techNote: ''
     }
 
     this.selectionHandler = this.selectionHandler.bind(this);
-    this.fetchInsuranceClaimDetail = this.fetchInsuranceClaimDetail.bind(this);
-    this.saveClaimNote = this.saveClaimNote.bind(this);
-    this.setClaimNotes = this.setClaimNotes.bind(this);
+    this.fetchMaintenanceManualDetail = this.fetchMaintenanceManualDetail.bind(this);
+    this.saveTechNote = this.saveTechNote.bind(this);
+    this.setTechNotes = this.setTechNotes.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
     this.clearNotifier = this.clearNotifier.bind(this);
   
@@ -121,27 +121,27 @@ class Tutorial extends React.Component
     };
   }
 
-  async fetchInsuranceClaims()
+  async fetchMaintenanceManuals()
   {
-    let result = await this.dbTwig.callRestAPI('getInsuranceClaims');
-    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch insurance claims.');
+    let result = await this.dbTwig.callRestAPI('getMaintenanceManuals');
+    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch maintenance manuals.');
 
     let selectedRow = null;
     if (result.jsonData.length)
     {
       selectedRow = 0;
-      this.fetchInsuranceClaimDetail(result.jsonData[0].claimId);
+      this.fetchMaintenanceManualDetail(result.jsonData[0].manualId);
     }
-    this.setState({insuranceClaims: result.jsonData, selectedRow: selectedRow});
+    this.setState({maintenanceManuals: result.jsonData, selectedRow: selectedRow});
   }
 
-  async fetchInsuranceClaimDetail(claimId)
+  async fetchMaintenanceManualDetail(manualId)
   {
-    let bodyData = { databaseUsername: this.databaseUsername, claimId: claimId };
+    let bodyData = { databaseUsername: this.databaseUsername, manualId: manualId };
 
-    let result = await this.dbTwig.callRestAPI('getInsuranceClaimDetail', bodyData);
-    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch insurance claim detail');
-    this.setState({insuranceClaimDetail: result.jsonData});
+    let result = await this.dbTwig.callRestAPI('getMaintenanceManualDetail', bodyData);
+    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch maintenance manual detail');
+    this.setState({manualDetail: result.jsonData});
   }
 
   openAppModal(modalTitle, modalMessage)
@@ -163,18 +163,21 @@ class Tutorial extends React.Component
   {
     let columns =
     [
-      {id: 'mediaUrl', accessor: 'mediaUrl',
+      {id: 'mediaLink', accessor: 'mediaLink',
         Cell: (rowInfo) =>
         (
-          <div><img alt='no text' src={rowInfo.row.mediaUrl}/></div>
+          <div><img alt='no text' src={rowInfo.row.mediaLink}/></div>
         )
       }
     ]
 
-    let claimPhotos = (undefined === this.state.insuranceClaimDetail ? undefined : this.state.insuranceClaimDetail.claimPhotos);
-    let claimReport = (undefined === this.state.insuranceClaimDetail ? null : 
-      (<a href={this.state.insuranceClaimDetail.claimsAdjusterReport} target="_blank" rel="noopener noreferrer"><Button >View</Button></a> ));
+    let majorAssemblies = (undefined === this.state.manualDetail ? undefined : this.state.manualDetail.assemblyPhotos);
+    let maintenanceManualLink = (undefined === this.state.manualDetail ? null : 
+      (<a href={this.state.manualDetail.maintenanceManualLink} target="_blank" rel="noopener noreferrer"><Button >View</Button></a> ));
 
+      /*
+                    <Row style={{paddingTop: '10px'}}><Col><ReactJson src={this.state.manualDetail}/></Col></Row>
+*/
     return(
       <div>
         <Navbar className='bg-primary' dark fixed="top" expand="md" >
@@ -191,11 +194,11 @@ class Tutorial extends React.Component
               <Button color="secondary" onClick={this.toggleModal} autoFocus>OK</Button>
             </ModalFooter>
           </Modal>
-          <Row><Col sm='4' style={{textAlign: 'center'}}><h2>Insurance Claims</h2></Col><Col sm='8' style={{textAlign: 'center'}}><h2>Claim Details</h2></Col></Row>
+          <Row><Col sm='4' style={{textAlign: 'center'}}><h2>Maintenance Manuals</h2></Col><Col sm='8' style={{textAlign: 'center'}}><h2>Manual Details</h2></Col></Row>
           <Row >
             <Col sm='4'>
               <Row style={{paddingTop: '10px'}}><Col>
-                <ReactTable columns={this.state.listColumns} data={this.state.insuranceClaims} minRows={1} className="-striped -highlight" 
+                <ReactTable columns={this.state.listColumns} data={this.state.maintenanceManuals} minRows={1} className="-striped -highlight" 
                   onResizedChange={(resizedColumns, event) => this.debouncedSaveColumnWidths(resizedColumns, event)} 
                   getTrProps={(state, rowInfo, column) => 
                   { 
@@ -214,25 +217,24 @@ class Tutorial extends React.Component
                   }}
                 />
               </Col></Row>
-              <Row style={{paddingTop: '10px'}}><Col><ReactJson src={this.state.insuranceClaimDetail}/></Col></Row>
               <Row style={{paddingTop: '10px'}}>
                 <Col>
-                  <Input type="text" id="claimNote" placeholder="Enter some text..." value={this.state.claimNote} onChange={this.setClaimNotes}/>
+                  <Input type="text" id="techNote" placeholder="Enter some text..." value={this.state.techNote} onChange={this.setTechNotes}/>
                 </Col>
                 <Col sm={1}>
-                  <Button onClick={this.saveClaimNote} color="primary">Save</Button>
+                  <Button onClick={this.saveTechNote} color="primary">Save</Button>
                 </Col>
               </Row>
             </Col>
             <Col sm='8'>
-              <Row><Col sm='3'>Insured Party</Col><Col>{(undefined !== this.state.insuranceClaimDetail ? this.state.insuranceClaimDetail.insuredParty : null)}</Col></Row>
-              <Row><Col sm='3'>Accident Location</Col><Col>{(undefined !== this.state.insuranceClaimDetail ? this.state.insuranceClaimDetail.accidentLocation : null)}</Col></Row>
-              <Row><Col sm='3'>Accident Date</Col><Col>{(undefined !== this.state.insuranceClaimDetail ? this.state.insuranceClaimDetail.accidentDate : null)}</Col></Row>          
-              <Row><Col sm='3'>Deductible Amount</Col><Col>{(undefined !== this.state.insuranceClaimDetail ? this.state.insuranceClaimDetail.deductibleAmount : null)}</Col></Row>                      
-              <Row><Col sm='3'>Claims Adjuster's Report</Col><Col>{claimReport}</Col></Row>                      
+              <Row><Col sm='3'>Manufacturer</Col><Col>{(undefined !== this.state.manualDetail ? this.state.manualDetail.manufacturer : null)}</Col></Row>
+              <Row><Col sm='3'>Maintenance Division</Col><Col>{(undefined !== this.state.manualDetail ? this.state.manualDetail.maintenanceDivision : null)}</Col></Row>
+              <Row><Col sm='3'>In Service From</Col><Col>{(undefined !== this.state.manualDetail ? this.state.manualDetail.inServiceFrom : null)}</Col></Row>          
+              <Row><Col sm='3'>Revision #</Col><Col>{(undefined !== this.state.manualDetail ? this.state.manualDetail.revisionNumber : null)}</Col></Row>                      
+              <Row><Col sm='3'>Maintenance Manual</Col><Col>{maintenanceManualLink}</Col></Row>                      
               <Row>
-                <Col sm='3'>Photograph's</Col>
-                <Col><ReactTable columns={columns} data={claimPhotos} showPagination={false} minRows={1}/></Col>
+                <Col sm='3'>Major Assemblies</Col>
+                <Col><ReactTable columns={columns} data={majorAssemblies} showPagination={false} minRows={1}/></Col>
               </Row>
             </Col>
           </Row>
@@ -243,19 +245,19 @@ class Tutorial extends React.Component
     );
   }
 
-  async saveClaimNote()
+  async saveTechNote()
   {
     var bodyData = {};
 
-    bodyData.claimNote = this.state.claimNote;
-    bodyData.claimId = this.state.insuranceClaims[this.state.selectedRow].claimId;
-    let result = await this.dbTwig.callRestAPI('saveClaimNote', bodyData);
+    bodyData.techNote = this.state.techNote;
+    bodyData.manualId = this.state.maintenanceManuals[this.state.selectedRow].manualId;
+    let result = await this.dbTwig.callRestAPI('saveTechNote', bodyData);
     if ('success' !== result.status)
     {
       return this.dbTwig.apiErrorHandler(result, 'Error saving claim note.');
     } 
 
-    this.setState({claimNote: ''});
+    this.setState({techNote: ''});
   }
 
   saveColumnWidths(resizedColumns)
@@ -266,12 +268,12 @@ class Tutorial extends React.Component
   selectionHandler(event, handleOriginal, rowInfo, column, instance)
   {
     this.setState({selectedRow: rowInfo.index});
-    this.fetchInsuranceClaimDetail(rowInfo.row.claimId);
+    this.fetchMaintenanceManualDetail(rowInfo.row.manualId);
   }
 
-  setClaimNotes(event)
+  setTechNotes(event)
   {
-    this.setState({claimNote: event.target.value});
+    this.setState({techNote: event.target.value});
   }
 
   toggleModal()
