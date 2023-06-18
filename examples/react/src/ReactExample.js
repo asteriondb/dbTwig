@@ -36,7 +36,8 @@ import ReactTable from 'react-table-legacy'
 import "react-table-legacy/react-table.css";
 import './css/index.css';
 
-// import ReactJson from 'react-json-view'
+import { JsonView } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 import AppLocalStorage from './AppLocalStorage.js'
 
@@ -175,9 +176,6 @@ class Tutorial extends React.Component
     let maintenanceManualLink = (undefined === this.state.manualDetail ? null : 
       (<a href={this.state.manualDetail.maintenanceManualLink} target="_blank" rel="noopener noreferrer"><Button >View</Button></a> ));
 
-      /*
-                    <Row style={{paddingTop: '10px'}}><Col><ReactJson src={this.state.manualDetail}/></Col></Row>
-*/
     return(
       <div>
         <Navbar className='bg-primary' dark fixed="top" expand="md" >
@@ -225,6 +223,9 @@ class Tutorial extends React.Component
                   <Button onClick={this.saveTechNote} color="primary">Save</Button>
                 </Col>
               </Row>
+              { (undefined !== this.state.manualDetail) &&
+                <Row style={{paddingTop: '10px'}}><Col><JsonView data={this.state.manualDetail}/></Col></Row>
+              }
             </Col>
             <Col sm='8'>
               <Row><Col sm='3'>Manufacturer</Col><Col>{(undefined !== this.state.manualDetail ? this.state.manualDetail.manufacturer : null)}</Col></Row>

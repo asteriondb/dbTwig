@@ -1,0 +1,665 @@
+To proceed, you will have to connect to the database as a DBA.
+
+Enter a user name that can connect to the database as a DBA: system@local-dev
+Enter the DBA password: 
+Connected.
+
+Enter the name of the user that owns the DbTwig schema [dbtwig]: 
+
+
+We need to create a user to own the DbTwig Example schema
+Enter the name of the DbTwig Example schema owner [dbtwig_example]: 
+
+
+Enter a password for the DbTwig Example schema owner: 
+
+
+Enter the name of the user that owns the AsterionDB schema [asteriondb_dgbunker]: asteriondb_objvault
+
+SQL> 
+SQL> rem
+SQL> rem  Note how we are granting privileges to the React Example schema.  In a
+SQL> rem  production environment you would not be granting all of these privileges
+SQL> rem  (normally).  As discussed in the DbTwig documentation, in a production
+SQL> rem  environment the actual schema owners can not connect to the database and
+SQL> rem  have very few, if any, privileges granted to them.  But here, you are
+SQL> rem  going to be doing development work.  Therefore, you will need to connect
+SQL> rem  to the database as a regular developer would.
+SQL> rem
+SQL> 
+SQL> declare
+  2  
+  3  	 l_sql_text			   clob;
+  4  	 l_default_tablespace		   database_properties.property_value%type;
+  5  
+  6  begin
+  7  
+  8  	 select  property_value
+  9  	   into  l_default_tablespace
+ 10  	   from  database_properties
+ 11  	  where  property_name = 'DEFAULT_PERMANENT_TABLESPACE';
+ 12  
+ 13  	 l_sql_text := 'create user &&tutorials_user identified by "&&tutorials_password"';
+ 14  	 execute immediate l_sql_text;
+ 15  
+ 16  	 l_sql_text := 'grant create session, create table, create procedure to &&tutorials_user';
+ 17  	 execute immediate l_sql_text;
+ 18  
+ 19  	 l_sql_text := 'alter user &&tutorials_user quota 50M on '||l_default_tablespace;
+ 20  	 execute immediate l_sql_text;
+ 21  
+ 22  end;
+ 23  .
+SQL> /
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> rem
+SQL> rem  Setup the React Example user so that it can make calls to the AsterionDB
+SQL> rem  API by using DbTwig.
+SQL> rem
+SQL> 
+SQL> grant execute on &&dbtwig_user..db_twig to &&tutorials_user;
+
+Grant succeeded.
+
+SQL> 
+SQL> create synonym &&tutorials_user..db_twig for &&dbtwig_user..db_twig;
+
+Synonym created.
+
+SQL> 
+SQL> alter session set current_schema = &&dbtwig_user;
+
+Session altered.
+
+SQL> 
+SQL> rem
+SQL> rem  Setup DbTwig so that it knows about the reactExample service.
+SQL> rem
+SQL> 
+SQL> delete  from db_twig_services
+  2   where  service_name = 'reactExample';
+
+1 row deleted.
+
+SQL> 
+SQL> insert into db_twig_services
+  2    (service_name, service_owner, replace_error_stack, session_validation_procedure, api_error_handler)
+  3  values ('reactExample', '&&tutorials_user', 'Y', 'react_example.validate_session', 'react_example.restapi_error');
+
+1 row created.
+
+SQL> 
+SQL> alter session set current_schema = &&tutorials_user;
+
+Session altered.
+
+SQL> 
+SQL> rem
+SQL> rem  Create the middle-tier map.
+SQL> rem
+SQL> 
+SQL> @@../../../dba/middleTierMap
+SQL> create table middle_tier_map
+  2  (
+  3    entry_point			 varchar2(128) primary key,
+  4    object_type			 varchar2(9) not null
+  5  	 constraint object_type_check check (object_type in ('function', 'procedure')),
+  6    object_name			 varchar2(128) not null,
+  7    object_group			 varchar2(128) not null,
+  8    required_authorization_level	 varchar2(13) default 'administrator' not null
+  9  	 constraint required_auth_level_chk check (required_authorization_level in ('administrator', 'user', 'guest', 'none')),
+ 10    allow_blocked_session varchar2(1) default 'N' not null
+ 11  	 constraint allow_blocked_chk check (allow_blocked_session in ('Y', 'N'))
+ 12  );
+
+Table created.
+
+SQL> 
+SQL> rem
+SQL> rem  Insert our middle-tier map entries.
+SQL> rem
+SQL> 
+SQL> @@dbTwigData
+SQL> insert into middle_tier_map values ('getMaintenanceManaulDetail', 'function', 'react_example.get_maintenance_manual_detail', 'reactExample', 'none', 'N');
+
+1 row created.
+
+SQL> insert into middle_tier_map values ('getMaintenanceManuals', 'function', 'react_example.get_maintenance_manuals', 'reactExample', 'none', 'N');
+
+1 row created.
+
+SQL> insert into middle_tier_map values ('getSupportInfo', 'function', 'react_example.get_support_info', 'reactExample', 'none', 'N');
+
+1 row created.
+
+SQL> insert into middle_tier_map values ('restApiError', 'function', 'react_example.error_handler', 'reactExample', 'none', 'N');
+
+1 row created.
+
+SQL> insert into middle_tier_map values ('saveTechNote', 'procedure', 'react_example.save_tech_note', 'reactExample', 'none', 'N');
+
+1 row created.
+
+SQL> 
+SQL> commit;
+
+Commit complete.
+
+SQL> 
+SQL> create table maintenance_manuals
+  2  (manual_id 				     number(6) primary key,
+  3   manufacturer			     varchar2(60),
+  4   in_service_from			     date,
+  5   revision_number			 number(8),
+  6   maintenance_division		     varchar2(128),
+  7   maintenance_manual_filename	 varchar2(128));
+
+Table created.
+
+SQL> 
+SQL> create table major_assembly_photos
+  2  (manual_id 				 number(6)
+  3  	references maintenance_manuals(manual_id),
+  4   filename					 varchar2(128));
+
+Table created.
+
+SQL> 
+SQL> create table technician_notes
+  2  (manual_id 			 number(6)
+  3  	references maintenance_manuals(manual_id),
+  4   tech_note 			 varchar2(256));
+
+Table created.
+
+SQL> 
+SQL> create sequence tutorials_seq minvalue 1 maxvalue 999999 cycle start with 1;
+
+Sequence created.
+
+SQL> 
+SQL> begin
+  2  
+  3    insert into maintenance_manuals
+  4  	 (manual_id, manufacturer, maintenance_division, in_service_from, revision_number, maintenance_manual_filename)
+  5    values
+  6  	 (tutorials_seq.nextval, 'General Electric', 'Compressor Servicing', '27-JUL-2010', 100, 'assets/pdfs/compressor.pdf');
+  7  
+  8    insert into maintenance_manuals
+  9  	 (manual_id, manufacturer, maintenance_division, in_service_from, revision_number, maintenance_manual_filename)
+ 10    values
+ 11  	 (tutorials_seq.nextval, 'Teledyne', 'Turbine Servicing', '30-SEP-2012', 22, 'assets/pdfs/turbine.pdf');
+ 12  
+ 13    insert into major_assembly_photos
+ 14  	 select  manual_id, 'assets/images/compressor_1.jpg'
+ 15  	   from  maintenance_manuals
+ 16  	  where  manufacturer = 'General Electric';
+ 17  
+ 18    insert into major_assembly_photos
+ 19  	 select  manual_id, 'assets/images/compressor_2.jpg'
+ 20  	   from  maintenance_manuals
+ 21  	  where  manufacturer = 'General Electric';
+ 22  
+ 23    insert into major_assembly_photos
+ 24  	 select  manual_id, 'assets/images/turbine_1.jpg'
+ 25  	   from  maintenance_manuals
+ 26  	  where  manufacturer = 'Teledyne';
+ 27  
+ 28    insert into major_assembly_photos
+ 29  	 select  manual_id, 'assets/images/turbine_2.jpg'
+ 30  	   from  maintenance_manuals
+ 31  	  where  manufacturer = 'Teledyne';
+ 32  
+ 33  end;
+ 34  .
+SQL> /
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> commit;
+
+Commit complete.
+
+SQL> 
+SQL> @react_example
+SQL> create or replace
+  2  package react_example as
+  3  
+  4  /*
+  5  
+  6    This function is called by SELECT statement within the package body. Therefore, it has to be declared in the package header.
+  7  
+  8  */
+  9  
+ 10    function generate_object_weblink
+ 11    (
+ 12  	 l_object_id			   varchar2
+ 13    )
+ 14    return clob;
+ 15  
+ 16  /*
+ 17  
+ 18    This function is called by DbTwig on behalf of the React Example Web Application. All functions and procedures that are called
+ 19    by DbTwig have the same signature. Functions accept a JSON string of parameters and return JSON data using CLOB variables.
+ 20    Procedures accept a JSON string of parameters using a CLOB variable.
+ 21  
+ 22  */
+ 23  
+ 24    function get_insurance_claim_detail
+ 25    (
+ 26  	 p_json_parameters		   json_object_t
+ 27    )
+ 28    return clob;
+ 29  
+ 30  /*
+ 31  
+ 32    This function is called by SELECT statement within the package body. Therefore, it has to be declared in the package header.
+ 33  
+ 34  */
+ 35  
+ 36    function get_insurance_claim_photos
+ 37    (
+ 38  	 p_claim_id			   insurance_claims.claim_id%type
+ 39    )
+ 40    return clob;
+ 41  
+ 42  /*
+ 43  
+ 44    This function is called by DbTwig on behalf of the React Example Web Application.
+ 45  
+ 46  */
+ 47  
+ 48    function get_insurance_claims
+ 49    (
+ 50  	 p_json_parameters		   json_object_t
+ 51    )
+ 52    return clob;
+ 53  
+ 54  /*
+ 55  
+ 56    function restapi_error
+ 57  
+ 58    This function is registered with DbTwig when the reactExample service is created. It is called when the
+ 59    DbTwig logic (in the database) detects an exception upon calling a mapped middle-tier entry-point.
+ 60  
+ 61    All error information is to be accessed by calling utl_call_stack.
+ 62  
+ 63    The returned json object shall contain an key/value pair for 'errorId' The errorId, if not null, will
+ 64    be concatenated by the DbTwig logic to form a string that says:
+ 65  
+ 66  	 'Please reference error ID ... when contacting support.'
+ 67  
+ 68  */
+ 69  
+ 70    function restapi_error
+ 71    (
+ 72  	 p_json_parameters		   json_object_t	 -- The JSON parameters associated with the HTTP request.
+ 73    )
+ 74    return json_object_t;
+ 75  
+ 76  /*
+ 77  
+ 78    This procedure shows you how you can accept a value from your UI and insert that into the DB. Nothing too fancy here.
+ 79  
+ 80  */
+ 81  
+ 82    procedure save_claim_note
+ 83    (
+ 84  	 p_json_parameters		   json_object_t
+ 85    );
+ 86  
+ 87  /*
+ 88  
+ 89   This is just a placeholder procedure in order to satisfy DbTwig's requirements for a session_validation_procedure.
+ 90  
+ 91  */
+ 92  
+ 93    procedure validate_session
+ 94    (
+ 95  	 p_entry_point			   middle_tier_map.entry_point%type,
+ 96  	 p_json_parameters		   json_object_t
+ 97    );
+ 98  
+ 99  end react_example;
+100  .
+SQL> /
+
+Warning: Package created with compilation errors.
+
+SQL> show errors package react_example
+Errors for PACKAGE REACT_EXAMPLE:
+
+LINE/COL ERROR                                                                  
+-------- -----------------------------------------------------------------      
+35/3     PL/SQL: Declaration ignored                                            
+37/39    PLS-00201: identifier 'INSURANCE_CLAIMS.CLAIM_ID' must be              
+         declared                                                               
+                                                                                
+SQL> @react_example.pls
+SQL> create or replace
+  2  package body react_example as
+  3  
+  4    s_api_token			   varchar2(32) := '<ASTERIONDB_API_TOKEN>';   --  Store your AsterionDB API Token here.
+  5  
+  6    function get_number_parameter_value					       -- Parameter getter/checker w/ default value
+  7    (
+  8  	 p_json_parameters		   json_object_t,
+  9  	 p_key				   varchar2,
+ 10  	 p_required_parameter		   boolean default true,		       -- Set to false to allow the parameter to not be required
+ 11  	 p_default_value		   number default null			       -- Set to a default value other than null when parameter is not required
+ 12    )
+ 13    return number
+ 14  
+ 15    is
+ 16  
+ 17    begin
+ 18  
+ 19  	 if p_json_parameters.has(p_key) then
+ 20  
+ 21  	   return p_json_parameters.get_number(p_key);
+ 22  
+ 23  	 else
+ 24  
+ 25  	   if p_required_parameter then
+ 26  
+ 27  	     raise_application_error(-20000, 'A required parameter was not specified.');
+ 28  
+ 29  	   else
+ 30  
+ 31  	     return p_default_value;
+ 32  
+ 33  	   end if;
+ 34  
+ 35  	 end if;
+ 36  
+ 37    end get_number_parameter_value;
+ 38  
+ 39    function get_string_parameter_value					       -- Parameter getter/checker w/ default value
+ 40    (
+ 41  	 p_json_parameters		   json_object_t,
+ 42  	 p_key				   varchar2,
+ 43  	 p_required_parameter		   boolean default true,		       -- Set to false to allow the parameter to not be required
+ 44  	 p_default_value		   varchar2 default null		       -- Set to a default value other than null when parameter is not required
+ 45    )
+ 46    return varchar2
+ 47  
+ 48    is
+ 49  
+ 50    begin
+ 51  
+ 52  	 if p_json_parameters.has(p_key) then
+ 53  
+ 54  	   return p_json_parameters.get_string(p_key);
+ 55  
+ 56  	 else
+ 57  
+ 58  	   if p_required_parameter then
+ 59  
+ 60  	     raise_application_error(-20000, 'A required parameter was not specified.');
+ 61  
+ 62  	   else
+ 63  
+ 64  	     return p_default_value;
+ 65  
+ 66  	   end if;
+ 67  
+ 68  	 end if;
+ 69  
+ 70    end get_string_parameter_value;
+ 71  
+ 72  /*
+ 73  
+ 74    Applications that interface to AsterionDB as an API client send and receive JSON data. Create a JSON object that will hold
+ 75    our parameters and make a call to DbTwig to generate a weblink.
+ 76  
+ 77  */
+ 78  
+ 79    function generate_object_weblink
+ 80    (
+ 81  	 l_object_id			   varchar2
+ 82    )
+ 83    return clob
+ 84  
+ 85    is
+ 86  
+ 87  	 l_json_object			   json_object_t := json_object_t;
+ 88  	 l_json_data			   json_object_t;
+ 89  
+ 90    begin
+ 91  
+ 92  	 l_json_object.put('entryPoint', 'generateObjectWeblink');
+ 93  	 l_json_object.put('serviceName', 'asterionDB');
+ 94  	 l_json_object.put('sessionId', s_api_token);
+ 95  	 l_json_object.put('contentDisposition', 'STREAM');
+ 96  	 l_json_object.put('objectId', l_object_id);
+ 97  
+ 98  	 l_json_data := json_object_t(db_twig.call_rest_api(l_json_object.to_clob));
+ 99  	 return l_json_data.get_string('objectWeblink');
+100  
+101    end generate_object_weblink;
+102  
+103  /*
+104  
+105    This function is called by DbTwig on behalf of the React Example Web Application.
+106  
+107    We are using Oracle's built-in capabilities to generate a JSON string directly from a SELECT statement.
+108  
+109    Note how we are generating the claimPhotos item.  By embedding a function within the SELECT statement,
+110    we can generate master/detail information in a single call.
+111  
+112    We have also provided the needed modifications as commented out SELECT items to help speed up the process
+113    of converting this example so that it is accessing unstructured data from AsterionDB.
+114  
+115    Execute the following SQL statement to modify the insurance_claims table:
+116  
+117  	 alter table insurance_claims add report_id varchar2(32);
+118  
+119  */
+120  
+121    function get_insurance_claim_detail
+122    (
+123  	 p_json_parameters		   json_object_t
+124    )
+125    return clob
+126  
+127    as
+128  
+129  	 l_claim_id			   insurance_claims.claim_id%type := get_number_parameter_value(p_json_parameters, 'claimId');
+130  	 l_clob 			   clob;
+131  
+132    begin
+133  
+134  	 select  json_object(
+135  		   'insuredParty' is insured_party,
+136  		   'accidentDate' is to_char(accident_date, 'dd-MON-yyyy'),
+137  		   'accidentLocation' is accident_location,
+138  		   'deductibleAmount' is deductible_amount,
+139  -- 	     'claimsAdjusterReport' is generate_object_weblink(report_id),
+140  -- 	     'oldClaimsAdjusterReport' is claims_adjuster_report,
+141  		   'claimsAdjusterReport' is claims_adjuster_report,
+142  		   'claimPhotos' is get_insurance_claim_photos(l_claim_id) format json
+143  		   returning clob)
+144  	   into  l_clob
+145  	   from  insurance_claims
+146  	  where  claim_id = l_claim_id;
+147  
+148  	 return l_clob;
+149  
+150    end get_insurance_claim_detail;
+151  
+152  /*
+153  
+154    This function is called by get_insurance_claim_detail.  It will provide all of the photographs associated with
+155    an insurance claim by returning a JSON string.
+156  
+157    We have provided the needed modifications as commented out SELECT items to help speed up the process of converting
+158    this example so that it is accessing unstructured data from AsterionDB.
+159  
+160    Execute the following SQL statement to modify the insurance_claim_photos table:
+161  
+162  	 alter table insurance_claim_photos add photo_id varchar2(32);
+163  
+164  */
+165  
+166    function get_insurance_claim_photos
+167    (
+168  	 p_claim_id			   insurance_claims.claim_id%type
+169    )
+170    return clob
+171  
+172    as
+173  
+174  	 l_clob 			   clob;
+175  
+176    begin
+177  
+178  	 select  json_arrayagg(json_object(
+179  -- 	     'mediaUrl' is generate_object_weblink(photo_id),
+180  -- 	     'oldMediaUrl' is filename)
+181  		   'mediaUrl' is filename)
+182  		   returning clob)
+183  	   into  l_clob
+184  	   from  insurance_claim_photos
+185  	  where  claim_id = p_claim_id;
+186  
+187  	 return l_clob;
+188  
+189    end get_insurance_claim_photos;
+190  
+191  /*
+192  
+193    This function is called by DbTwig on behalf of the React Example Web Application.
+194  
+195    Note that even though we do not need any parameters, we still have to provide the required function/procedure signature.
+196  
+197  */
+198  
+199    function get_insurance_claims
+200    (
+201  	 p_json_parameters		   json_object_t
+202    )
+203    return clob
+204  
+205    as
+206  
+207  	 l_clob 			   clob;
+208  
+209    begin
+210  
+211  	 select  json_arrayagg(json_object(
+212  		   'insuredParty' is insured_party,
+213  		   'claimId' is claim_id,
+214  		   'accidentDate' is to_char(accident_date, 'dd-MON-yyyy'))
+215  		   order by insured_party returning clob)
+216  	   into  l_clob
+217  	   from  insurance_claims;
+218  
+219  	 return l_clob;
+220  
+221    end get_insurance_claims;
+222  
+223  /*
+224  
+225    This function is called directly by DbTwig upon encountering an exception.
+226  
+227  */
+228  
+229    function restapi_error
+230    (
+231  	 p_json_parameters		   json_object_t
+232    )
+233    return json_object_t
+234  
+235    is
+236  
+237  	 l_json_object			   json_object_t := json_object_t;
+238  	 l_error_id			   varchar2(12) := 'random-value';
+239  
+240    begin
+241  
+242  -- Do something here such as log the error in a table, create a real errorId. Get error stack info by calling utl_call_stack.
+243  
+244  	 l_json_object.put('errorId', l_error_id);
+245  	 return l_json_object;
+246  
+247    end restapi_error;
+248  
+249  /*
+250  
+251   Simple code that shows you how to unpack the parameter object and insert values into the DB.
+252  
+253  */
+254  
+255    procedure save_claim_note
+256    (
+257  	 p_json_parameters		   json_object_t
+258    )
+259  
+260    is
+261  
+262  	 l_claim_note			   insurance_claim_notes.claim_note%type := get_string_parameter_value(p_json_parameters, 'claimNote');
+263  	 l_claim_id			   insurance_claims.claim_id%type := get_number_parameter_value(p_json_parameters, 'claimId');
+264  
+265    begin
+266  
+267  	 insert into insurance_claim_notes
+268  	   (claim_id, claim_note)
+269  	 values
+270  	   (l_claim_id, l_claim_note);
+271  
+272    end save_claim_note;
+273  
+274  /*
+275  
+276   This is just a placeholder procedure in order to satisfy DbTwig's requirements  for a session_validation_procedure.
+277  
+278  */
+279  
+280    procedure validate_session
+281    (
+282  	 p_entry_point			   middle_tier_map.entry_point%type,
+283  	 p_json_parameters		   json_object_t
+284    )
+285  
+286    is
+287  
+288    begin
+289  
+290  	 null;
+291  
+292    end validate_session;
+293  
+294  end react_example;
+295  /
+
+Warning: Package Body created with compilation errors.
+
+SQL> show errors package body react_example
+Errors for PACKAGE BODY REACT_EXAMPLE:
+
+LINE/COL ERROR                                                                  
+-------- -----------------------------------------------------------------      
+0/0      PL/SQL: Compilation unit analysis terminated                           
+1/14     PLS-00304: cannot compile body of 'REACT_EXAMPLE' without its          
+         specification                                                          
+                                                                                
+1/14     PLS-00905: object DBTWIG_EXAMPLE.REACT_EXAMPLE is invalid              
+SQL> 
+SQL> rem
+SQL> rem  Allow DbTwig to lookup our middle-tier map entries and execute our package.
+SQL> rem
+SQL> 
+SQL> grant select on middle_tier_map to &&dbtwig_user;
+
+Grant succeeded.
+
+SQL> grant execute on react_example to &&dbtwig_user;
+
+Grant succeeded.
+
+SQL> 
+SQL> spool off;

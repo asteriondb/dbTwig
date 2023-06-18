@@ -54,8 +54,7 @@ const restAPI = '/dbTwig/dbTwigExample/';
 
 //  Build an appropriate URL.  You can alter this to suite your needs.
 //  The global variable window.dbTwigHost is set in the configuration file
-//  ./public/assets/config.js, if you have one.  Be sure to run 'npm run build'
-//  after modifying config.js.
+//  ./public/assets/config.js, if you have one.
 
 function buildURL(path, parameters)
 {
