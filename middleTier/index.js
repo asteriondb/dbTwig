@@ -22,6 +22,8 @@ const {format, createLogger, transports} = require('winston');
 let errorLog = process.env.HOME + '/asterion/oracle/logs/db-twig-error.log';
 let combinedLog = process.env.HOME + '/asterion/oracle/logs/db-twig-combined.log';
 
+var uploadComplete;
+
 const logger = createLogger(
 {
   level: 'info',
@@ -76,7 +78,7 @@ app.use(function(req, res, next)
   next();
 });
 
-app.post('/dbTwig/:serviceName/uploadFiles', handleUploadRequest);
+app.post('/dbTwig/:serviceName/uploadFiles', uploadFiles);
 
 app.get('/dbTwig/:serviceName/getSupportInfo', getSupportInfoRequest);
 
@@ -206,94 +208,111 @@ async function handleOauthReply(request, response)
   response.redirect(origin + '/gmailAuthReply');
 }
 
-async function handleUploadRequest(request, response)
+function handleUploadRequest(request, response)
 {
-  let fileId = null;
-
-  let jsonParms = {gatewayName: os.hostname()};
-
-  const busBoy = busboyP({ headers: request.headers });
-
-  busBoy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated)
+  return new Promise((resolve) =>
   {
-    switch (fieldname)
+    let fileId = null;
+    let jsonParms = {gatewayName: os.hostname()};
+
+    const busBoy = busboyP({ headers: request.headers });
+
+    busBoy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated)
     {
-      case 'name':
-        jsonParms.sourcePath = val;
-        break;
-
-      case 'size':
-        jsonParms.filesize = val;
-        break;
-
-      case 'objectId':
-        jsonParms.objectId = val;
-        break;
-
-      case 'newVersion':
-        jsonParms.newVersion = val;
-        break;
-
-      case 'lastModified':
-        jsonParms.modificationDate = val;
-        break;
-
-      default:
-        break;
-    }
-  });
-
-  var jsonPayload;
-  var result;
-
-  busBoy.on('file', async function(fieldname, file, filename, encoding, mimetype) 
-  {
-    request.body = jsonParms;
-    request.params.entryPoint = 'createUploadedObject';
-
-    let connection = await dbTwig.getConnectionFromPool();
-    result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
-
-    if (!result.status)
-    {
-      response.status(HTTP_SERVER_ERROR);
-      response.send(JSON.stringify({success: 0, errorCode: result.errorCode, errorMessage: result.errorMessage}));      
-    }
-    else
-    {
-      jsonPayload = await dbTwig.getJsonPayload(result.lob);
-      let onError = false;
-      if (result.status)
+      switch (fieldname)
       {
-        let jsonObject = JSON.parse(jsonPayload);
-        result = file.pipe(fs.createWriteStream(jsonObject.filename))
-          .on('error', function(e)
+        case 'name':
+          jsonParms.sourcePath = val;
+          break;
+
+        case 'size':
+          jsonParms.filesize = val;
+          break;
+
+        case 'objectId':
+          jsonParms.objectId = val;
+          break;
+
+        case 'newVersion':
+          jsonParms.newVersion = val;
+          break;
+
+        case 'lastModified':
+          jsonParms.modificationDate = val;
+          break;
+
+        default:
+          break;
+      }
+    });
+
+    var jsonPayload;
+    var result;
+
+    busBoy.on('file', function(fieldname, file, filename, encoding, mimetype) 
+    {
+      uploadComplete = new Promise(async (resolve) =>
+      {
+        request.body = jsonParms;
+        request.params.entryPoint = 'createUploadedObject';
+
+        let connection = await dbTwig.getConnectionFromPool();
+        result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
+
+        if (!result.status)
+        {
+          response.status(HTTP_SERVER_ERROR);
+          response.send(JSON.stringify({success: 0, errorCode: result.errorCode, errorMessage: result.errorMessage}));      
+        }
+        else
+        {
+          jsonPayload = await dbTwig.getJsonPayload(result.lob);
+          let onError = false;
+          if (result.status)
+          {
+            let jsonObject = JSON.parse(jsonPayload);
+            file.pipe(fs.createWriteStream(jsonObject.filename))
+              .on('error', function(e)
+              {
+                response.status(HTTP_SERVER_ERROR);
+                let jsonResponse = {uuid: fileId, success: 0, errorMessage: e.message.substring(0, e.message.indexOf(','))};
+                response.send(JSON.stringify(jsonResponse));
+                onError = true;
+              })
+              .on('close', function(x)
+              {
+                if (!onError)
+                {
+                  let jsonResponse = {uuid: fileId, success: 1};
+                  response.send(JSON.stringify(jsonResponse));
+                }
+                resolve();
+              });
+          }
+          else
           {
             response.status(HTTP_SERVER_ERROR);
-            let jsonResponse = {uuid: fileId, success: 0, errorMessage: e.message.substring(0, e.message.indexOf(','))};
-            response.send(JSON.stringify(jsonResponse));
-            onError = true;
-          })
-          .on('close', function(x)
-          {
-            if (!onError)
-            {
-              let jsonResponse = {uuid: fileId, success: 1};
-              response.send(JSON.stringify(jsonResponse));
-            }
-          });
-      }
-      else
+            file.resume();
+          }
+        }
+
+        dbTwig.closeConnection(connection);
+      })
+    });
+
+    request.pipe(busBoy)
+      .on('close', function()
       {
-        response.status(HTTP_SERVER_ERROR);
-        file.resume();
+        resolve();
       }
-    }
-
-    dbTwig.closeConnection(connection);
+    );
   });
+}
 
-  return request.pipe(busBoy);
+async function uploadFiles(request, response)
+{
+  await handleUploadRequest(request, response);
+  await uploadComplete;
 }
 
 async function getSupportInfoRequest(request, response)
@@ -323,7 +342,9 @@ async function getSupportInfoRequest(request, response)
 
 
   dbTwig.closeConnection(connection);
-  return response.send(jsonPayload);
+  response.send(jsonPayload);
+  response.end();
+  return;
 }
 
 async function handleRequest(request, response)
@@ -341,6 +362,7 @@ async function handleRequest(request, response)
   }
 
   dbTwig.closeConnection(connection);
+  response.end();
 }
 
 async function closePoolAndExit()
