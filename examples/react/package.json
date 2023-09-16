@@ -2,7 +2,7 @@
   "name": "react-example",
   "version": "1.0.0",
   "versionComment": "",
-  "gitTag": "2023.03",
+  "gitTag": "2023.09",
   "gitBranch": "main",
   "private": true,
   "scripts": {
@@ -33,6 +33,7 @@
     "react-scripts": "^5.0.1",
     "react-table-legacy": "^6.12.0",
     "react-toastify": "^9.1.3",
-    "reactstrap": "^9.2.0"
+    "reactstrap": "^9.2.0",
+    "plugin-proposal": "@babel/plugin-proposal-private-property-in-object"
   }
 }
