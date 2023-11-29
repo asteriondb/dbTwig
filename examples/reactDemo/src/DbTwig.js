@@ -50,13 +50,13 @@ const FatalErrorCeiling = 20099;
 //  The standard URL format for the DbTwig middle-tier listener is 
 //  '/dbTwig/{db-twig-service}/'.  Note the closing slash character.
 
-const restAPI = '/dbTwig/dbTwigExample/';
+const restAPI = '/dbTwig/';
 
 //  Build an appropriate URL.  You can alter this to suite your needs.
 //  The global variable window.dbTwigHost is set in the configuration file
 //  ./public/assets/config.js, if you have one.
 
-function buildURL(path, parameters)
+function buildURL(service, path, parameters)
 {
 
   //  If window.dbTwigHost is set, use that value when constructing the URL.
@@ -64,8 +64,8 @@ function buildURL(path, parameters)
   //  is being served from as the location of the DbTwig middle-tier listener.
 
   let apiURL = (window.dbTwigHost !== null ? 
-    window.dbTwigHost + restAPI : 
-    window.location.protocol + '//' + window.location.hostname  + ':8080' + restAPI);
+    window.dbTwigHost + restAPI + service + '/': 
+    window.location.protocol + '//' + window.location.hostname  + ':8080' + restAPI + service + '/');
 
   if (typeof parameters === 'undefined')
     return apiURL + path;
@@ -110,7 +110,7 @@ export function apiErrorHandler(result, errorMessage)
 //  if a change is necessary, it will most likely be implemented by doing a
 //  search and replace.
 
-export async function callRestAPI(entryPoint, bodyData)
+export async function callRestAPI(service, entryPoint, bodyData)
 {
   //  If you need to add any additional headers (e.g. session token) do that
   //  here by adding more properties to the headers object.
@@ -120,8 +120,8 @@ export async function callRestAPI(entryPoint, bodyData)
   //  Create an appropriate request object.
 
   let request = (undefined === bodyData ? 
-    new Request(buildURL(entryPoint), {headers: new Headers(headers)}) :
-    new Request(buildURL(entryPoint), {method: "POST", body: JSON.stringify(bodyData), headers: new Headers(headers)}));
+    new Request(buildURL(service, entryPoint), {headers: new Headers(headers)}) :
+    new Request(buildURL(service, entryPoint), {method: "POST", body: JSON.stringify(bodyData), headers: new Headers(headers)}));
 
   let response = await fetch(request).catch(function(error)
   {

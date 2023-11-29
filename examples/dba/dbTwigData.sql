@@ -1,3 +1,4 @@
+insert into middle_tier_map values ('editSpreadsheet', 'procedure', 'dbtwig_example.edit_spreadsheet', 'dbTwigExample', 'none', 'N');
 insert into middle_tier_map values ('getMaintenanceManualDetail', 'function', 'dbtwig_example.get_maintenance_manual_detail', 'dbTwigExample', 'none', 'N');
 insert into middle_tier_map values ('getMaintenanceManuals', 'function', 'dbtwig_example.get_maintenance_manuals', 'dbTwigExample', 'none', 'N');
 insert into middle_tier_map values ('getSupportInfo', 'function', 'dbtwig_example.get_support_info', 'dbTwigExample', 'none', 'N');

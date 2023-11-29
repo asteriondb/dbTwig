@@ -1,7 +1,7 @@
 create or replace
 package body dbtwig_example as
 
-  s_api_token                         varchar2(32) := '<ASTERIONDB_API_TOKEN>';   --  Store your AsterionDB API Token here.
+  s_api_token                         varchar2(32) := '%api-token%';              --  Store your AsterionDB API Token here.
 
   function get_number_parameter_value                                             -- Parameter getter/checker w/ default value
   (
@@ -100,6 +100,55 @@ package body dbtwig_example as
 
   end generate_object_weblink;
 
+---
+---
+---
+
+  procedure edit_spreadsheet
+  (
+    p_json_parameters                 json_object_t
+  )
+
+  is
+
+    l_json_object                     json_object_t;
+    l_spreadsheet_id                  maintenance_manuals.spreadsheet_id%type :=
+      get_string_parameter_value(p_json_parameters, 'spreadsheetId');
+    l_spreadsheet_file                varchar2(256);
+    l_result                          json_object_t;
+
+  begin
+
+--  Generate a filename that we can use with LibreOffice
+
+    l_json_object := json_object_t;
+    l_json_object.put('entryPoint', 'generateObjectFilename');
+    l_json_object.put('serviceName', 'asterionDB');
+    l_json_object.put('sessionId', s_api_token);
+    l_json_object.put('gatewayName', sys_context('userenv', 'host'));
+    l_json_object.put('objectId', l_spreadsheet_id);
+    l_json_object.put('accessMode', 'U');
+    l_json_object.put('accessLimit', -1);
+
+    l_result := json_object_t(db_twig.call_rest_api(l_json_object.to_clob));
+    l_spreadsheet_file := l_result.get_string('filename');
+
+
+--  Gotta commit this so the external process (the Python script and DbObscura) can see our transaction...
+
+    commit;
+
+    l_json_object := json_object_t;
+    l_json_object.put('entryPoint', 'spawnHelperApplication');
+    l_json_object.put('serviceName', 'asterionDB');
+    l_json_object.put('sessionId', s_api_token);
+    l_json_object.put('gatewayName', sys_context('userenv', 'host'));
+    l_json_object.put('commandLine', 'libreoffice '||l_spreadsheet_file);
+
+    l_result := json_object_t(db_twig.call_rest_api(l_json_object.to_clob));
+
+  end edit_spreadsheet;
+
 /*
 
   This function is called by DbTwig on behalf of the DbTwig Example Web Application.
@@ -139,6 +188,7 @@ package body dbtwig_example as
 --              'maintenanceManualLink' is generate_object_weblink(object_id),
 --              'oldMaintenanceManualLink' is maintenance_manual_filename,
               'maintenanceManualLink' is maintenance_manual_filename,
+              'spreadsheetId' is spreadsheet_id,
               'assemblyPhotos' is get_major_assembly_photos(l_manual_id) format json
               returning clob)
       into  l_clob
@@ -228,7 +278,7 @@ package body dbtwig_example as
 
   function restapi_error
   (
-    p_json_parameters                 json_object_t
+    p_json_parameters                 clob
   )
   return json_object_t
 

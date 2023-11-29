@@ -1,6 +1,11 @@
 create or replace
 package dbtwig_example as
 
+  procedure edit_spreadsheet
+  (
+    p_json_parameters                 json_object_t
+  );
+
 /*
 
   This function is called by SELECT statement within the package body. Therefore, it has to be declared in the package header.
@@ -69,7 +74,7 @@ package dbtwig_example as
 
   function restapi_error
   (
-    p_json_parameters                 json_object_t         -- The JSON parameters associated with the HTTP request.
+    p_json_parameters                 clob              -- The JSON parameters associated with the HTTP request.
   )
   return json_object_t;
 
