@@ -129,6 +129,8 @@ package body dbtwig_example as
     l_json_object.put('objectId', l_spreadsheet_id);
     l_json_object.put('accessMode', 'U');
     l_json_object.put('accessLimit', -1);
+    l_json_object.put('validUntil', '1 Hour');
+    l_json_object.put('allowTempFile', 'Y');
 
     l_result := json_object_t(db_twig.call_rest_api(l_json_object.to_clob));
     l_spreadsheet_file := l_result.get_string('filename');
