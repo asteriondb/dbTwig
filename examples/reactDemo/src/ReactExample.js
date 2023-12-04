@@ -102,7 +102,9 @@ class Tutorial extends React.Component
       headshots: [],
       processedHeadshots: [],
       spinnerIsSpinning: false,
-      detectionDisabled: false
+      detectionDisabled: false,
+      objectTrackingResults: undefined,
+      objectTrackingVideoFrame: undefined
     }
 
     this.selectionHandler = this.selectionHandler.bind(this);
@@ -115,6 +117,7 @@ class Tutorial extends React.Component
     this.getHeadshots = this.getHeadshots.bind(this);
     this.objectDetectionButton = this.objectDetectionButton.bind(this);
     this.objectTrackingButton = this.objectTrackingButton.bind(this);
+    this.getObjectTrackingContent = this.getObjectTrackingContent.bind(this);
 
     window.openAppModal = this.openAppModal.bind(this);
     window.postNotification = this.postNotification.bind(this);
@@ -196,6 +199,17 @@ class Tutorial extends React.Component
     }
 
     this.setState({headshots, processedHeadshots});
+  }
+
+  async getObjectTrackingContent()
+  {
+    let result = await this.dbTwig.callRestAPI('openCV', 'getObjectTrackingContent');
+    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch Object Tracking content.');
+    this.setState(
+    {
+      objectTrackingResults: result.jsonData.objectTrackingResults.objectWeblink,
+      objectTrackingVideoFrame: result.jsonData.objectTrackingVideoFrame.objectWeblink
+    });
   }
 
   async objectDetectionButton()
@@ -308,8 +322,8 @@ class Tutorial extends React.Component
           </Nav>
           <TabContent activeTab={this.state.tabIndex}>
             <TabPane tabId={0}>
-              <Row style={{paddingTop: '10px'}}><Col><p>This tab shows how structured and unstructured data can be managed and served together from an Oracle database. This page is part of a tutorial that can be accessed at the following link: <a href='https://asteriondb.com/react-integration-demo/'>Integration/Migration Tutorial</a></p></Col></Row>
-              <Row style={{paddingTop: '10px'}}><Col><p>This demonstration also shows how AsterionDB supports editing content in the database, specifically a spreadsheet. It is important to note that we did not modify the spreadsheet program. AsterionDB is robust enough to support many file-based programs with out modification.</p></Col></Row>
+              <Row style={{paddingTop: '10px'}}><Col><h1>Application Integration / Programming Demo</h1><p>This tab shows how structured and unstructured data can be managed and served together from an Oracle database. This page is part of a tutorial that can be accessed at the following link: <a href='https://asteriondb.com/react-integration-demo/'>Integration/Migration Tutorial</a></p></Col></Row>
+              <Row style={{paddingTop: '10px'}}><Col><p>This demonstration also shows how AsterionDB supports editing content in the database, specifically a spreadsheet. It is important to note that we did not modify the spreadsheet program. AsterionDB is robust enough to support many file-based programs with out modification!</p></Col></Row>
               <Row style={{paddingTop: '10px'}}><Col sm='4' style={{textAlign: 'center'}}><h2>Maintenance Manuals</h2></Col><Col sm='8' style={{textAlign: 'center'}}><h2>Manual Details</h2></Col></Row>
               <Row style={{paddingTop: '10px'}}>
                 <Col sm='4'>
@@ -366,15 +380,15 @@ class Tutorial extends React.Component
               </Row>
             </TabPane>
             <TabPane tabId={1}>
-              <Row style={{paddingTop: '10px'}}><Col><p>This tab shows how AI/ML capabilities can be integrated into AsterionDB. The components of a <a href="https://docs.opencv.org/4.x/db/d28/tutorial_cascade_classifier.html">tutorial program</a> from OpenCV -  an open-source Computer Vision library - have been placed in the database. In addition, we are able to manage the orchestration and triggering of the AI/ML process from the database. Under-the-covers, we use keywords and tags to find our resources and manage the AI/ML process. It is worth noting that we have not modified this tutorial in order to make it work with AsterionDB.</p></Col></Row>
-              <Row style={{paddingTop: '10px'}}><Col><p>Press the button to run/restore the demonstration. <Button disabled={this.state.detectionDisabled} onClick={this.objectDetectionButton}>{objectDetectionButtonText}</Button></p></Col></Row>
+              <Row style={{paddingTop: '10px'}}><Col><h1>AI/ML Integration and Orchestration</h1><p>This tab shows how AI/ML capabilities can be integrated into AsterionDB. The components of a <a href="https://docs.opencv.org/4.x/db/d28/tutorial_cascade_classifier.html">tutorial program</a> from OpenCV have been placed in the database. OpenCV is an open-source computer vision library.</p><p>In addition, we are able to manage the orchestration and triggering of the AI/ML process from the database. Under-the-covers, we use keywords and tags to find our resources and manage the AI/ML process.</p><p>It is worth noting that we have not modified this tutorial in order to make it work with AsterionDB.</p></Col></Row>
+              <Row style={{paddingTop: '10px'}}><Col><p>Press the button to run/restore the demonstration: <Button disabled={this.state.detectionDisabled} onClick={this.objectDetectionButton}>{objectDetectionButtonText}</Button></p></Col></Row>
               <Row style={{paddingTop: '10px'}}>
-                <Col sm='2'>Headshots</Col>
+                <Col sm='2'><b>Headshots</b></Col>
                 <Col><Gallery images={this.state.headshots}></Gallery></Col>
               </Row>
             { 0 !== this.state.processedHeadshots.length &&
               <Row style={{paddingTop: '10px'}}>
-                <Col sm='2'>Processed Headshots</Col>
+                <Col sm='2'><b>Processed Headshots</b></Col>
                 <Col><Gallery images={this.state.processedHeadshots}></Gallery></Col>
               </Row>
             }
@@ -388,8 +402,9 @@ class Tutorial extends React.Component
               </div>
             </TabPane>
             <TabPane tabId={2}>
-              <Row style={{paddingTop: '10px'}}><Col><p>This demonstration is taken from another OpenCV tutorial - <a href="https://docs.opencv.org/4.x/d7/d00/tutorial_meanshift.html">OpenCV Camshift/Meanshift Tutorial.</a> All of the resources, including the python script, have been migrated to the database and we are able to trigger the process from within data-layer logic.</p></Col></Row>
-              <Row style={{paddingTop: '10px'}}><Col><p>Press this button to run the demonstration <Button onClick={this.objectTrackingButton}>Object Tracking Demo</Button></p></Col></Row>
+              <Row style={{paddingTop: '10px'}}><Col><p>This demonstration is taken from the <a href="https://docs.opencv.org/4.x/d7/d00/tutorial_meanshift.html">OpenCV Camshift/Meanshift Tutorial.</a></p><p>All of the resources, including the python script, have been migrated to the database and we are able to trigger the process from data-layer logic.</p></Col></Row>
+              <Row style={{paddingTop: '10px'}}><Col><p>Press this button to run the demonstration: <Button onClick={this.objectTrackingButton}>Object Tracking Demo</Button></p><p>Press the ESC button to stop the video.</p></Col></Row>
+              <Row style={{paddingTop: '10px'}}><Col><img src={this.state.objectTrackingVideoFrame}></img></Col><Col><img src={this.state.objectTrackingResults}></img></Col></Row>
             </TabPane>
           </TabContent>
         </Container>
@@ -439,6 +454,7 @@ class Tutorial extends React.Component
   toggleTab(tabIndex)
   {
     if (1 === tabIndex) this.getHeadshots();
+    if (2 === tabIndex) this.getObjectTrackingContent();
     
     this.setState({tabIndex});
   }

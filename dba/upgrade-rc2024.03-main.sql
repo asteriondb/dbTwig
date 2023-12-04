@@ -25,6 +25,9 @@ REM  Put stuff between here.....
 
 REM  ...and here
 
+@@db_twig
+@@db_twig.pls
+
 prompt 
 spool off;
 

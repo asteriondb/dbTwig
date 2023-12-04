@@ -11,7 +11,6 @@
         "@emotion/react": "^11.11.1",
         "bootstrap": "^5.3.0",
         "classnames": "^2.3.2",
-        "plugin-proposal": "@babel/plugin-proposal-private-property-in-object",
         "react": "^18.2.0",
         "react-grid-gallery": "^1.0.1-alpha.0",
         "react-json-view-lite": "^0.9.6",
@@ -22,7 +21,9 @@
         "reactstrap": "^9.2.0"
       }
     },
-    "@babel/plugin-proposal-private-property-in-object": {},
+    "@babel/plugin-proposal-private-property-in-object": {
+      "extraneous": true
+    },
     "node_modules/@alloc/quick-lru": {
       "version": "5.2.0",
       "resolved": "https://registry.npmjs.org/@alloc/quick-lru/-/quick-lru-5.2.0.tgz",
@@ -5383,9 +5384,9 @@
       }
     },
     "node_modules/caniuse-lite": {
-      "version": "1.0.30001504",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001504.tgz",
-      "integrity": "sha512-5uo7eoOp2mKbWyfMXnGO9rJWOGU8duvzEiYITW+wivukL7yHH4gX9yuRaobu6El4jPxo6jKZfG+N6fB621GD/Q==",
+      "version": "1.0.30001565",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001565.tgz",
+      "integrity": "sha512-xrE//a3O7TP0vaJ8ikzkD2c2NgcVUvsEe2IvFTntV4Yd1Z9FVzh+gW+enX96L0psrbaFMcVcH2l90xNuGDWc8w==",
       "funding": [
         {
           "type": "opencollective",
@@ -12433,10 +12434,6 @@
       "engines": {
         "node": ">=4"
       }
-    },
-    "node_modules/plugin-proposal": {
-      "resolved": "@babel/plugin-proposal-private-property-in-object",
-      "link": true
     },
     "node_modules/postcss": {
       "version": "8.4.24",

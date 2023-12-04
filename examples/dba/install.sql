@@ -120,8 +120,8 @@ create table maintenance_manuals
  in_service_from	                date,
  revision_number                    number(8),
  maintenance_division    	        varchar2(128),
- maintenance_manual_filename        varchar2(128)),
- spreadsheet_id                     varchar2(32);
+ maintenance_manual_filename        varchar2(128),
+ spreadsheet_id                     varchar2(32));
 
 create table major_assembly_photos
 (manual_id		                    number(6)

@@ -30,7 +30,6 @@
     "@emotion/react": "^11.11.1",
     "bootstrap": "^5.3.0",
     "classnames": "^2.3.2",
-    "plugin-proposal": "@babel/plugin-proposal-private-property-in-object",
     "react": "^18.2.0",
     "react-grid-gallery": "^1.0.1-alpha.0",
     "react-json-view-lite": "^0.9.6",
