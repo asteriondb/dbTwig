@@ -211,7 +211,7 @@ package body dbtwig_example as
 
   Execute the following SQL statement to modify the maintenance_manual_photos table:
 
-    alter table maintenance_manual_photos add object_id varchar2(32);
+    alter table major_assembly_photos add object_id varchar2(32);
 
 */
 
