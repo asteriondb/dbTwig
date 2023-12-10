@@ -209,7 +209,7 @@ package body dbtwig_example as
   We have provided the needed modifications as commented out SELECT items to help speed up the process of converting
   this example so that it is accessing unstructured data from AsterionDB.
 
-  Execute the following SQL statement to modify the maintenance_manual_photos table:
+  Execute the following SQL statement to modify the major_assembly_photos table:
 
     alter table major_assembly_photos add object_id varchar2(32);
 
