@@ -35,7 +35,9 @@ package body db_twig as
   (
     p_service_owner                   db_twig_services.service_owner%type,
     p_api_error_handler               db_twig_services.api_error_handler%type,
-    p_json_parameters                 db_twig_errors.json_parameters%type
+    p_json_parameters                 db_twig_errors.json_parameters%type,
+    p_service_name                    varchar2,
+    p_object_group                    varchar2
   )
   return json_object_t
 
@@ -46,8 +48,8 @@ package body db_twig as
 
   begin
 
-    l_sql_text := 'begin :result := '||p_service_owner||'.'||p_api_error_handler||'(:jsonParameters); end;';
-    execute immediate l_sql_text using out l_json_object, p_json_parameters;
+    l_sql_text := 'begin :result := '||p_service_owner||'.'||p_api_error_handler||'(:jsonParameters, :serviceName, :objectGroup); end;';
+    execute immediate l_sql_text using out l_json_object, p_json_parameters, p_service_name, p_object_group;
 
     return l_json_object;
 
@@ -76,6 +78,7 @@ package body db_twig as
     l_api_error_handler               db_twig_services.api_error_handler%type;
     l_error_text                      clob;
     l_error_code                      pls_integer;
+    l_object_group                    varchar2(128);
 
   begin
 
@@ -94,14 +97,14 @@ package body db_twig as
     end;
 
     l_plsql_text :=
-      'select  object_type, object_name ' ||
+      'select  object_type, object_name, object_group ' ||
       '  from  '||l_service_owner||'.middle_tier_map ' ||
       ' where  entry_point = :entryPoint';
 
     begin
 
       execute immediate l_plsql_text
-        into l_object_type, l_object_name
+        into l_object_type, l_object_name, l_object_group
         using l_entry_point;
 
     exception when no_data_found then
@@ -141,7 +144,7 @@ package body db_twig as
 
     when others then
 
-      l_json_data := restapi_error(l_service_owner, l_api_error_handler, p_json_parameters);
+      l_json_data := restapi_error(l_service_owner, l_api_error_handler, p_json_parameters, l_service_name, l_object_group);
 
       if l_json_data.get_string('errorId') is not null then
 
