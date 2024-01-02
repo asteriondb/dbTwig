@@ -9,6 +9,12 @@ package body db_twig as
   PLSQL_COMPILER_ERROR                EXCEPTION;
   pragma exception_init(PLSQL_COMPILER_ERROR, -6550);
 
+  PACKAGE_INVALIDATED                 EXCEPTION;
+  pragma exception_init(PACKAGE_INVALIDATED, -4061);
+
+  PACKAGE_DISCARDED                   EXCEPTION;
+  pragma exception_init(PACKAGE_DISCARDED, -4068);
+
   procedure db_twig_error
   (
     p_error_code                      db_twig_errors.error_code%type,
@@ -129,9 +135,7 @@ package body db_twig as
       else
 
         l_plsql_text := 'begin '||l_complete_object_name||'(json_object_t(:p_json_parameters)); end;';
-
         execute immediate l_plsql_text using p_json_parameters;
-
         l_json_string := s_json_response;
 
       end if;
@@ -141,6 +145,10 @@ package body db_twig as
     when PLSQL_COMPILER_ERROR then
 
       raise_application_error(-20100, l_plsql_text, true);
+
+    when PACKAGE_INVALIDATED or PACKAGE_DISCARDED then
+
+      raise;
 
     when others then
 

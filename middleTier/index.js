@@ -68,6 +68,8 @@ const dbTwig = require('./dbTwig');
 
 const HTTP_SERVER_ERROR = 500;
 
+const GATEWAY_OFFLINE_EC = 20112;
+
 app.use(express.json());
 
 app.use(function(req, res, next) 
@@ -275,7 +277,8 @@ function handleUploadRequest(request, response)
               .on('error', function(e)
               {
                 response.status(HTTP_SERVER_ERROR);
-                let jsonResponse = {uuid: fileId, success: 0, errorMessage: e.message.substring(0, e.message.indexOf(','))};
+                let jsonResponse = {errorCode: GATEWAY_OFFLINE_EC, success: 0, errorMessage: e.message.substring(0, e.message.indexOf(',')) +
+                  ' - Is the gateway online?'};
                 response.send(JSON.stringify(jsonResponse));
                 onError = true;
               })
