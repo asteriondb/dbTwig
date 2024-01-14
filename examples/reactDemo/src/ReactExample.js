@@ -284,7 +284,7 @@ class Tutorial extends React.Component
     return(
       <div>
         <Navbar className='bg-primary' dark fixed="top" expand="md" >
-          <NavbarBrand>React Based Demo Apps</NavbarBrand>
+          <NavbarBrand>AsterionDB Demo Apps</NavbarBrand>
         </Navbar>
         <Container fluid>
           <PopupNotification notificationText={this.state.notificationText} notificationType={this.state.notificationType} clearNotifier={this.clearNotifier}/>
