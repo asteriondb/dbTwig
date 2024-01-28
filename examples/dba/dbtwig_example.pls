@@ -204,7 +204,7 @@ package body dbtwig_example as
 /*
 
   This function is called by get_maintenance_manual_detail. It will provide all of the photographs associated with
-  a mainteance manual by returning a JSON string.
+  an mainteance manual by returning a JSON string.
 
   We have provided the needed modifications as commented out SELECT items to help speed up the process of converting
   this example so that it is accessing unstructured data from AsterionDB.
