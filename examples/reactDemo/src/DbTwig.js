@@ -90,10 +90,13 @@ export function apiErrorHandler(result, errorMessage)
       return;
 
     case 'fatalError':
-      console.log('We recommend that you terminate your user sesion when a fatal error is detected.')
-      window.location.replace(window.redirectURI);
+      window.postNotification('error', 'We recommend that you terminate your user sesion when a fatal error is detected.')
       return;
       
+    case 'apiError':
+      window.openAppModal(errorMessage, result.errorMessage);
+      return;
+
     default:
       window.openAppModal(errorMessage, result.errorMessage);
       return;

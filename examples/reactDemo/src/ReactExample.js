@@ -179,7 +179,10 @@ class Tutorial extends React.Component
   async getHeadshots()
   {
     let result = await this.dbTwig.callRestAPI('openCV', 'getHeadshots');
-    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to fetch headshots.');
+    if ('success' !== result.status)
+    {
+      return this.dbTwig.apiErrorHandler(result, 'Unable to fetch headshots.');
+    } 
     let headshots = [];
     for (let x = 0; x < result.jsonData.headshots.length; x++)
     {
@@ -235,7 +238,8 @@ class Tutorial extends React.Component
 
   async objectTrackingButton()
   {
-    await this.dbTwig.callRestAPI('openCV', 'trackAnObject');
+    let result = await this.dbTwig.callRestAPI('openCV', 'trackAnObject');
+    if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to start object tracking demo.');
   }
 
   openAppModal(modalTitle, modalMessage)
