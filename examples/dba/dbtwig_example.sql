@@ -74,7 +74,9 @@ package dbtwig_example as
 
   function restapi_error
   (
-    p_json_parameters                 clob              -- The JSON parameters associated with the HTTP request.
+    p_json_parameters                 clob,    -- The HTTP request JSON parameters, if available
+    p_service_name                    varchar2,
+    p_component_name                  varchar2
   )
   return json_object_t;
 

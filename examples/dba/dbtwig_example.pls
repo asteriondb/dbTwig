@@ -3,6 +3,27 @@ package body dbtwig_example as
 
   s_api_token                         varchar2(32) := '%api-token%';              --  Store your AsterionDB API Token here.
 
+  s_asteriondb_service                constant varchar2(10) := 'asterionDB';
+
+  function call_db_twig
+  (
+    p_json_parameters                 json_object_t
+  )
+  return json_object_t
+
+  is
+
+    l_json_parameters                 json_object_t := p_json_parameters;
+
+  begin
+
+    l_json_parameters.put('serviceName', s_asteriondb_service);
+    l_json_parameters.put('sessionId', s_api_token);
+
+    return json_object_t(db_twig.call_rest_api(l_json_parameters.to_clob));
+
+  end call_db_twig;
+
   function get_number_parameter_value                                             -- Parameter getter/checker w/ default value
   (
     p_json_parameters                 json_object_t,
@@ -90,12 +111,11 @@ package body dbtwig_example as
   begin
 
     l_json_object.put('entryPoint', 'generateObjectWeblink');
-    l_json_object.put('serviceName', 'asterionDB');
     l_json_object.put('sessionId', s_api_token);
     l_json_object.put('contentDisposition', 'STREAM');
     l_json_object.put('objectId', l_object_id);
 
-    l_json_data := json_object_t(db_twig.call_rest_api(l_json_object.to_clob));
+    l_json_data := call_db_twig(l_json_object);
     return l_json_data.get_string('objectWeblink');
 
   end generate_object_weblink;
@@ -123,7 +143,6 @@ package body dbtwig_example as
 
     l_json_object := json_object_t;
     l_json_object.put('entryPoint', 'generateObjectFilename');
-    l_json_object.put('serviceName', 'asterionDB');
     l_json_object.put('sessionId', s_api_token);
     l_json_object.put('gatewayName', sys_context('userenv', 'host'));
     l_json_object.put('objectId', l_spreadsheet_id);
@@ -132,22 +151,20 @@ package body dbtwig_example as
     l_json_object.put('validUntil', '1 Hour');
     l_json_object.put('allowTempFile', 'Y');
 
-    l_result := json_object_t(db_twig.call_rest_api(l_json_object.to_clob));
+    l_result := call_db_twig(l_json_object);
     l_spreadsheet_file := l_result.get_string('filename');
 
-
---  Gotta commit this so the external process (the Python script and DbObscura) can see our transaction...
+--  Gotta commit this so the external process (libreoffice and DbObscura) can see our transaction...
 
     commit;
 
     l_json_object := json_object_t;
     l_json_object.put('entryPoint', 'spawnHelperApplication');
-    l_json_object.put('serviceName', 'asterionDB');
     l_json_object.put('sessionId', s_api_token);
     l_json_object.put('gatewayName', sys_context('userenv', 'host'));
     l_json_object.put('commandLine', 'libreoffice '||l_spreadsheet_file);
 
-    l_result := json_object_t(db_twig.call_rest_api(l_json_object.to_clob));
+    l_result := call_db_twig(l_json_object);
 
   end edit_spreadsheet;
 
@@ -280,21 +297,26 @@ package body dbtwig_example as
 
   function restapi_error
   (
-    p_json_parameters                 clob
+    p_json_parameters                 clob,    -- The HTTP request JSON parameters, if available
+    p_service_name                    varchar2,
+    p_component_name                  varchar2
   )
   return json_object_t
 
   is
 
-    l_json_object                     json_object_t := json_object_t;
-    l_error_id                        varchar2(12) := 'random-value';
+    l_json_request                    json_object_t := json_object_t;
+    l_result                          json_object_t;
 
   begin
 
--- Do something here such as log the error in a table, create a real errorId. Get error stack info by calling utl_call_stack.
+    l_json_request.put('entryPoint', 'restapiError');
+    l_json_request.put('jsonParameters', p_json_parameters);
+    l_json_request.put('errorInService', p_service_name);
+    l_json_request.put('componentName', p_component_name);
+    l_result := call_db_twig(l_json_request);
 
-    l_json_object.put('errorId', l_error_id);
-    return l_json_object;
+    return l_result;
 
   end restapi_error;
 
