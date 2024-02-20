@@ -4,3 +4,5 @@
 */    
 
 var dbTwigHost  = null;
+
+var enableDesktopElements = false;

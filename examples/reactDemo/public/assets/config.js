@@ -4,3 +4,5 @@
 */    
 
 var dbTwigHost  = 'http://localhost:80';
+
+var enableDesktopElements = true;

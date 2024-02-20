@@ -316,6 +316,7 @@ class Tutorial extends React.Component
                 Object Detection
               </NavLink>
             </NavItem>
+          { window.enableDesktopElements && 
             <NavItem>
               <NavLink className={classnames({ active: this.state.tabIndex === 2 })}
                 onClick={() => { this.toggleTab(2); }}
@@ -323,6 +324,7 @@ class Tutorial extends React.Component
                 Object Tracking
               </NavLink>
             </NavItem>
+          }            
           </Nav>
           <TabContent activeTab={this.state.tabIndex}>
             <TabPane tabId={0}>
@@ -369,6 +371,7 @@ class Tutorial extends React.Component
                   <Row><Col sm='3'>In Service From</Col><Col>{(undefined !== this.state.manualDetail ? this.state.manualDetail.inServiceFrom : null)}</Col></Row>          
                   <Row><Col sm='3'>Revision #</Col><Col>{(undefined !== this.state.manualDetail ? this.state.manualDetail.revisionNumber : null)}</Col></Row>                      
                   <Row><Col sm='3'>Maintenance Manual</Col><Col>{maintenanceManualLink}</Col></Row>                      
+                { window.enableDesktopElements &&
                   <Row style={{paddingTop: '10px'}}>
                     <Col sm='3'>Parts Spreadsheet</Col>
                     <Col>
@@ -376,6 +379,7 @@ class Tutorial extends React.Component
                         onClick={this.editPartsSpreadsheet.bind(this, spreadsheetId)}>Edit</Button>
                     </Col>
                   </Row>
+                }
                   <Row style={{paddingTop: '10px'}}>
                     <Col sm='3'>Major Assemblies</Col>
                     <Col><ReactTable columns={columns} data={majorAssemblies} showPagination={false} minRows={1}/></Col>
