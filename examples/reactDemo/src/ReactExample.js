@@ -240,6 +240,7 @@ class Tutorial extends React.Component
   {
     let result = await this.dbTwig.callRestAPI('openCV', 'trackAnObject');
     if ('success' !== result.status) return this.dbTwig.apiErrorHandler(result, 'Unable to start object tracking demo.');
+    this.postNotification('success', 'Object tracking demo loading...');
   }
 
   openAppModal(modalTitle, modalMessage)
