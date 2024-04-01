@@ -65,11 +65,11 @@ exports.callDbTwig = async function(connection, requestData)
   systemParameters.httpHost =  requestData.httpHost;
   systemParameters.serverAddress = requestData.serverAddress;
 
-  let text = 'declare json_data clob := null; begin json_data := db_twig.call_rest_api(:jsonParameters); :jsonData := json_data; end;';
+  let text = 'declare json_data clob := null; begin json_data := call_restapi(:jsonParameters); :jsonData := json_data; end;';
   let bindVars = 
   {
     jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
-    jsonParameters: JSON.stringify({...systemParameters, ...requestData.body, query: requestData.query, serviceName: requestData.serviceName, 
+    jsonParameters: JSON.stringify({...systemParameters, ...requestData.body, ...requestData.query, serviceName: requestData.serviceName, 
       entryPoint: requestData.entryPoint})
   }
 

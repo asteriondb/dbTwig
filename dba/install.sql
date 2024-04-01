@@ -43,16 +43,25 @@ end;
 .
 /
 
-create synonym &5..db_twig for &4..db_twig;
+create synonym &5..call_restapi for &4..call_restapi;
 
 alter session set current_schema = &4;
+
+create table dbtwig_profile
+(
+  production_mode                   varchar2(1) default 'Y'
+   constraint prod_mode_chk check (production_mode in ('Y', 'N')) not null
+);
+
+insert into dbtwig_profile values ('Y');
+commit;
 
 create table db_twig_services
 (
   service_name                      varchar2(128) primary key,
   service_owner                     varchar2(128) not null,
-  replace_error_stack               varchar2(1) default 'Y'
-   constraint replace_stack_chk check (replace_error_stack in ('Y', 'N')) not null,
+  production_mode                   varchar2(1) default 'Y'
+   constraint svc_prod_mode_chk check (production_mode in ('Y', 'N')) not null,
   session_validation_procedure      varchar2(256) not null,
   api_error_handler                 varchar2(256) not null
 );
@@ -68,6 +77,8 @@ create table db_twig_errors
 @@db_twig
 @@db_twig.pls
 
-grant execute on db_twig to &5;
+@@call_restapi.sql
+
+grant execute on call_restapi to &5;
 
 exit;

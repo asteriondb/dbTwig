@@ -54,11 +54,99 @@ Note - You do not have to use the same function name as shown above.
 
 */
 
-  function call_rest_api
+  SECONDS_PER_DAY                     constant pls_integer := 86400;
+
+  function call_restapi
   (
     p_json_parameters                 clob
   )
   return clob;
+
+  function convert_date_to_unix_timestamp
+  (
+    p_date_value                      date
+  )
+  return number;
+
+  function convert_timestamp_to_unix_timestamp
+  (
+    p_timestamp_value                 timestamp
+  )
+  return varchar2;
+
+  procedure convert_timestamp_to_timeval
+  (
+    p_timestamp_value                 timestamp,
+    p_tv_sec                          out number,
+    p_tv_usec                         out number
+  );
+
+  function convert_unix_timestamp_to_date
+  (
+    p_unix_timestamp                  number
+  )
+  return date;
+
+  function convert_unix_timestamp_to_timestamp
+  (
+    p_unix_timestamp                  float
+  )
+  return timestamp;
+
+  procedure db_twig_error
+  (
+    p_error_code                      db_twig_errors.error_code%type,
+    p_json_parameters                 db_twig_errors.json_parameters%type default null,
+    p_error_message                   db_twig_errors.error_message%type default null
+  );
+
+  function get_array_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   json_array_t default null
+  )
+  return json_array_t;
+
+  function get_clob_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   clob default null
+  )
+  return clob;
+
+  function get_dbtwig_errors return clob;
+
+  function get_number_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   number default null
+  )
+  return number;
+
+  function get_string_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   varchar2 default null
+  )
+  return varchar2;
+
+  function restapi_error
+  (
+    p_service_owner                   db_twig_services.service_owner%type,
+    p_api_error_handler               db_twig_services.api_error_handler%type,
+    p_json_parameters                 db_twig_errors.json_parameters%type,
+    p_service_name                    varchar2,
+    p_object_group                    varchar2
+  )
+  return json_object_t;
 
 end db_twig;
 .

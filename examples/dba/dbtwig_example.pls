@@ -20,7 +20,7 @@ package body dbtwig_example as
     l_json_parameters.put('serviceName', s_asteriondb_service);
     l_json_parameters.put('sessionId', s_api_token);
 
-    return json_object_t(db_twig.call_rest_api(l_json_parameters.to_clob));
+    return json_object_t(db_twig.call_restapi(l_json_parameters.to_clob));
 
   end call_db_twig;
 

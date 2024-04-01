@@ -105,9 +105,8 @@ function getRequestData(request, serverAddress)
 {
   let authorization = request.get('authorization');
 
-  return(
+  let obj =
   {
-    sessionId: (undefined !== authorization ? authorization.split(" ")[1] : ""), 
     clientAddress: request.headers['x-real-ip'] ? request.headers['x-real-ip'] : request.headers['x-forwarded-for'],
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
@@ -117,7 +116,11 @@ function getRequestData(request, serverAddress)
     entryPoint: undefined === request.params.entryPoint ? '/' : request.params.entryPoint,
     originalUrl: request.originalUrl,
     serverAddress: serverAddress
-  });
+  };
+
+  if (undefined !== authorization) obj.sessionId = authorization.split(" ")[1];
+
+  return(obj);
 }
 
 async function handleOauthReply(request, response)
