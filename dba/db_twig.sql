@@ -1,6 +1,8 @@
 create or replace
 package db_twig as
 
+  GENERIC_ERROR                       constant pls_integer := -20100;           -- Borrowed from AsterionDB.
+
 /*
 
 Calling API Components via DbTwig - Required Parameters

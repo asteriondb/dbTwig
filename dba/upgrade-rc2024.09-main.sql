@@ -26,8 +26,16 @@ create table dbtwig_profile
 insert into dbtwig_profile values ('Y');
 commit;
 
+create table logged_requests
+(
+  request_timestamp                 timestamp default systimestamp at time zone 'utc' not null,
+  request                           clob not null
+);
+
 alter table db_twig_services rename column replace_error_stack to production_mode;
 alter table db_twig_services rename constraint replace_stack_chk to svc_prod_mode_chk;
+alter table db_twig_services add log_all_requests varchar2(1) default 'N'
+   constraint log_all_requests_chk check (log_all_requests in ('Y', 'N')) not null;
 
 @$HOME/asterion/oracle/dbTwig/dba/db_twig
 @$HOME/asterion/oracle/dbTwig/dba/db_twig.pls

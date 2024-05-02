@@ -1,8 +1,6 @@
 create or replace
 package body db_twig as
 
-  s_json_response                     constant varchar2(23) := '{"response": "success"}';
-
   s_user_error_max                    constant pls_integer := -20000;
   s_user_error_min                    constant pls_integer := -20999;
 
@@ -14,8 +12,6 @@ package body db_twig as
 
   PACKAGE_DISCARDED                   EXCEPTION;
   pragma exception_init(PACKAGE_DISCARDED, -4068);
-
-  GENERIC_ERROR                       constant pls_integer := -20100;           -- Borrowed from AsterionDB.
 
   INVALID_PARAMETERS_EC               constant pls_integer := -20138;
 
@@ -34,12 +30,23 @@ package body db_twig as
 
     PRAGMA AUTONOMOUS_TRANSACTION;
 
+    l_json_parameters                 json_object_t := json_object_t(p_json_parameters);
+    l_clob                            clob;
+
   begin
+
+    if l_json_parameters.has('password') then
+
+      l_json_parameters.remove('password');
+
+    end if;
+
+    l_clob := l_json_parameters.to_clob;
 
     insert into db_twig_errors
       (error_code, json_parameters, error_message)
     values
-      (p_error_code, p_json_parameters, p_error_message);
+      (p_error_code, l_clob, p_error_message);
 
     commit;
 
@@ -234,7 +241,7 @@ package body db_twig as
     l_plsql_text                      varchar2(1024);
     l_object_type                     varchar2(9);
     l_object_name                     varchar2(128);
-    l_json_string                     clob;
+    l_json_response                   clob;
     l_json_data                       json_object_t;
     l_entry_point                     varchar2(128);
     l_service_name                    db_twig_services.service_name%type;
@@ -246,6 +253,7 @@ package body db_twig as
     l_error_text                      clob;
     l_error_code                      pls_integer;
     l_object_group                    varchar2(128);
+    l_log_all_requests                db_twig_services.log_all_requests%type;
 
   begin
 
@@ -295,8 +303,9 @@ package body db_twig as
 
     begin
 
-      select  service_owner, production_mode, session_validation_procedure, api_error_handler
-        into  l_service_owner, l_production_mode, l_session_validation_procedure, l_api_error_handler
+      select  service_owner, production_mode, session_validation_procedure, api_error_handler, log_all_requests
+        into  l_service_owner, l_production_mode, l_session_validation_procedure, l_api_error_handler,
+              l_log_all_requests
         from  db_twig_services
        where  service_name = l_service_name;
 
@@ -314,6 +323,23 @@ package body db_twig as
       end if;
 
     end;
+
+    if 'Y' = l_log_all_requests then
+
+      if l_json_parameters.has('password') then
+
+        l_json_parameters.remove('password');
+
+      end if;
+
+      insert into logged_requests
+        (request)
+      values
+        (l_json_parameters.to_clob);
+
+      commit;
+
+    end if;
 
     l_plsql_text :=
       'select  object_type, object_name, object_group ' ||
@@ -350,14 +376,13 @@ package body db_twig as
 
       if 'function' = l_object_type then
 
-        l_plsql_text := 'begin :l_json_string := '||l_complete_object_name||'(json_object_t(:p_json_parameters)); end;';
-        execute immediate l_plsql_text using out l_json_string, p_json_parameters;
+        l_plsql_text := 'begin :l_json_response := '||l_complete_object_name||'(json_object_t(:p_json_parameters)); end;';
+        execute immediate l_plsql_text using out l_json_response, p_json_parameters;
 
       else
 
         l_plsql_text := 'begin '||l_complete_object_name||'(json_object_t(:p_json_parameters)); end;';
         execute immediate l_plsql_text using p_json_parameters;
-        l_json_string := s_json_response;
 
       end if;
 
@@ -402,7 +427,7 @@ package body db_twig as
 
     end;
 
-    return l_json_string;
+    return l_json_response;
 
   end call_restapi;
 

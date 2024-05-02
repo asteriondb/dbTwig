@@ -63,15 +63,24 @@ create table db_twig_services
   production_mode                   varchar2(1) default 'Y'
    constraint svc_prod_mode_chk check (production_mode in ('Y', 'N')) not null,
   session_validation_procedure      varchar2(256) not null,
-  api_error_handler                 varchar2(256) not null
+  api_error_handler                 varchar2(256) not null,
+  log_all_requests                  varchar2(1) default 'N'
+   constraint log_all_requests_chk check (log_all_requests in ('Y', 'N')) not null
 );
 
 create table db_twig_errors
 (
   error_timestamp                   timestamp default systimestamp at time zone 'utc' not null,
   error_code                        number(6) not null,
-  json_parameters                   clob,
+  json_parameters                   clob not null,
   error_message                     clob
+);
+
+create table logged_requests
+(
+  request_timestamp                 timestamp default systimestamp at time zone 'utc' not null,
+  request                           clob 
+    constraint request_chk check (request is json) not null
 );
 
 @@db_twig
