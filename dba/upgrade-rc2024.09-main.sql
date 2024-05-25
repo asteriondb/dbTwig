@@ -23,7 +23,26 @@ create table dbtwig_profile
    constraint prod_mode_chk check (production_mode in ('Y', 'N')) not null
 );
 
-insert into dbtwig_profile values ('Y');
+declare
+
+  l_production_mode                 dbtwig_profile.production_mode%type;
+
+begin
+
+  select  production_mode
+    into  l_production_mode
+    from  dbtwig_profile;
+
+exception
+
+when no_data_found then
+
+  insert into dbtwig_profile values ('Y');
+
+end;
+.
+/
+
 commit;
 
 create table logged_requests
