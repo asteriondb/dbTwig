@@ -168,6 +168,39 @@ package body db_twig as
 
   end get_number_parameter;
 
+  function get_object_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   json_object_t default null
+  )
+  return json_object_t
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_object(p_key);
+
+    else
+
+      if p_required_parameter then
+
+        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_object_parameter;
+
   function get_string_parameter
   (
     p_json_parameters                 json_object_t,
@@ -241,7 +274,7 @@ package body db_twig as
     l_plsql_text                      varchar2(1024);
     l_object_type                     varchar2(9);
     l_object_name                     varchar2(128);
-    l_json_response                   clob;
+    l_json_response                   clob := '{"status": "success"}';
     l_json_data                       json_object_t;
     l_entry_point                     varchar2(128);
     l_service_name                    db_twig_services.service_name%type;

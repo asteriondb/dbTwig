@@ -131,6 +131,15 @@ Note - You do not have to use the same function name as shown above.
   )
   return number;
 
+  function get_object_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   json_object_t default null
+  )
+  return json_object_t;
+
   function get_string_parameter
   (
     p_json_parameters                 json_object_t,
