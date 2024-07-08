@@ -13,39 +13,23 @@ whenever sqlerror exit failure;
 set verify off
 spool install.log
 
-connect &1/"&2"@"&3";
+define dba_user = '&1'
+define dba_password = '&2'
+define database_name = '&3'
+define dbtwig_user = '&4'
+define dbtwig_listener = '&5'
+define middle_tier_password = '&6'
+
+connect &dba_user/"&dba_password"@"&database_name";
 
 set termout off
 set echo on
 
-declare
+@setupSchema
 
-    l_sql_text                        clob;
-    l_default_tablespace              database_properties.property_value%type;
+create synonym &dbtwig_listener..call_restapi for &dbtwig_user..call_restapi;
 
-begin
-
-    select  property_value
-      into  l_default_tablespace
-      from  database_properties 
-     where  property_name = 'DEFAULT_PERMANENT_TABLESPACE';
-
-    l_sql_text := 'create user &4';
-    execute immediate l_sql_text;
-
-    l_sql_text := 'alter user &4 quota 50M on '||l_default_tablespace;
-    execute immediate l_sql_text;
-
-    l_sql_text := 'grant create session to &5 identified by "&6"';
-    execute immediate l_sql_text;
-
-end;
-.
-/
-
-create synonym &5..call_restapi for &4..call_restapi;
-
-alter session set current_schema = &4;
+alter session set current_schema = &dbtwig_user;
 
 create table dbtwig_profile
 (
@@ -88,6 +72,6 @@ create table logged_requests
 
 @@call_restapi.sql
 
-grant execute on call_restapi to &5;
+grant execute on call_restapi to &dbtwig_listener;
 
 exit;
