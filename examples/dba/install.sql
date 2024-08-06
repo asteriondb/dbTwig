@@ -95,7 +95,7 @@ delete  from db_twig_services
  where  service_name = 'dbTwigExample';
 
 insert into db_twig_services 
-  (service_name, service_owner, replace_error_stack, session_validation_procedure, api_error_handler) 
+  (service_name, service_owner, production_mode, session_validation_procedure, api_error_handler) 
 values ('dbTwigExample', '&&tutorials_user', 'Y', 'dbtwig_example.validate_session', 'dbtwig_example.restapi_error');
 
 alter session set current_schema = &&tutorials_user;
