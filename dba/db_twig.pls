@@ -448,7 +448,7 @@ package body db_twig as
 
       if 'Y' = l_production_mode then
 
-        l_error_text := l_error_text||'ORA-'||utl_call_stack.error_number(1)||': '||utl_call_stack.error_msg(1);
+        l_error_text := l_error_text||utl_call_stack.error_msg(1);
         raise_application_error(l_error_code, l_error_text, false);
 
       else
