@@ -80,19 +80,6 @@ app.use(function(req, res, next)
   next();
 });
 
-app.post('/dbTwig/:serviceName/uploadFiles', uploadFiles);
-
-app.get('/dbTwig/:serviceName/getSupportInfo', getSupportInfoRequest);
-
-app.get('/dbTwig/:serviceName/oauthReply', handleOauthReply);
-
-app.get('/dbTwig/:serviceName/:entryPoint', handleRequest);
-app.post('/dbTwig/:serviceName/:entryPoint', handleRequest);
-
-app.get('/dbTwig/:serviceName/:entryPoint/*', handleRequest);
-app.post('/dbTwig/:serviceName/:entryPoint/*', handleRequest);
-
-app.get('/dbTwig/:serviceName', handleRequest);
 
 var os = require('os'), fs = require('fs');
 
@@ -376,6 +363,20 @@ async function closePoolAndExit()
   dbTwig.closePool();
   process.exit(0);
 }
+
+app.post('/dbTwig/:serviceName/uploadFiles', uploadFiles);
+
+app.get('/dbTwig/:serviceName/getSupportInfo', getSupportInfoRequest);
+
+app.get('/dbTwig/:serviceName/oauthReply', handleOauthReply);
+
+app.get('/dbTwig/:serviceName/:entryPoint', handleRequest);
+app.post('/dbTwig/:serviceName/:entryPoint', handleRequest);
+
+app.get('/dbTwig/:serviceName/:entryPoint/*', handleRequest);
+app.post('/dbTwig/:serviceName/:entryPoint/*', handleRequest);
+
+app.get('/dbTwig/:serviceName', handleRequest);
 
 process
   .once('SIGTERM', closePoolAndExit)
