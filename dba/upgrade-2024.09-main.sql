@@ -4,7 +4,7 @@
 
 */
 
-spool $HOME/asterion/oracle/dbTwig/dba/upgrade-rc2024.09-main.log
+spool $HOME/asterion/oracle/dbTwig/dba/upgrade-2024.09-main.log
 
 REM  Put stuff between here.....
 
