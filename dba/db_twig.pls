@@ -287,6 +287,7 @@ package body db_twig as
     l_error_code                      pls_integer;
     l_object_group                    varchar2(128);
     l_log_all_requests                db_twig_services.log_all_requests%type;
+    l_service_enabled                 db_twig_services.service_enabled%type;
 
   begin
 
@@ -336,9 +337,10 @@ package body db_twig as
 
     begin
 
-      select  service_owner, production_mode, session_validation_procedure, api_error_handler, log_all_requests
+      select  service_owner, production_mode, session_validation_procedure, api_error_handler, log_all_requests,
+              service_enabled
         into  l_service_owner, l_production_mode, l_session_validation_procedure, l_api_error_handler,
-              l_log_all_requests
+              l_log_all_requests, l_service_enabled
         from  db_twig_services
        where  service_name = l_service_name;
 
@@ -356,6 +358,12 @@ package body db_twig as
       end if;
 
     end;
+
+    if 'N' = l_service_enabled then
+
+      raise_application_error(GENERIC_ERROR, 'Service is disabled', false);
+
+    end if;
 
     if 'Y' = l_log_all_requests then
 

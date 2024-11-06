@@ -49,7 +49,9 @@ create table db_twig_services
   session_validation_procedure      varchar2(256) not null,
   api_error_handler                 varchar2(256) not null,
   log_all_requests                  varchar2(1) default 'N'
-   constraint log_all_requests_chk check (log_all_requests in ('Y', 'N')) not null
+   constraint log_all_requests_chk check (log_all_requests in ('Y', 'N')) not null,
+  service_enabled                   varchar2(1) default 'Y' 
+   constraint service_enabled_chk check (service_enabled in ('Y', 'N')) not null
 );
 
 create table db_twig_errors

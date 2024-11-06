@@ -102,6 +102,12 @@ Note - You do not have to use the same function name as shown above.
     p_error_message                   db_twig_errors.error_message%type default null
   );
 
+  function empty_json_array
+  (
+    p_key                             varchar2
+  )
+  return clob;
+
   function get_array_parameter
   (
     p_json_parameters                 json_object_t,
