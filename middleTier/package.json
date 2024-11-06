@@ -11,10 +11,10 @@
   "author": "Steve Guilford, AsterionDB Inc.",
   "license": "MIT",
   "dependencies": {
-    "axios": "^1.6.0",
+    "axios": "^1.7.7",
     "busboy": "^1.6.0",
-    "express": "^4.18.1",
-    "oracledb": "^5.4.0",
-    "winston": "^3.8.1"
+    "express": "^4.21.1",
+    "oracledb": "^6.6.0",
+    "winston": "^3.16.0"
   }
 }
