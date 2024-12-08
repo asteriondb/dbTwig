@@ -95,6 +95,13 @@ Note - You do not have to use the same function name as shown above.
   )
   return timestamp;
 
+  procedure create_dbtwig_service
+  (
+    p_service_owner                   db_twig_services.service_owner%type,
+    p_service_name                    db_twig_services.service_name%type,
+    p_session_validation_procedure    db_twig_services.session_validation_procedure%type
+  );
+
   procedure db_twig_error
   (
     p_error_code                      db_twig_errors.error_code%type,
@@ -146,6 +153,12 @@ Note - You do not have to use the same function name as shown above.
   )
   return json_object_t;
 
+  function get_service_id
+  (
+    p_service_name                    db_twig_services.service_name%type
+  )
+  return db_twig_services.service_id%type;
+
   function get_string_parameter
   (
     p_json_parameters                 json_object_t,
@@ -158,10 +171,8 @@ Note - You do not have to use the same function name as shown above.
   function restapi_error
   (
     p_service_owner                   db_twig_services.service_owner%type,
-    p_api_error_handler               db_twig_services.api_error_handler%type,
-    p_json_parameters                 db_twig_errors.json_parameters%type,
-    p_service_name                    varchar2,
-    p_object_group                    varchar2
+    p_json_parameters                   db_twig_errors.json_parameters%type,
+    p_service_id                      db_twig_services.service_id%type
   )
   return json_object_t;
 

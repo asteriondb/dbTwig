@@ -126,7 +126,7 @@ async function handleOauthReply(request, response)
     httpHost: request.get('Host'),
     body: request.body,
     entryPoint: 'saveOauthReply',
-    serviceName: 'asterionDB',
+    serviceName: 'dgBunker',
     originalUrl: request.originalUrl,
     serverAddress: server.address().address
   };
@@ -247,6 +247,7 @@ function handleUploadRequest(request, response)
       {
         request.body = jsonParms;
         request.params.entryPoint = 'createUploadedObject';
+        request.params.serviceName = 'dgBunker';
 
         let connection = await dbTwig.getConnectionFromPool();
         result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
@@ -311,6 +312,7 @@ async function uploadFiles(request, response)
 async function getSupportInfoRequest(request, response)
 {
   request.params.entryPoint = 'getSupportInfo';
+  request.params.serviceName = 'dgBunker';
   let connection = await dbTwig.getConnectionFromPool();
   let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 

@@ -6,5 +6,5 @@ whenever sqlerror exit failure;
 
 alter session set current_schema = &1;
 
-grant connect, create table, create procedure to &1 identified by "&2";
+grant connect, create table, create procedure, create sequence to &1 identified by "&2";
 

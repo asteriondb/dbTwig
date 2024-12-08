@@ -177,7 +177,7 @@ exports.init = async function()
   {
     user: process.env.DBTWIG_USER, 
     password: process.env.DBTWIG_PASSWORD, 
-    connectString: process.env.DATABASE_NAME
+    connectString: process.env.TWO_TASK
   };
 
   try

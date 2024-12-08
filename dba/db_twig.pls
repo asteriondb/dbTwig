@@ -19,6 +19,10 @@ package body db_twig as
   pragma exception_init(INVALID_PARAMETERS, INVALID_PARAMETERS_EC);             -- Borrowed from AsterionDB.
   INVALID_PARAMETERS_MSG              constant varchar2(19) := 'Invalid parameters.';
 
+  s_production_mode                   dbtwig_profile.production_mode%type;
+  s_elog_service_owner                dbtwig_profile.elog_service_owner%type;
+  s_api_error_handler                 dbtwig_profile.api_error_handler%type;
+
   procedure db_twig_error
   (
     p_error_code                      db_twig_errors.error_code%type,
@@ -237,10 +241,8 @@ package body db_twig as
   function restapi_error
   (
     p_service_owner                   db_twig_services.service_owner%type,
-    p_api_error_handler               db_twig_services.api_error_handler%type,
     p_json_parameters                 db_twig_errors.json_parameters%type,
-    p_service_name                    varchar2,
-    p_object_group                    varchar2
+    p_service_id                      db_twig_services.service_id%type
   )
   return json_object_t
 
@@ -251,8 +253,8 @@ package body db_twig as
 
   begin
 
-    l_sql_text := 'begin :result := '||p_service_owner||'.'||p_api_error_handler||'(:jsonParameters, :serviceName, :objectGroup); end;';
-    execute immediate l_sql_text using out l_json_object, p_json_parameters, p_service_name, p_object_group;
+    l_sql_text := 'begin :result := '||s_elog_service_owner||'.'||s_api_error_handler||'(:jsonParameters, :serviceId); end;';
+    execute immediate l_sql_text using out l_json_object, p_json_parameters, p_service_id;
 
     return l_json_object;
 
@@ -279,27 +281,24 @@ package body db_twig as
     l_entry_point                     varchar2(128);
     l_service_name                    db_twig_services.service_name%type;
     l_service_owner                   db_twig_services.service_owner%type;
+    l_service_id                      db_twig_services.service_id%type;
     l_complete_object_name            varchar2(257);
-    l_production_mode                 db_twig_services.production_mode%type;
     l_session_validation_procedure    db_twig_services.session_validation_procedure%type;
-    l_api_error_handler               db_twig_services.api_error_handler%type;
     l_error_text                      clob;
     l_error_code                      pls_integer;
-    l_object_group                    varchar2(128);
     l_log_all_requests                db_twig_services.log_all_requests%type;
     l_service_enabled                 db_twig_services.service_enabled%type;
+    l_required_authorization_level    varchar2(13);
+    l_allow_blocked_session           varchar2(1);
+    l_production_mode                 db_twig_services.production_mode%type;
 
   begin
-
-    select  production_mode
-      into  l_production_mode
-      from  dbtwig_profile;
 
     if p_json_parameters is null then
 
       db_twig_error(INVALID_PARAMETERS_EC, null, 'No parameters specified.');
 
-      if 'Y' = l_production_mode then
+      if 'Y' = s_production_mode then
 
         raise_application_error(GENERIC_ERROR, 'No information available', false);
 
@@ -323,7 +322,7 @@ package body db_twig as
     when others then
 
       db_twig_error(INVALID_PARAMETERS_EC, p_json_parameters, sqlerrm);
-      if 'Y' = l_production_mode then
+      if 'Y' = s_production_mode then
 
         raise_application_error(GENERIC_ERROR, 'No information available', false);
 
@@ -337,23 +336,23 @@ package body db_twig as
 
     begin
 
-      select  service_owner, production_mode, session_validation_procedure, api_error_handler, log_all_requests,
-              service_enabled
-        into  l_service_owner, l_production_mode, l_session_validation_procedure, l_api_error_handler,
-              l_log_all_requests, l_service_enabled
+      select  service_owner, production_mode, session_validation_procedure, log_all_requests,
+              service_enabled, service_id
+        into  l_service_owner, l_production_mode, l_session_validation_procedure,
+              l_log_all_requests, l_service_enabled, l_service_id
         from  db_twig_services
        where  service_name = l_service_name;
 
     exception when no_data_found then
 
-      db_twig_error(INVALID_PARAMETERS_EC, p_json_parameters, 'Invalid service name.');
+      db_twig_error(INVALID_PARAMETERS_EC, p_json_parameters, 'Invalid service name: '||l_service_name);
       if 'Y' = l_production_mode then
 
         raise_application_error(GENERIC_ERROR, 'No information available', false);
 
       else
 
-        raise_application_error(INVALID_PARAMETERS_EC, 'Invalid service name.', false);
+        raise_application_error(INVALID_PARAMETERS_EC, 'Invalid service name: '||l_service_name, false);
 
       end if;
 
@@ -383,14 +382,14 @@ package body db_twig as
     end if;
 
     l_plsql_text :=
-      'select  object_type, object_name, object_group ' ||
+      'select  object_type, object_name, required_authorization_level, allow_blocked_session ' ||
       '  from  '||l_service_owner||'.middle_tier_map ' ||
       ' where  entry_point = :entryPoint';
 
     begin
 
       execute immediate l_plsql_text
-        into l_object_type, l_object_name, l_object_group
+        into l_object_type, l_object_name, l_required_authorization_level, l_allow_blocked_session
         using l_entry_point;
 
     exception when no_data_found then
@@ -412,8 +411,8 @@ package body db_twig as
 
     begin
 
-      execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(:entry_point, json_object_t(:p_json_parameters)); end;'
-        using l_entry_point, p_json_parameters;
+      execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(json_object_t(:p_json_parameters), :required_authorization_level, :allow_blocked_session); end;'
+        using p_json_parameters, l_required_authorization_level, l_allow_blocked_session;
 
       if 'function' = l_object_type then
 
@@ -431,6 +430,7 @@ package body db_twig as
 
     when PLSQL_COMPILER_ERROR then
 
+      db_twig_error(GENERIC_ERROR, p_json_parameters, l_plsql_text);
       raise_application_error(GENERIC_ERROR, l_plsql_text, true);
 
     when PACKAGE_INVALIDATED or PACKAGE_DISCARDED then
@@ -439,7 +439,7 @@ package body db_twig as
 
     when others then
 
-      l_json_data := restapi_error(l_service_owner, l_api_error_handler, p_json_parameters, l_service_name, l_object_group);
+      l_json_data := restapi_error(l_service_owner, p_json_parameters, l_service_id);
 
       if l_json_data.get_string('errorId') is not null then
 
@@ -564,6 +564,24 @@ package body db_twig as
 
   end convert_unix_timestamp_to_timestamp;
 
+  procedure create_dbtwig_service
+  (
+    p_service_owner                   db_twig_services.service_owner%type,
+    p_service_name                    db_twig_services.service_name%type,
+    p_session_validation_procedure    db_twig_services.session_validation_procedure%type
+  )
+
+  is
+
+  begin
+
+    insert into db_twig_services
+      (service_id, service_owner, service_name, session_validation_procedure)
+    values
+      (id_seq.nextval, p_service_owner, p_service_name, p_session_validation_procedure);
+
+  end create_dbtwig_service;
+
   function get_dbtwig_errors return clob
 
   is
@@ -592,6 +610,33 @@ package body db_twig as
     return l_clob;
 
   end get_dbtwig_errors;
+
+  function get_service_id
+  (
+    p_service_name                    db_twig_services.service_name%type
+  )
+  return db_twig_services.service_id%type
+
+  is
+
+    l_service_id                      db_twig_services.service_id%type;
+
+  begin
+
+    select  service_id
+      into  l_service_id
+      from  db_twig_services
+     where  service_name = p_service_name;
+
+    return l_service_id;
+
+  end get_service_id;
+
+begin
+
+  select  production_mode, elog_service_owner, api_error_handler
+    into  s_production_mode, s_elog_service_owner, s_api_error_handler
+    from  dbtwig_profile;
 
 end db_twig;
 /

@@ -31,23 +31,29 @@ create synonym &dbtwig_listener..call_restapi for &dbtwig_user..call_restapi;
 
 alter session set current_schema = &dbtwig_user;
 
+create sequence id_seq minvalue 1 maxvalue 999999999999 cycle;
+
 create table dbtwig_profile
 (
   production_mode                   varchar2(1) default 'Y'
-   constraint prod_mode_chk check (production_mode in ('Y', 'N')) not null
+   constraint prod_mode_chk check (production_mode in ('Y', 'N')) not null,
+  elog_service_owner                varchar2(128) not null,
+  api_error_handler                 varchar2(256) not null,
+  icam_service_owner                varchar2(128) not null,
+  session_validation_procedure      varchar2(256) not null
 );
 
-insert into dbtwig_profile values ('Y');
+insert into dbtwig_profile values ('Y', 'dbtwig_elog', 'restapi.restapi_error', 'dbtwig_icam', 'restapi.validate_session');
 commit;
 
 create table db_twig_services
 (
-  service_name                      varchar2(128) primary key,
+  service_id                        number(12) primary key,
+  service_name                      varchar2(128) unique not null,
   service_owner                     varchar2(128) not null,
   production_mode                   varchar2(1) default 'Y'
    constraint svc_prod_mode_chk check (production_mode in ('Y', 'N')) not null,
   session_validation_procedure      varchar2(256) not null,
-  api_error_handler                 varchar2(256) not null,
   log_all_requests                  varchar2(1) default 'N'
    constraint log_all_requests_chk check (log_all_requests in ('Y', 'N')) not null,
   service_enabled                   varchar2(1) default 'Y' 
@@ -73,6 +79,7 @@ create table logged_requests
 @@db_twig.pls
 
 @@call_restapi.sql
+@@get_column_length.sql
 
 grant execute on call_restapi to &dbtwig_listener;
 
