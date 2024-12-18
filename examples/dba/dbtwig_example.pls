@@ -3,7 +3,7 @@ package body dbtwig_example as
 
   s_api_token                         varchar2(32) := '%api-token%';              --  Store your AsterionDB API Token here.
 
-  s_asteriondb_service                constant varchar2(10) := 'asterionDB';
+  s_asteriondb_service                constant varchar2(10) := 'dgBunker';
 
   function call_db_twig
   (
@@ -353,8 +353,9 @@ package body dbtwig_example as
 
   procedure validate_session
   (
-    p_entry_point                     middle_tier_map.entry_point%type,
-    p_json_parameters                 json_object_t
+    p_json_parameters                 json_object_t,
+    p_required_authorization_level    middle_tier_map.required_authorization_level%type,
+    p_allow_blocked_session           middle_tier_map.allow_blocked_session%type
   )
 
   is

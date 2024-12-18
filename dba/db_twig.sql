@@ -153,6 +153,12 @@ Note - You do not have to use the same function name as shown above.
   )
   return json_object_t;
 
+  function get_service_data
+  (
+    p_service_name                    db_twig_services.service_name%type
+  )
+  return clob;
+
   function get_service_id
   (
     p_service_name                    db_twig_services.service_name%type

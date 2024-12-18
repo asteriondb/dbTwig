@@ -56,188 +56,6 @@ package body db_twig as
 
   end db_twig_error;
 
-  function empty_json_array
-  (
-    p_key                             varchar2
-  )
-  return clob
-
-  is
-
-    l_json_object                     json_object_t := json_object_t;
-
-  begin
-
-    l_json_object.put(p_key, json_array_t);
-    return l_json_object.to_clob;
-
-  end empty_json_array;
-
-  function get_array_parameter
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required_parameter              boolean default true,
-    p_default_value                   json_array_t default null
-  )
-  return json_array_t
-
-  is
-
-  begin
-
-    if p_json_parameters.has(p_key) then
-
-      return treat(p_json_parameters.get(p_key) as json_array_t);
-
-    else
-
-      if p_required_parameter then
-
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG, false);
-
-      else
-
-        return p_default_value;
-
-      end if;
-
-    end if;
-
-  end get_array_parameter;
-
-  function get_clob_parameter
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required_parameter              boolean default true,
-    p_default_value                   clob default null
-  )
-  return clob
-
-  is
-
-  begin
-
-    if p_json_parameters.has(p_key) then
-
-      return p_json_parameters.get_clob(p_key);
-
-    else
-
-      if p_required_parameter then
-
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
-
-      else
-
-        return p_default_value;
-
-      end if;
-
-    end if;
-
-  end get_clob_parameter;
-
-  function get_number_parameter
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required_parameter              boolean default true,
-    p_default_value                   number default null
-  )
-  return number
-
-  is
-
-  begin
-
-    if p_json_parameters.has(p_key) then
-
-      return p_json_parameters.get_number(p_key);
-
-    else
-
-      if p_required_parameter then
-
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
-
-      else
-
-        return p_default_value;
-
-      end if;
-
-    end if;
-
-  end get_number_parameter;
-
-  function get_object_parameter
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required_parameter              boolean default true,
-    p_default_value                   json_object_t default null
-  )
-  return json_object_t
-
-  is
-
-  begin
-
-    if p_json_parameters.has(p_key) then
-
-      return p_json_parameters.get_object(p_key);
-
-    else
-
-      if p_required_parameter then
-
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
-
-      else
-
-        return p_default_value;
-
-      end if;
-
-    end if;
-
-  end get_object_parameter;
-
-  function get_string_parameter
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required_parameter              boolean default true,
-    p_default_value                   varchar2 default null
-  )
-  return varchar2
-
-  is
-
-  begin
-
-    if p_json_parameters.has(p_key) then
-
-      return p_json_parameters.get_string(p_key);
-
-    else
-
-      if p_required_parameter then
-
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
-
-      else
-
-        return p_default_value;
-
-      end if;
-
-    end if;
-
-  end get_string_parameter;
-
   function restapi_error
   (
     p_service_owner                   db_twig_services.service_owner%type,
@@ -411,8 +229,8 @@ package body db_twig as
 
     begin
 
-      execute immediate 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(json_object_t(:p_json_parameters), :required_authorization_level, :allow_blocked_session); end;'
-        using p_json_parameters, l_required_authorization_level, l_allow_blocked_session;
+      l_plsql_text := 'begin '||l_service_owner||'.'||l_session_validation_procedure||'(json_object_t(:p_json_parameters), :required_authorization_level, :allow_blocked_session); end;';
+      execute immediate l_plsql_text using p_json_parameters, l_required_authorization_level, l_allow_blocked_session;
 
       if 'function' = l_object_type then
 
@@ -430,7 +248,16 @@ package body db_twig as
 
     when PLSQL_COMPILER_ERROR then
 
-      db_twig_error(GENERIC_ERROR, p_json_parameters, l_plsql_text);
+      if 'Y' = l_production_mode then
+
+        db_twig_error(GENERIC_ERROR, p_json_parameters, utl_call_stack.error_msg(1));
+
+      else
+
+        db_twig_error(GENERIC_ERROR, p_json_parameters,  sqlerrm);
+
+      end if;
+
       raise_application_error(GENERIC_ERROR, l_plsql_text, true);
 
     when PACKAGE_INVALIDATED or PACKAGE_DISCARDED then
@@ -576,11 +403,94 @@ package body db_twig as
   begin
 
     insert into db_twig_services
-      (service_id, service_owner, service_name, session_validation_procedure)
+      (service_id, service_owner, service_name, session_validation_procedure, jwt_signing_key)
     values
-      (id_seq.nextval, p_service_owner, p_service_name, p_session_validation_procedure);
+      (id_seq.nextval, p_service_owner, p_service_name, p_session_validation_procedure, dbms_crypto.randombytes(32));
 
   end create_dbtwig_service;
+
+  function empty_json_array
+  (
+    p_key                             varchar2
+  )
+  return clob
+
+  is
+
+    l_json_object                     json_object_t := json_object_t;
+
+  begin
+
+    l_json_object.put(p_key, json_array_t);
+    return l_json_object.to_clob;
+
+  end empty_json_array;
+
+  function get_array_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   json_array_t default null
+  )
+  return json_array_t
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return treat(p_json_parameters.get(p_key) as json_array_t);
+
+    else
+
+      if p_required_parameter then
+
+        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG, false);
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_array_parameter;
+
+  function get_clob_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   clob default null
+  )
+  return clob
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_clob(p_key);
+
+    else
+
+      if p_required_parameter then
+
+        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_clob_parameter;
 
   function get_dbtwig_errors return clob
 
@@ -611,6 +521,100 @@ package body db_twig as
 
   end get_dbtwig_errors;
 
+  function get_number_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   number default null
+  )
+  return number
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_number(p_key);
+
+    else
+
+      if p_required_parameter then
+
+        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_number_parameter;
+
+  function get_object_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   json_object_t default null
+  )
+  return json_object_t
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_object(p_key);
+
+    else
+
+      if p_required_parameter then
+
+        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_object_parameter;
+
+  function get_service_data
+  (
+    p_service_name                    db_twig_services.service_name%type
+  )
+  return clob
+
+  is
+
+    l_result                          clob;
+
+  begin
+
+    select  json_object('serviceOwner'                is service_owner,
+                        'productionMode'              is production_mode,
+                        'sessionValidationProcedure'  is session_validation_procedure,
+                        'logAllRequests'              is log_all_requests,
+                        'serviceEnabled'              is service_enabled,
+                        'serviceId'                   is service_id,
+                        'jwtSigningKey'               is jwt_signing_key,
+                        'jwtExpiresIn'                is jwt_expires_in)
+      into  l_result
+      from  db_twig_services
+     where  service_name = p_service_name;
+
+    return l_result;
+
+  end get_service_data;
+
   function get_service_id
   (
     p_service_name                    db_twig_services.service_name%type
@@ -631,6 +635,39 @@ package body db_twig as
     return l_service_id;
 
   end get_service_id;
+
+  function get_string_parameter
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required_parameter              boolean default true,
+    p_default_value                   varchar2 default null
+  )
+  return varchar2
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_string(p_key);
+
+    else
+
+      if p_required_parameter then
+
+        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_string_parameter;
 
 begin
 
