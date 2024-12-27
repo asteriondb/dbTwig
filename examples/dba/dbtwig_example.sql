@@ -1,6 +1,8 @@
 create or replace
 package dbtwig_example as
 
+  procedure create_dbtwig_example_service;
+
   procedure edit_spreadsheet
   (
     p_json_parameters                 json_object_t
@@ -55,30 +57,6 @@ package dbtwig_example as
     p_json_parameters                 json_object_t
   )
   return clob;
-
-/*
-
-  function restapi_error
-
-  This function is registered with DbTwig when the dbTwigExample service is created. It is called when the
-  DbTwig logic (in the database) detects an exception upon calling a mapped middle-tier entry-point.
-
-  All error information is to be accessed by calling utl_call_stack.
-
-  The returned json object shall contain an key/value pair for 'errorId' The errorId, if not null, will
-  be concatenated by the DbTwig logic to form a string that says:
-
-    'Please reference error ID ... when contacting support.'
-
-*/
-
-  function restapi_error
-  (
-    p_json_parameters                 clob,    -- The HTTP request JSON parameters, if available
-    p_service_name                    varchar2,
-    p_component_name                  varchar2
-  )
-  return json_object_t;
 
 /*
 

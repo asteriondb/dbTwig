@@ -77,28 +77,21 @@ end;
 /
 
 rem
-rem  Setup the DbTwig Example user so that it can make calls to the AsterionDB 
-rem  API by using DbTwig.
+rem  Setup the DbTwig Example user so that it can make calls to the AsterionDB dgBunker 
+rem  service
+rem
+
+grant execute on &&vault_user..dgbunker_service to &&tutorials_user;
+create or replace synonym &&tutorials_user..dgbunker_service for &&vault_user..dgbunker_service;
+
+rem
+rem  Setup the DbTwig Example user so that it can make calls to the DbTwig API
 rem
 
 grant execute on &&dbtwig_user..db_twig to &&tutorials_user;
-
 create synonym &&tutorials_user..db_twig for &&dbtwig_user..db_twig;
 
-alter session set current_schema = &&dbtwig_user;
-
-rem
-rem  Setup DbTwig so that it knows about the dbTwigExample service.
-rem
-
-delete  from db_twig_services
- where  service_name = 'dbTwigExample';
-
-insert into db_twig_services 
-  (service_name, service_owner, production_mode, session_validation_procedure, api_error_handler) 
-values ('dbTwigExample', '&&tutorials_user', 'Y', 'dbtwig_example.validate_session', 'dbtwig_example.restapi_error');
-
-alter session set current_schema = &&tutorials_user;
+alter session set current_schema = &tutorials_user;
 
 rem
 rem  Create the middle-tier map.
@@ -180,8 +173,19 @@ rem
 rem  Allow DbTwig to lookup our middle-tier map entries and execute our package.
 rem
 
-grant select on middle_tier_map to &&dbtwig_user;
-grant execute on dbtwig_example to &&dbtwig_user;
+grant select on &&tutorials_user..middle_tier_map to &&dbtwig_user;
+grant execute on &&tutorials_user..dbtwig_example to &&dbtwig_user;
+
+
+rem
+rem  Create the DbTwig Example service
+rem
+
+begin dbtwig_example.create_dbtwig_example_service; end;
+.
+/
+
+commit;
 
 spool off;
 exit;

@@ -67,6 +67,7 @@ if (process.env.NODE_ENV !== 'production')
 const dbTwig = require('./dbTwig');
 
 const HTTP_SERVER_ERROR = 500;
+const HTTP_FORBIDDEN_ERROR = 403;
 
 const GATEWAY_OFFLINE_EC = 20112;
 
@@ -348,12 +349,23 @@ async function handleRequest(request, response)
 
   let result = await dbTwig.callDbTwig(connection, getRequestData(request, server.address().address));
 
-  if (!result.status) response.status(HTTP_SERVER_ERROR);
+  if (!result.status)
+  {
+    switch (result.errorCode)
+    {
+      case dbTwig.SESSION_TIMEOUT:
+        response.status(HTTP_FORBIDDEN_ERROR);
+        break;
+
+      default:
+        response.status(HTTP_SERVER_ERROR);
+    }
+  } 
   if (undefined !== result.lob && null !== result.lob)
     await dbTwig.sendLobResponse(result.lob, response);
   else
   {
-    response.send({errorCode: result.errorCode, errorMessage: result.errorMessage});
+    response.send({status: result.status, errorCode: result.errorCode, errorMessage: result.errorMessage});
   }
 
   dbTwig.closeConnection(connection);

@@ -18,6 +18,7 @@ const ORA_PACKAGE_STATE_DISCARDED = 4068;
 const USER_PASSWORD_ERROR = 20124;
 const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
 const ACCOUNT_LOCKED = 20125;
+exports.SESSION_TIMEOUT = 20002;
 
 var systemParameters = 
 {

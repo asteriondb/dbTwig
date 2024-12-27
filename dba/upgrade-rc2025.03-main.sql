@@ -8,6 +8,7 @@ define dba_user = '&1'
 define dba_password = '&2'
 define database_name = '&3'
 define dbtwig_user = '&4'
+define elog_user = '&5'
 
 spool $HOME/asterion/oracle/dbTwig/dba/upgrade-rc2025.03-main.log
 whenever sqlerror exit
@@ -47,7 +48,7 @@ alter table dbtwig_profile add elog_service_owner varchar2(128);
 alter table dbtwig_profile add api_error_handler varchar2(256);
 
 update  dbtwig_profile
-   set  elog_service_owner = 'dbtwig_elog',
+   set  elog_service_owner = '&elog_user',
         api_error_handler = 'error_logger.restapi_error';
         
 alter table dbtwig_profile modify elog_service_owner not null;

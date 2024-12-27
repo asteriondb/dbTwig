@@ -109,6 +109,8 @@ as
   )
   return confirmation_tokens.confirmation_token%type;
 
+  procedure create_icam_service;
+
   function create_user_account
   (
     p_username                        icam_users.username%type,

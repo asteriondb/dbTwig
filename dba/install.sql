@@ -6,7 +6,7 @@ rem  Written By:  Steve Guilford
 rem
 rem  This SQL script drives the creation of all required objects for the DbTwig Middle Tier Framework
 rem
-rem  Invocation: sqlplus /nolog @install $DBA_USER $DBA_PASSWORD $DATABASE_NAME $DBTWIG_USER $DBTWIG_LISTENER $MIDDLE_TIER_PASSWORD
+rem  Invocation: sqlplus /nolog @install $DBA_USER $DBA_PASSWORD $DATABASE_NAME $DBTWIG_USER $ELOG_USER $DBTWIG_LISTENER $MIDDLE_TIER_PASSWORD
 
 whenever sqlerror exit failure;
 
@@ -17,8 +17,9 @@ define dba_user = '&1'
 define dba_password = '&2'
 define database_name = '&3'
 define dbtwig_user = '&4'
-define dbtwig_listener = '&5'
-define middle_tier_password = '&6'
+define elog_user = '&5'
+define dbtwig_listener = '&6'
+define middle_tier_password = '&7'
 
 connect &dba_user/"&dba_password"@"&database_name";
 
@@ -40,12 +41,14 @@ create table dbtwig_profile
   production_mode                   varchar2(1) default 'Y'
    constraint prod_mode_chk check (production_mode in ('Y', 'N')) not null,
   elog_service_owner                varchar2(128) not null,
-  api_error_handler                 varchar2(256) not null,
-  icam_service_owner                varchar2(128) not null,
-  session_validation_procedure      varchar2(256) not null
+  api_error_handler                 varchar2(256) not null
 );
 
-insert into dbtwig_profile values ('Y', 'dbtwig_elog', 'restapi.restapi_error', 'dbtwig_icam', 'restapi.validate_session');
+insert into dbtwig_profile 
+  (production_mode, elog_service_owner, api_error_handler) 
+values 
+  ('Y', '&elog_user', 'error_logger.restapi_error');
+
 commit;
 
 create table db_twig_services

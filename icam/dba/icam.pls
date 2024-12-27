@@ -1,6 +1,8 @@
 create or replace
 package body icam as
 
+  SERVICE_NAME                        CONSTANT varchar2(4) := 'icam';
+
   ACTION_DISALLOWED                   constant pls_integer := -20011;
   ACTION_DISALLOWED_EMSG              constant varchar2(35) := 'The requested action is not allowed';
 
@@ -810,6 +812,17 @@ All rights reserved.
        -1, l_user_agent, AS_ACTIVE, API_CLIENT);
 
   end create_api_client_session;
+
+  procedure create_icam_service
+
+  is
+
+  begin
+
+    db_twig.create_dbtwig_service(p_service_name => SERVICE_NAME, p_service_owner => sys_context('USERENV', 'CURRENT_USER'),
+      p_session_validation_procedure => 'restapi.validate_session');
+
+  end create_icam_service;
 
   function create_user_account
   (

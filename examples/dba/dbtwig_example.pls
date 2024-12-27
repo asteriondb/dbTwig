@@ -3,99 +3,7 @@ package body dbtwig_example as
 
   s_api_token                         varchar2(32) := '%api-token%';              --  Store your AsterionDB API Token here.
 
-  s_asteriondb_service                constant varchar2(10) := 'dgBunker';
-
-  function call_db_twig
-  (
-    p_json_parameters                 json_object_t
-  )
-  return json_object_t
-
-  is
-
-    l_json_parameters                 json_object_t := p_json_parameters;
-
-  begin
-
-    l_json_parameters.put('serviceName', s_asteriondb_service);
-    l_json_parameters.put('sessionId', s_api_token);
-
-    return json_object_t(db_twig.call_restapi(l_json_parameters.to_clob));
-
-  end call_db_twig;
-
-  function get_number_parameter_value                                             -- Parameter getter/checker w/ default value
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required_parameter              boolean default true,                       -- Set to false to allow the parameter to not be required
-    p_default_value                   number default null                         -- Set to a default value other than null when parameter is not required
-  )
-  return number
-
-  is
-
-  begin
-
-    if p_json_parameters.has(p_key) then
-
-      return p_json_parameters.get_number(p_key);
-
-    else
-
-      if p_required_parameter then
-
-        raise_application_error(-20000, 'A required parameter was not specified.');
-
-      else
-
-        return p_default_value;
-
-      end if;
-
-    end if;
-
-  end get_number_parameter_value;
-
-  function get_string_parameter_value                                             -- Parameter getter/checker w/ default value
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required_parameter              boolean default true,                       -- Set to false to allow the parameter to not be required
-    p_default_value                   varchar2 default null                       -- Set to a default value other than null when parameter is not required
-  )
-  return varchar2
-
-  is
-
-  begin
-
-    if p_json_parameters.has(p_key) then
-
-      return p_json_parameters.get_string(p_key);
-
-    else
-
-      if p_required_parameter then
-
-        raise_application_error(-20000, 'A required parameter was not specified.');
-
-      else
-
-        return p_default_value;
-
-      end if;
-
-    end if;
-
-  end get_string_parameter_value;
-
-/*
-
-  Applications that interface to AsterionDB as an API client send and receive JSON data. Create a JSON object that will hold
-  our parameters and make a call to DbTwig to generate a weblink.
-
-*/
+  SERVICE_NAME                        constant varchar2(13) := 'dbTwigExample';
 
   function generate_object_weblink
   (
@@ -105,17 +13,11 @@ package body dbtwig_example as
 
   is
 
-    l_json_object                     json_object_t := json_object_t;
     l_json_data                       json_object_t;
 
   begin
 
-    l_json_object.put('entryPoint', 'generateObjectWeblink');
-    l_json_object.put('sessionId', s_api_token);
-    l_json_object.put('contentDisposition', 'STREAM');
-    l_json_object.put('objectId', l_object_id);
-
-    l_json_data := call_db_twig(l_json_object);
+    l_json_data := json_object_t(dgbunker_service.generate_object_weblink(s_api_token, l_object_id, dgbunker_service.STREAM_CONTENT));
     return l_json_data.get_string('objectWeblink');
 
   end generate_object_weblink;
@@ -123,6 +25,17 @@ package body dbtwig_example as
 ---
 ---
 ---
+
+  procedure create_dbtwig_example_service
+
+  is
+
+  begin
+
+    db_twig.create_dbtwig_service(p_service_name => SERVICE_NAME, p_service_owner => sys_context('USERENV', 'CURRENT_USER'),
+      p_session_validation_procedure => 'dbtwig_example.validate_session');
+
+  end create_dbtwig_example_service;
 
   procedure edit_spreadsheet
   (
@@ -133,38 +46,24 @@ package body dbtwig_example as
 
     l_json_object                     json_object_t;
     l_spreadsheet_id                  maintenance_manuals.spreadsheet_id%type :=
-      get_string_parameter_value(p_json_parameters, 'spreadsheetId');
+      db_twig.get_string_parameter(p_json_parameters, 'spreadsheetId');
     l_spreadsheet_file                varchar2(256);
-    l_result                          json_object_t;
 
   begin
 
 --  Generate a filename that we can use with LibreOffice
 
-    l_json_object := json_object_t;
-    l_json_object.put('entryPoint', 'generateObjectFilename');
-    l_json_object.put('sessionId', s_api_token);
-    l_json_object.put('gatewayName', sys_context('userenv', 'host'));
-    l_json_object.put('objectId', l_spreadsheet_id);
-    l_json_object.put('accessMode', 'U');
-    l_json_object.put('accessLimit', -1);
-    l_json_object.put('validUntil', '1 Hour');
-    l_json_object.put('allowTempFile', 'Y');
+    l_json_object := json_object_t(dgbunker_service.generate_object_filename(p_session_id => s_api_token, p_gateway_name => sys_context('userenv', 'host'),
+      p_object_id => l_spreadsheet_id, p_access_mode => dgbunker_service.READ_WRITE_ACCESS, p_access_limit => dgbunker_service.UNLIMITED_ACCESS_OPERATIONS,
+      p_valid_until => dgbunker_service.VALID_FOR_AN_HOUR, p_allow_temporary_files => dgbunker_service.OPTION_ENABLED));
 
-    l_result := call_db_twig(l_json_object);
-    l_spreadsheet_file := l_result.get_string('filename');
+    l_spreadsheet_file := l_json_object.get_string('filename');
 
 --  Gotta commit this so the external process (libreoffice and DbObscura) can see our transaction...
 
     commit;
 
-    l_json_object := json_object_t;
-    l_json_object.put('entryPoint', 'spawnHelperApplication');
-    l_json_object.put('sessionId', s_api_token);
-    l_json_object.put('gatewayName', sys_context('userenv', 'host'));
-    l_json_object.put('commandLine', 'libreoffice '||l_spreadsheet_file);
-
-    l_result := call_db_twig(l_json_object);
+    dgbunker_service.spawn_helper_application(sys_context('userenv', 'host'), 'libreoffice '||l_spreadsheet_file);
 
   end edit_spreadsheet;
 
@@ -194,7 +93,7 @@ package body dbtwig_example as
 
   as
 
-    l_manual_id                       maintenance_manuals.manual_id%type := get_number_parameter_value(p_json_parameters, 'manualId');
+    l_manual_id                       maintenance_manuals.manual_id%type := db_twig.get_number_parameter(p_json_parameters, 'manualId');
     l_clob                            clob;
 
   begin
@@ -291,37 +190,6 @@ package body dbtwig_example as
 
 /*
 
-  This function is called directly by DbTwig upon encountering an exception.
-
-*/
-
-  function restapi_error
-  (
-    p_json_parameters                 clob,    -- The HTTP request JSON parameters, if available
-    p_service_name                    varchar2,
-    p_component_name                  varchar2
-  )
-  return json_object_t
-
-  is
-
-    l_json_request                    json_object_t := json_object_t;
-    l_result                          json_object_t;
-
-  begin
-
-    l_json_request.put('entryPoint', 'restapiError');
-    l_json_request.put('jsonParameters', p_json_parameters);
-    l_json_request.put('errorInService', p_service_name);
-    l_json_request.put('componentName', p_component_name);
-    l_result := call_db_twig(l_json_request);
-
-    return l_result;
-
-  end restapi_error;
-
-/*
-
  Simple code that shows you how to unpack the parameter object and insert values into the DB.
 
 */
@@ -333,8 +201,8 @@ package body dbtwig_example as
 
   is
 
-    l_tech_note                       technician_notes.tech_note%type := get_string_parameter_value(p_json_parameters, 'techNote');
-    l_manual_id                       maintenance_manuals.manual_id%type := get_number_parameter_value(p_json_parameters, 'manualId');
+    l_tech_note                       technician_notes.tech_note%type := db_twig.get_string_parameter(p_json_parameters, 'techNote');
+    l_manual_id                       maintenance_manuals.manual_id%type := db_twig.get_number_parameter(p_json_parameters, 'manualId');
 
   begin
 
@@ -347,7 +215,7 @@ package body dbtwig_example as
 
 /*
 
- This is just a placeholder procedure in order to satisfy DbTwig's requirements  for a session_validation_procedure.
+ This is just a placeholder procedure in order to satisfy DbTwig's requirement for a session_validation_procedure.
 
 */
 

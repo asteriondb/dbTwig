@@ -175,11 +175,7 @@ create index conf_token_session_id_ix on confirmation_tokens(session_id);
 @$HOME/asterion/oracle/dbTwig/dba/middleTierMap.sql
 @$HOME/asterion/oracle/dbTwig/icam/dba/dbTwigData
 
-@$HOME/asterion/oracle/dbTwig/icam/dba/icam.sql
-@$HOME/asterion/oracle/dbTwig/icam/dba/restapi.sql
-
-@$HOME/asterion/oracle/dbTwig/icam/dba/icam.pls
-@$HOME/asterion/oracle/dbTwig/icam/dba/restapi.pls
+@$HOME/asterion/oracle/dbTwig/icam/dba/loadPackages
 
 grant select on &icam_user..middle_tier_map to &dbtwig_user;
 grant execute on &icam_user..restapi to &dbtwig_user;
@@ -189,7 +185,7 @@ create or replace synonym &elog_user..icam for &icam_user..icam;
 
 alter package &elog_user..error_logger compile body;
 
-begin db_twig.create_dbtwig_service(p_service_name => 'icam', p_service_owner => '&icam_user', p_session_validation_procedure => 'restapi.validate_session'); end;
+begin icam.create_icam_service; end;
 .
 /
 
