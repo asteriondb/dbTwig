@@ -77,12 +77,15 @@ end;
 /
 
 rem
-rem  Setup the DbTwig Example user so that it can make calls to the AsterionDB dgBunker 
+rem  Setup the DbTwig Example user so that it can create references and make calls to the AsterionDB dgBunker 
 rem  service
 rem
 
 grant execute on &&vault_user..dgbunker_service to &&tutorials_user;
 create or replace synonym &&tutorials_user..dgbunker_service for &&vault_user..dgbunker_service;
+
+grant read, references(object_id) on &&vault_user..vault_objects to &&tutorials_user;
+create or replace synonym dbtwig_example.vault_objects for asteriondb_dgbunker.vault_objects;
 
 rem
 rem  Setup the DbTwig Example user so that it can make calls to the DbTwig API
@@ -114,7 +117,8 @@ create table maintenance_manuals
  revision_number                    number(8),
  maintenance_division    	        varchar2(128),
  maintenance_manual_filename        varchar2(128),
- spreadsheet_id                     varchar2(32));
+ spreadsheet_id                     varchar2(32)
+    references vault_objects(object_id));
 
 create table major_assembly_photos
 (manual_id		                    number(6)
@@ -167,14 +171,17 @@ end;
 commit;
 
 @dbtwig_example
+@restapi
+
 @dbtwig_example.pls
+@restapi.pls
 
 rem
 rem  Allow DbTwig to lookup our middle-tier map entries and execute our package.
 rem
 
 grant select on &&tutorials_user..middle_tier_map to &&dbtwig_user;
-grant execute on &&tutorials_user..dbtwig_example to &&dbtwig_user;
+grant execute on &&tutorials_user..restapi to &&dbtwig_user;
 
 
 rem

@@ -7,7 +7,7 @@ package body dbtwig_example as
 
   function generate_object_weblink
   (
-    l_object_id                       varchar2
+    p_object_id                       varchar2
   )
   return clob
 
@@ -17,7 +17,7 @@ package body dbtwig_example as
 
   begin
 
-    l_json_data := json_object_t(dgbunker_service.generate_object_weblink(s_api_token, l_object_id, dgbunker_service.STREAM_CONTENT));
+    l_json_data := json_object_t(dgbunker_service.generate_object_weblink(s_api_token, p_object_id, dgbunker_service.STREAM_CONTENT));
     return l_json_data.get_string('objectWeblink');
 
   end generate_object_weblink;
@@ -33,20 +33,18 @@ package body dbtwig_example as
   begin
 
     db_twig.create_dbtwig_service(p_service_name => SERVICE_NAME, p_service_owner => sys_context('USERENV', 'CURRENT_USER'),
-      p_session_validation_procedure => 'dbtwig_example.validate_session');
+      p_session_validation_procedure => 'restapi.validate_session');
 
   end create_dbtwig_example_service;
 
   procedure edit_spreadsheet
   (
-    p_json_parameters                 json_object_t
+    p_spreadsheet_id                  maintenance_manuals.spreadsheet_id%type
   )
 
   is
 
     l_json_object                     json_object_t;
-    l_spreadsheet_id                  maintenance_manuals.spreadsheet_id%type :=
-      db_twig.get_string_parameter(p_json_parameters, 'spreadsheetId');
     l_spreadsheet_file                varchar2(256);
 
   begin
@@ -54,7 +52,7 @@ package body dbtwig_example as
 --  Generate a filename that we can use with LibreOffice
 
     l_json_object := json_object_t(dgbunker_service.generate_object_filename(p_session_id => s_api_token, p_gateway_name => sys_context('userenv', 'host'),
-      p_object_id => l_spreadsheet_id, p_access_mode => dgbunker_service.READ_WRITE_ACCESS, p_access_limit => dgbunker_service.UNLIMITED_ACCESS_OPERATIONS,
+      p_object_id => p_spreadsheet_id, p_access_mode => dgbunker_service.READ_WRITE_ACCESS, p_access_limit => dgbunker_service.UNLIMITED_ACCESS_OPERATIONS,
       p_valid_until => dgbunker_service.VALID_FOR_AN_HOUR, p_allow_temporary_files => dgbunker_service.OPTION_ENABLED));
 
     l_spreadsheet_file := l_json_object.get_string('filename');
@@ -81,19 +79,18 @@ package body dbtwig_example as
 
   Execute the following SQL statement to modify the maintenance_manuals table:
 
-    alter table maintenance_manuals add object_id varchar2(32);
+    alter table maintenance_manuals add object_id varchar2(32) references vault_objects(object_id);
 
 */
 
   function get_maintenance_manual_detail
   (
-    p_json_parameters                 json_object_t
+    p_manual_id                       maintenance_manuals.manual_id%type
   )
   return clob
 
   as
 
-    l_manual_id                       maintenance_manuals.manual_id%type := db_twig.get_number_parameter(p_json_parameters, 'manualId');
     l_clob                            clob;
 
   begin
@@ -107,11 +104,11 @@ package body dbtwig_example as
 --              'oldMaintenanceManualLink' is maintenance_manual_filename,
               'maintenanceManualLink' is maintenance_manual_filename,
               'spreadsheetId' is spreadsheet_id,
-              'assemblyPhotos' is get_major_assembly_photos(l_manual_id) format json
+              'assemblyPhotos' is get_major_assembly_photos(p_manual_id) format json
               returning clob)
       into  l_clob
       from  maintenance_manuals
-     where  manual_id = l_manual_id;
+     where  manual_id = p_manual_id;
 
     return l_clob;
 
@@ -127,7 +124,7 @@ package body dbtwig_example as
 
   Execute the following SQL statement to modify the major_assembly_photos table:
 
-    alter table major_assembly_photos add object_id varchar2(32);
+    alter table major_assembly_photos add object_id varchar2(32) references vault_objects(object_id);
 
 */
 
@@ -156,19 +153,7 @@ package body dbtwig_example as
 
   end get_major_assembly_photos;
 
-/*
-
-  This function is called by DbTwig on behalf of the DbTwig Example Web Application.
-
-  Note that even though we do not need any parameters, we still have to provide the required function/procedure signature.
-
-*/
-
-  function get_maintenance_manuals
-  (
-    p_json_parameters	              json_object_t
-  )
-  return clob
+  function get_maintenance_manuals return clob
 
   as
 
@@ -196,20 +181,18 @@ package body dbtwig_example as
 
   procedure save_tech_note
   (
-    p_json_parameters                 json_object_t
+    p_tech_note                       technician_notes.tech_note%type,
+    p_manual_id                       maintenance_manuals.manual_id%type
   )
 
   is
-
-    l_tech_note                       technician_notes.tech_note%type := db_twig.get_string_parameter(p_json_parameters, 'techNote');
-    l_manual_id                       maintenance_manuals.manual_id%type := db_twig.get_number_parameter(p_json_parameters, 'manualId');
 
   begin
 
     insert into technician_notes
       (manual_id, tech_note)
     values
-      (l_manual_id, l_tech_note);
+      (p_manual_id, p_tech_note);
 
   end save_tech_note;
 

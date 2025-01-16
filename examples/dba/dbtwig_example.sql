@@ -5,40 +5,20 @@ package dbtwig_example as
 
   procedure edit_spreadsheet
   (
-    p_json_parameters                 json_object_t
+    p_spreadsheet_id                  maintenance_manuals.spreadsheet_id%type
   );
-
-/*
-
-  This function is called by SELECT statement within the package body. Therefore, it has to be declared in the package header.
-
-*/
 
   function generate_object_weblink
   (
-    l_object_id                       varchar2
+    p_object_id                       varchar2
   )
   return clob;
-
-/*
-
-  This function is called by DbTwig on behalf of the DbTwig Example Web Application. All functions and procedures that are called
-  by DbTwig have the same signature. Functions accept a JSON string of parameters and return JSON data using CLOB variables.
-  Procedures accept a JSON string of parameters using a CLOB variable.
-
-*/
 
   function get_maintenance_manual_detail
   (
-    p_json_parameters                 json_object_t
+    p_manual_id                       maintenance_manuals.manual_id%type
   )
   return clob;
-
-/*
-
-  This function is called by SELECT statement within the package body. Therefore, it has to be declared in the package header.
-
-*/
 
   function get_major_assembly_photos
   (
@@ -46,34 +26,13 @@ package dbtwig_example as
   )
   return clob;
 
-/*
-
-  This function is called by DbTwig on behalf of the DbTwig Example Web Application.
-
-*/
-
-  function get_maintenance_manuals
-  (
-    p_json_parameters                 json_object_t
-  )
-  return clob;
-
-/*
-
-  This procedure shows you how you can accept a value from your UI and insert that into the DB. Nothing too fancy here.
-
-*/
+  function get_maintenance_manuals return clob;
 
   procedure save_tech_note
   (
-    p_json_parameters                 json_object_t
+    p_tech_note                       technician_notes.tech_note%type,
+    p_manual_id                       maintenance_manuals.manual_id%type
   );
-
-/*
-
- This is just a placeholder procedure in order to satisfy DbTwig's requirements for a session_validation_procedure.
-
-*/
 
   procedure validate_session
   (

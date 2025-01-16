@@ -62,9 +62,7 @@ create table db_twig_services
   log_all_requests                  varchar2(1) default 'N'
    constraint log_all_requests_chk check (log_all_requests in ('Y', 'N')) not null,
   service_enabled                   varchar2(1) default 'Y' 
-   constraint service_enabled_chk check (service_enabled in ('Y', 'N')) not null,
-  jwt_signing_key                   varchar2(64) unique not null,
-  jwt_expires_in                    varchar2(30) default '7d' not null
+   constraint service_enabled_chk check (service_enabled in ('Y', 'N')) not null
 );
 
 create table db_twig_errors

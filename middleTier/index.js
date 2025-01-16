@@ -84,11 +84,6 @@ app.use(function(req, res, next)
 
 var os = require('os'), fs = require('fs');
 
-var msleep = function(microSeconds) 
-{
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, microSeconds);
-}
-
 function getRequestData(request, serverAddress)
 {
   let authorization = request.get('authorization');
@@ -110,6 +105,8 @@ function getRequestData(request, serverAddress)
 
   return(obj);
 }
+
+// The following functions are added to support AsterionDB.
 
 async function handleOauthReply(request, response)
 {
@@ -343,6 +340,8 @@ async function getSupportInfoRequest(request, response)
   return;
 }
 
+// End of support for AsterionDB
+
 async function handleRequest(request, response)
 {
   let connection = await dbTwig.getConnectionFromPool();
@@ -378,11 +377,15 @@ async function closePoolAndExit()
   process.exit(0);
 }
 
+// The following routes are added to support AsterionDB
+
 app.post('/dbTwig/:serviceName/uploadFiles', uploadFiles);
 
 app.get('/dbTwig/:serviceName/getSupportInfo', getSupportInfoRequest);
 
 app.get('/dbTwig/:serviceName/oauthReply', handleOauthReply);
+
+// End of AsterionDB specific routes
 
 app.get('/dbTwig/:serviceName/:entryPoint', handleRequest);
 app.post('/dbTwig/:serviceName/:entryPoint', handleRequest);

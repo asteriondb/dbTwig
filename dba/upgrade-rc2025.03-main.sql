@@ -58,16 +58,6 @@ alter table db_twig_services drop column api_error_handler;
 
 grant execute on dbms_crypto to &dbtwig_user;
 
-alter table db_twig_services add jwt_signing_key varchar2(64) unique;
-
-update  db_twig_services
-   set  jwt_signing_key = dbms_crypto.randombytes(32);
-
-commit;
-
-alter table db_twig_services modify jwt_signing_key not null;
-alter table db_twig_services add jwt_expires_in varchar2(30) default '7d' not null;
-
 update  db_twig_services
    set  service_name = 'dgBunker'
  where  service_name = 'asterionDB';
