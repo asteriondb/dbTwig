@@ -174,6 +174,8 @@ exports.getJsonPayload = async function(lob)
 
 exports.init = async function()
 {
+  oracledb.initOracleClient({});
+  
   let credentials = 
   {
     user: process.env.DBTWIG_USER, 

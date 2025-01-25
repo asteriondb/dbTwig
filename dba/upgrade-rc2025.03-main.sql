@@ -44,19 +44,16 @@ alter table db_twig_services modify service_id primary key;
 alter table db_twig_services add service_enabled varchar2(1) default 'Y' not null
   constraint service_enabled_chk check (service_enabled in ('Y', 'N'));
 
-alter table dbtwig_profile add elog_service_owner varchar2(128);
-alter table dbtwig_profile add api_error_handler varchar2(256);
+rename dbtwig_profile to db_twig_profile;
 
-update  dbtwig_profile
-   set  elog_service_owner = '&elog_user',
-        api_error_handler = 'error_logger.restapi_error';
+update  db_twig_profile
+   set  api_error_handler = '&elog_user'||'.error_logger.restapi_error';
         
-alter table dbtwig_profile modify elog_service_owner not null;
-alter table dbtwig_profile modify api_error_handler not null;
+alter table db_twig_profile modify api_error_handler not null;
 
-alter table db_twig_services drop column api_error_handler;
+alter table db_twig_profile drop column elog_service_owner;
 
-grant execute on dbms_crypto to &dbtwig_user;
+revoke execute on dbms_crypto from &dbtwig_user;
 
 update  db_twig_services
    set  service_name = 'dgBunker'

@@ -19,9 +19,8 @@ package body db_twig as
   pragma exception_init(INVALID_PARAMETERS, INVALID_PARAMETERS_EC);             -- Borrowed from AsterionDB.
   INVALID_PARAMETERS_MSG              constant varchar2(19) := 'Invalid parameters.';
 
-  s_production_mode                   dbtwig_profile.production_mode%type;
-  s_elog_service_owner                dbtwig_profile.elog_service_owner%type;
-  s_api_error_handler                 dbtwig_profile.api_error_handler%type;
+  s_production_mode                   db_twig_profile.production_mode%type;
+  s_api_error_handler                 db_twig_profile.api_error_handler%type;
 
   procedure db_twig_error
   (
@@ -58,7 +57,6 @@ package body db_twig as
 
   function restapi_error
   (
-    p_service_owner                   db_twig_services.service_owner%type,
     p_json_parameters                 db_twig_errors.json_parameters%type,
     p_service_id                      db_twig_services.service_id%type
   )
@@ -71,7 +69,7 @@ package body db_twig as
 
   begin
 
-    l_sql_text := 'begin :result := '||s_elog_service_owner||'.'||s_api_error_handler||'(:jsonParameters, :serviceId); end;';
+    l_sql_text := 'begin :result := '||s_api_error_handler||'(:jsonParameters, :serviceId); end;';
     execute immediate l_sql_text using out l_json_object, p_json_parameters, p_service_id;
 
     return l_json_object;
@@ -266,7 +264,7 @@ package body db_twig as
 
     when others then
 
-      l_json_data := restapi_error(l_service_owner, p_json_parameters, l_service_id);
+      l_json_data := restapi_error(p_json_parameters, l_service_id);
 
       if l_json_data.get_string('errorId') is not null then
 
@@ -403,9 +401,9 @@ package body db_twig as
   begin
 
     insert into db_twig_services
-      (service_id, service_owner, service_name, session_validation_procedure, jwt_signing_key)
+      (service_id, service_owner, service_name, session_validation_procedure)
     values
-      (id_seq.nextval, p_service_owner, p_service_name, p_session_validation_procedure, dbms_crypto.randombytes(32));
+      (id_seq.nextval, p_service_owner, p_service_name, p_session_validation_procedure);
 
   end create_dbtwig_service;
 
@@ -604,9 +602,7 @@ package body db_twig as
                         'sessionValidationProcedure'  is session_validation_procedure,
                         'logAllRequests'              is log_all_requests,
                         'serviceEnabled'              is service_enabled,
-                        'serviceId'                   is service_id,
-                        'jwtSigningKey'               is jwt_signing_key,
-                        'jwtExpiresIn'                is jwt_expires_in)
+                        'serviceId'                   is service_id)
       into  l_result
       from  db_twig_services
      where  service_name = p_service_name;
@@ -671,9 +667,9 @@ package body db_twig as
 
 begin
 
-  select  production_mode, elog_service_owner, api_error_handler
-    into  s_production_mode, s_elog_service_owner, s_api_error_handler
-    from  dbtwig_profile;
+  select  production_mode, api_error_handler
+    into  s_production_mode, s_api_error_handler
+    from  db_twig_profile;
 
 end db_twig;
 /

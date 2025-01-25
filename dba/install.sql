@@ -36,18 +36,17 @@ alter session set current_schema = &dbtwig_user;
 
 create sequence id_seq minvalue 1 maxvalue 999999999999 cycle;
 
-create table dbtwig_profile
+create table db_twig_profile
 (
   production_mode                   varchar2(1) default 'Y'
    constraint prod_mode_chk check (production_mode in ('Y', 'N')) not null,
-  elog_service_owner                varchar2(128) not null,
   api_error_handler                 varchar2(256) not null
 );
 
-insert into dbtwig_profile 
-  (production_mode, elog_service_owner, api_error_handler) 
+insert into db_twig_profile 
+  (production_mode, api_error_handler) 
 values 
-  ('Y', '&elog_user', 'error_logger.restapi_error');
+  ('Y', '&elog_user'||'error_logger.restapi_error');
 
 commit;
 
