@@ -189,6 +189,12 @@ package body dbtwig_example as
 
   begin
 
+    if p_tech_note is null or p_manual_id is null then
+
+      raise_application_error(-20000, 'Invalid parameters (null value)');
+
+    end if;
+
     insert into technician_notes
       (manual_id, tech_note)
     values

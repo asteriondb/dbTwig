@@ -428,7 +428,7 @@ package body db_twig as
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   json_array_t default null
   )
   return json_array_t
@@ -443,7 +443,7 @@ package body db_twig as
 
     else
 
-      if p_required_parameter then
+      if p_required  then
 
         raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG, false);
 
@@ -461,7 +461,7 @@ package body db_twig as
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   clob default null
   )
   return clob
@@ -476,7 +476,7 @@ package body db_twig as
 
     else
 
-      if p_required_parameter then
+      if p_required then
 
         raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
 
@@ -523,7 +523,7 @@ package body db_twig as
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   number default null
   )
   return number
@@ -538,7 +538,7 @@ package body db_twig as
 
     else
 
-      if p_required_parameter then
+      if p_required then
 
         raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
 
@@ -556,7 +556,7 @@ package body db_twig as
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   json_object_t default null
   )
   return json_object_t
@@ -571,7 +571,7 @@ package body db_twig as
 
     else
 
-      if p_required_parameter then
+      if p_required then
 
         raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
 
@@ -636,7 +636,7 @@ package body db_twig as
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   varchar2 default null
   )
   return varchar2
@@ -651,7 +651,7 @@ package body db_twig as
 
     else
 
-      if p_required_parameter then
+      if p_required then
 
         raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
 

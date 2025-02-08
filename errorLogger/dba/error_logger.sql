@@ -3,7 +3,7 @@ package error_logger as
 
 /*
 
-Copyright 2014 - 2019 by Asterion DB, LLC.
+Copyright 2014 - 2025 by Asterion DB, LLC.
 
 All rights reserved.
 
@@ -13,6 +13,12 @@ All rights reserved.
     p_service_id                      api_errors.service_id%type
   )
   return clob;
+
+/*
+
+  This function can be called by another micro-service to log an error and return the error-id from the error stack.
+
+*/
 
   function log_api_error
   (
@@ -25,6 +31,19 @@ All rights reserved.
   (
     p_service_id                      api_errors.service_id%type
   );
+
+/*
+
+  function restapi_error
+
+  This function is registered with DbTwig when the AsterionDB service is created. It is called when the
+  DbTwig logic (in the database) detects an exception upon calling a mapped middle-tier entry-point.
+
+  All error information is accessed by calling utl_call_stack.
+
+  The returned json object shall contain an key/value pair for 'errorId'.
+
+*/
 
   function restapi_error
   (

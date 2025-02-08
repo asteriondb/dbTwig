@@ -91,12 +91,12 @@ as
   )
   return icam_users.user_id%type;
 
-  procedure create_api_client_session
+  function create_api_client_session
   (
-    p_api_client_token                icam_sessions.session_id%type,
     p_old_client_token                icam_sessions.session_id%type,
     p_json_parameters                 json_object_t
-  );
+  )
+  return icam_sessions.session_id%type;
 
   function create_confirmation_token
   (

@@ -27,6 +27,8 @@ connect &dba_user/"&dba_password"@"&database_name";
 set termout off
 set echo on
 
+whenever sqlerror continue
+
 @$HOME/asterion/oracle/dbTwig/errorLogger/dba/setupSchema
 
 grant references(service_id) on &dbtwig_user..db_twig_services to &elog_user;

@@ -2,60 +2,6 @@ create or replace
 package db_twig as
 
   GENERIC_ERROR                       constant pls_integer := -20100;           -- Borrowed from AsterionDB.
-
-/*
-
-Calling API Components via DbTwig - Required Parameters
------------------------------------------------------------------------------------------------------------------------------------
-There are two ways to call services using DbTwig:
-
-  1 - Use an HTTP based interface (i.e. a web browser calling the HTTPS DbTwig listener)
-  2 - Use a PL/SQL based interface with an API Key - for calls between services in the database
-
-When using the HTTP based interface, the session-id is specified in the 'authorization' request header field as a
-'Bearer Authorization' token (e.g. Bearer 9YAZOHVGXQ0MFKCXYJWJZT5X61Z5O8LL). You will need to include this header field when you
-build your HTTP request.
-
-When using a PL/SQL based interface, the session-id is embeded within the JSON parameter string:
-
-  {"sessionId":"J3A9DKDKJGDGKDKADFWJZASG9334O8LD"}
-
-JSON value keys are case sensitive.
-
-Session Validation
------------------------------------------------------------------------------------------------------------------------------------
-The DbTwig middle-tier logic performs session validation by calling the session validation procedure for a registered service
-(i.e. db_twig_services.session_validation_procedure). It is the responsibility of the service's session validation procedcure to
-perform any required checks and validations.
-
-The signature of a session validation procedure is:
-
-  procedure validate_session
-  (
-    p_entry_point                     middle_tier_map.entry_point%type,
-    p_json_parameters                 json_object_t
-  );
-
-Note - You do not have to use the same procedure name as shown above.
-
-Exception Handling
------------------------------------------------------------------------------------------------------------------------------------
-The call_rest_api function will catch any exceptions thrown by the called API component. Upon catching an exception, DbTwig will
-call the error handler (i.e. db_twig_services.api_error_handler) registered for the service. It is the responsibility of the
-error handler to perform any logic required and return an 'error-id' string in a JSON object.
-
-The signature of the error handler function is:
-
-  function restapi_error
-  (
-    p_json_parameters                 api_errors.json_parameters%type
-  )
-  return json_object_t;
-
-Note - You do not have to use the same function name as shown above.
-
-*/
-
   SECONDS_PER_DAY                     constant pls_integer := 86400;
 
   function call_restapi
@@ -115,11 +61,25 @@ Note - You do not have to use the same function name as shown above.
   )
   return clob;
 
+/*
+
+These helper functions make it easy to extract a parameter from a JSON object.
+
+The functions allow you to easily handle required parameters, parameters w/ a default value and parameters that are null if not present.'
+
+To specify a required parameter, set p_required to TRUE and omit the p_default_value parameter.
+
+To specify an optional parameter with a default value, set p_required to FALSE and provide a value for p_default_value.
+
+To specify an optional parameter w/ a default value of null, set p__required to FALSE and omit the p_default_value parameter.
+
+*/
+
   function get_array_parameter
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   json_array_t default null
   )
   return json_array_t;
@@ -128,7 +88,7 @@ Note - You do not have to use the same function name as shown above.
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   clob default null
   )
   return clob;
@@ -139,7 +99,7 @@ Note - You do not have to use the same function name as shown above.
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   number default null
   )
   return number;
@@ -148,7 +108,7 @@ Note - You do not have to use the same function name as shown above.
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   json_object_t default null
   )
   return json_object_t;
@@ -169,19 +129,10 @@ Note - You do not have to use the same function name as shown above.
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required_parameter              boolean default true,
+    p_required                        boolean default true,
     p_default_value                   varchar2 default null
   )
   return varchar2;
-
-/*
-  function restapi_error
-  (
-    p_json_parameters                 db_twig_errors.json_parameters%type,
-    p_service_id                      db_twig_services.service_id%type
-  )
-  return json_object_t;
-*/
 
 end db_twig;
 .

@@ -44,15 +44,22 @@ alter table db_twig_services modify service_id primary key;
 alter table db_twig_services add service_enabled varchar2(1) default 'Y' not null
   constraint service_enabled_chk check (service_enabled in ('Y', 'N'));
 
-rename dbtwig_profile to db_twig_profile;
+alter table db_twig_services drop column api_error_handler;
 
-update  db_twig_profile
-   set  api_error_handler = '&elog_user'||'.error_logger.restapi_error';
+create table db_twig_profile
+(
+  production_mode                   varchar2(1) default 'Y'
+   constraint dbtwig_prod_mode_chk check (production_mode in ('Y', 'N')) not null,
+  api_error_handler                 varchar2(256) not null
+);
+
+delete from db_twig_profile;
+
+insert into db_twig_profile
+  (production_mode, api_error_handler)
+values
+  ('Y', '&elog_user'||'.error_logger.restapi_error');
         
-alter table db_twig_profile modify api_error_handler not null;
-
-alter table db_twig_profile drop column elog_service_owner;
-
 revoke execute on dbms_crypto from &dbtwig_user;
 
 update  db_twig_services

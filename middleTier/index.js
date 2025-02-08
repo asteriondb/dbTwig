@@ -90,7 +90,7 @@ function getRequestData(request, serverAddress)
 
   let obj =
   {
-    clientAddress: request.headers['x-real-ip'] ? request.headers['x-real-ip'] : request.headers['x-forwarded-for'],
+    clientAddress: request.get('x-real-ip') ? request.get('x-real-ip') : request.get('x-forwarded-for'),
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
     body: request.body,
@@ -119,7 +119,7 @@ async function handleOauthReply(request, response)
   let requestData = 
   {
     sessionId: (undefined !== authorization ? authorization.split(" ")[1] : ""), 
-    clientAddress: request.headers['x-forwarded-for'],
+    clientAddress: request.get('x-forwarded-for'),
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
     body: request.body,

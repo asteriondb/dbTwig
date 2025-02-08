@@ -39,7 +39,7 @@ create sequence id_seq minvalue 1 maxvalue 999999999999 cycle;
 create table db_twig_profile
 (
   production_mode                   varchar2(1) default 'Y'
-   constraint prod_mode_chk check (production_mode in ('Y', 'N')) not null,
+   constraint dbtwig_prod_mode_chk check (production_mode in ('Y', 'N')) not null,
   api_error_handler                 varchar2(256) not null
 );
 

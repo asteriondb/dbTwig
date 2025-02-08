@@ -28,6 +28,8 @@ connect &dba_user/"&dba_password"@"&database_name";
 set termout off
 set echo on
 
+whenever sqlerror continue
+
 @$HOME/asterion/oracle/dbTwig/icam/dba/setupSchema
 
 create or replace synonym &icam_user..db_twig for &dbtwig_user..db_twig;

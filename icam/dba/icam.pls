@@ -780,17 +780,18 @@ All rights reserved.
 
   end create_administrator_account;
 
-  procedure create_api_client_session
+  function create_api_client_session
   (
-    p_api_client_token                icam_sessions.session_id%type,
     p_old_client_token                icam_sessions.session_id%type,
     p_json_parameters                 json_object_t
   )
+  return icam_sessions.session_id%type
 
   is
 
     l_user_id                         icam_sessions.user_id%type := get_session_user_id_from_json(p_json_parameters);
     l_user_agent                      icam_sessions.user_agent%type := db_twig.get_string_parameter(p_json_parameters, 'userAgent');
+    l_session_id                      icam_sessions.session_id%type := dbms_random.string('x', get_column_length('ICAM_SESSIONS', 'SESSION_ID'));
 
   begin
 
@@ -808,8 +809,10 @@ All rights reserved.
       (session_id, user_id, client_address, session_created, last_activity, session_inactivity_limit,
        user_agent, session_status, client_type)
     values
-      (p_api_client_token, l_user_id, '127.0.0.1', systimestamp at time zone 'utc', systimestamp at time zone 'utc',
+      (l_session_id, l_user_id, '127.0.0.1', systimestamp at time zone 'utc', systimestamp at time zone 'utc',
        -1, l_user_agent, AS_ACTIVE, API_CLIENT);
+
+    return l_session_id;
 
   end create_api_client_session;
 
@@ -855,7 +858,7 @@ All rights reserved.
          account_status, account_type, default_timezone)
       values
         (id_seq.nextval, p_username, hashed_value(p_username||l_password, l_random_bytes),
-         l_random_bytes, p_first_name, p_middle_name, p_last_name, p_email_address, AS_ACTIVE, AT_USER,
+         l_random_bytes, p_first_name, p_middle_name, p_last_name, p_email_address, AS_CHANGE_PASSWORD, AT_USER,
          p_default_timezone)
       returning user_id into l_user_id;
 
