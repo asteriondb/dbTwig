@@ -107,6 +107,7 @@ package body db_twig as
     l_required_authorization_level    varchar2(13);
     l_allow_blocked_session           varchar2(1);
     l_production_mode                 db_twig_services.production_mode%type;
+    l_request                         clob;
 
   begin
 
@@ -188,10 +189,12 @@ package body db_twig as
 
       end if;
 
+      l_request := l_json_parameters.to_clob;
+
       insert into logged_requests
         (request)
       values
-        (l_json_parameters.to_clob);
+        (l_request);
 
       commit;
 
