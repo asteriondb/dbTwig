@@ -46,7 +46,7 @@ create table db_twig_profile
 insert into db_twig_profile 
   (production_mode, api_error_handler) 
 values 
-  ('Y', '&elog_user'||'error_logger.restapi_error');
+  ('Y', '&elog_user'||'.error_logger.restapi_error');
 
 commit;
 

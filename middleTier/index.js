@@ -353,6 +353,7 @@ async function handleRequest(request, response)
     switch (result.errorCode)
     {
       case dbTwig.SESSION_TIMEOUT:
+      case dbTwig.INVALID_SESSION_STATUS:
         response.status(HTTP_FORBIDDEN_ERROR);
         break;
 

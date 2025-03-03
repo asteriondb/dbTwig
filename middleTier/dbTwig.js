@@ -19,6 +19,7 @@ const USER_PASSWORD_ERROR = 20124;
 const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
 const ACCOUNT_LOCKED = 20125;
 exports.SESSION_TIMEOUT = 20002;
+exports.INVALID_SESSION_STATUS = 20014;
 
 var systemParameters = 
 {
