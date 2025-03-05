@@ -1,7 +1,7 @@
 create or replace
 package body dbtwig_example as
 
-  s_api_token                         varchar2(32) := '%api-token%';              --  Store your AsterionDB API Token here.
+  g_api_token                         varchar2(32) := '%api-token%';              --  Store your AsterionDB API Token here.
 
   SERVICE_NAME                        constant varchar2(13) := 'dbTwigExample';
 
@@ -17,7 +17,7 @@ package body dbtwig_example as
 
   begin
 
-    l_json_data := json_object_t(dgbunker_service.generate_object_weblink(s_api_token, p_object_id, dgbunker_service.STREAM_CONTENT));
+    l_json_data := json_object_t(dgbunker_service.generate_object_weblink(g_api_token, p_object_id, dgbunker_service.STREAM_CONTENT));
     return l_json_data.get_string('objectWeblink');
 
   end generate_object_weblink;
@@ -51,7 +51,7 @@ package body dbtwig_example as
 
 --  Generate a filename that we can use with LibreOffice
 
-    l_json_object := json_object_t(dgbunker_service.generate_object_filename(p_session_id => s_api_token, p_gateway_name => sys_context('userenv', 'host'),
+    l_json_object := json_object_t(dgbunker_service.generate_object_filename(p_session_id => g_api_token, p_gateway_name => sys_context('userenv', 'host'),
       p_object_id => p_spreadsheet_id, p_access_mode => dgbunker_service.READ_WRITE_ACCESS, p_access_limit => dgbunker_service.UNLIMITED_ACCESS_OPERATIONS,
       p_valid_until => dgbunker_service.VALID_FOR_AN_HOUR, p_allow_temporary_files => dgbunker_service.OPTION_ENABLED));
 

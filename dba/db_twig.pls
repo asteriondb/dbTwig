@@ -163,7 +163,7 @@ package body db_twig as
     exception when no_data_found then
 
       db_twig_error(INVALID_PARAMETERS_EC, p_json_parameters, 'Invalid service name: '||l_service_name);
-      if 'Y' = l_production_mode then
+      if 'Y' = s_production_mode then
 
         raise_application_error(GENERIC_ERROR, 'No information available', false);
 

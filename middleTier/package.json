@@ -1,6 +1,6 @@
 {
   "name": "db-twig-middle-tier",
-  "gitTag": "rc2025.03",
+  "gitTag": "2025.03",
   "gitBranch": "main",
   "private": true,
   "description": "DbTwig - The UltraSlim Middle-Tier Framework",
