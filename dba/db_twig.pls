@@ -131,8 +131,8 @@ package body db_twig as
 
     begin
 
-      l_service_name  := get_string_parameter(l_json_parameters, 'serviceName');
-      l_entry_point := get_string_parameter(l_json_parameters, 'entryPoint');
+      l_service_name  := get_string(l_json_parameters, 'serviceName');
+      l_entry_point := get_string(l_json_parameters, 'entryPoint');
 
     exception
 
@@ -427,7 +427,7 @@ package body db_twig as
 
   end empty_json_array;
 
-  function get_array_parameter
+  function get_array
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -458,9 +458,42 @@ package body db_twig as
 
     end if;
 
-  end get_array_parameter;
+  end get_array;
 
-  function get_clob_parameter
+  function get_boolean
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required                        boolean default true,
+    p_default_value                   boolean default null
+  )
+  return boolean
+
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_boolean(p_key);
+
+    else
+
+      if p_required then
+
+        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+
+      else
+
+        return p_default_value;
+
+      end if;
+
+    end if;
+
+  end get_boolean;
+
+  function get_clob
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -491,7 +524,7 @@ package body db_twig as
 
     end if;
 
-  end get_clob_parameter;
+  end get_clob;
 
   function get_dbtwig_errors return clob
 
@@ -522,7 +555,7 @@ package body db_twig as
 
   end get_dbtwig_errors;
 
-  function get_number_parameter
+  function get_number
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -553,9 +586,9 @@ package body db_twig as
 
     end if;
 
-  end get_number_parameter;
+  end get_number;
 
-  function get_object_parameter
+  function get_object
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -586,7 +619,7 @@ package body db_twig as
 
     end if;
 
-  end get_object_parameter;
+  end get_object;
 
   function get_service_data
   (
@@ -635,7 +668,7 @@ package body db_twig as
 
   end get_service_id;
 
-  function get_string_parameter
+  function get_string
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -666,7 +699,7 @@ package body db_twig as
 
     end if;
 
-  end get_string_parameter;
+  end get_string;
 
 begin
 

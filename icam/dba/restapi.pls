@@ -16,7 +16,7 @@ as
 
   begin
 
-    l_session_to_terminate := db_twig.get_string_parameter(p_json_parameters, 'sessionToTerminate');
+    l_session_to_terminate := db_twig.get_string(p_json_parameters, 'sessionToTerminate');
 
     return icam.abandon_for_current_session(l_session_id, l_session_to_terminate);
 
@@ -31,8 +31,8 @@ as
   is
 
     l_blocked_session_id              icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_blocked_client_address          icam_sessions.client_address%type := db_twig.get_string_parameter(p_json_parameters, 'clientAddress');
-    l_blocked_user_agent              icam_sessions.user_agent%type := db_twig.get_string_parameter(p_json_parameters, 'userAgent');
+    l_blocked_client_address          icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
+    l_blocked_user_agent              icam_sessions.user_agent%type := db_twig.get_string(p_json_parameters, 'userAgent');
 
   begin
 
@@ -51,19 +51,19 @@ as
     l_session_status                  icam_sessions.session_status%type;
 
     l_session_id                      icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string_parameter(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
     l_current_password                varchar2(60);
     l_new_password                    varchar2(60);
     l_clob                            clob;
 
     l_blocked_session_id              icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_blocked_user_agent              icam_sessions.user_agent%type := db_twig.get_string_parameter(p_json_parameters, 'userAgent');
+    l_blocked_user_agent              icam_sessions.user_agent%type := db_twig.get_string(p_json_parameters, 'userAgent');
 
 
   begin
 
-    l_current_password := db_twig.get_string_parameter(p_json_parameters, 'currentPassword');
-    l_new_password := db_twig.get_string_parameter(p_json_parameters, 'newPassword');
+    l_current_password := db_twig.get_string(p_json_parameters, 'currentPassword');
+    l_new_password := db_twig.get_string(p_json_parameters, 'newPassword');
     icam.change_password(icam.get_session_user_id_from_json(p_json_parameters),
       l_client_address, l_current_password, l_new_password);
 
@@ -97,7 +97,7 @@ as
 
   begin
 
-    l_confirmation_token := db_twig.get_string_parameter(p_json_parameters, 'confirmationToken');
+    l_confirmation_token := db_twig.get_string(p_json_parameters, 'confirmationToken');
     icam.validate_confirmation_token(p_confirmation_token => l_confirmation_token, p_check_only => true);
 
   end check_confirmation_token;
@@ -117,16 +117,16 @@ as
     l_email_address                   icam_users.email_address%type;
     l_default_timezone                icam_users.default_timezone%type;
     l_caller_session_id               icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string_parameter(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
 
   begin
 
-    l_username := db_twig.get_string_parameter(p_json_parameters, 'username');
-    l_first_name := db_twig.get_string_parameter(p_json_parameters, 'firstName');
-    l_middle_name := db_twig.get_string_parameter(p_json_parameters, 'middleName', false);
-    l_last_name := db_twig.get_string_parameter(p_json_parameters, 'lastName');
-    l_email_address := db_twig.get_string_parameter(p_json_parameters, 'emailAddress');
-    l_default_timezone := db_twig.get_string_parameter(p_json_parameters, 'defaultTimezone', false, 'Etc/GMT');
+    l_username := db_twig.get_string(p_json_parameters, 'username');
+    l_first_name := db_twig.get_string(p_json_parameters, 'firstName');
+    l_middle_name := db_twig.get_string(p_json_parameters, 'middleName', false);
+    l_last_name := db_twig.get_string(p_json_parameters, 'lastName');
+    l_email_address := db_twig.get_string(p_json_parameters, 'emailAddress');
+    l_default_timezone := db_twig.get_string(p_json_parameters, 'defaultTimezone', false, 'Etc/GMT');
 
     return icam.create_user_account(l_username, l_first_name, l_middle_name, l_last_name, l_email_address, l_default_timezone,
       l_client_address, l_caller_session_id);
@@ -141,7 +141,7 @@ as
 
   is
 
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string_parameter(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
     l_user_agent                      icam_sessions.user_agent%type;
     l_clob                            clob;
     l_identification                  icam_users.username%type;
@@ -149,9 +149,9 @@ as
 
   begin
 
-    l_user_agent := db_twig.get_string_parameter(p_json_parameters, 'userAgent');
-    l_identification := db_twig.get_string_parameter(p_json_parameters, 'identification');
-    l_txt_password := db_twig.get_string_parameter(p_json_parameters, 'password');
+    l_user_agent := db_twig.get_string(p_json_parameters, 'userAgent');
+    l_identification := db_twig.get_string(p_json_parameters, 'identification');
+    l_txt_password := db_twig.get_string(p_json_parameters, 'password');
     l_clob := icam.create_user_session(l_identification, l_txt_password, l_client_address, l_user_agent);
 
     return l_clob;
@@ -165,8 +165,8 @@ as
 
   is
 
-    l_email_address                   icam_users.email_address%type := db_twig.get_string_parameter(p_json_parameters, 'emailAddress');
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string_parameter(p_json_parameters, 'clientAddress');
+    l_email_address                   icam_users.email_address%type := db_twig.get_string(p_json_parameters, 'emailAddress');
+    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
 
   begin
 
@@ -183,8 +183,8 @@ as
   is
 
     l_session_id                      icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string_parameter(p_json_parameters, 'clientAddress');
-    l_username                        icam_users.username%type := db_twig.get_string_parameter(p_json_parameters, 'username');
+    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
+    l_username                        icam_users.username%type := db_twig.get_string(p_json_parameters, 'username');
     l_clob                            clob;
     l_temporary_password              varchar2(10);
 
@@ -238,7 +238,7 @@ as
 
   begin
 
-    return icam.get_login_history(icam.get_user_id(db_twig.get_string_parameter(p_json_parameters, 'username')));
+    return icam.get_login_history(icam.get_user_id(db_twig.get_string(p_json_parameters, 'username')));
 
   end get_login_history_for_user;
 
@@ -278,7 +278,7 @@ as
 
   is
 
-    l_username                        icam_users.username%type := db_twig.get_string_parameter(p_json_parameters, 'username');
+    l_username                        icam_users.username%type := db_twig.get_string(p_json_parameters, 'username');
 
   begin
 
@@ -293,8 +293,8 @@ as
 
   is
 
-    l_email_address                   icam_users.email_address%type := db_twig.get_string_parameter(p_json_parameters, 'emailAddress');
-    l_client_address                  confirmation_tokens.client_address%type := db_twig.get_string_parameter(p_json_parameters, 'clientAddress');
+    l_email_address                   icam_users.email_address%type := db_twig.get_string(p_json_parameters, 'emailAddress');
+    l_client_address                  confirmation_tokens.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
 
   begin
 
@@ -310,13 +310,13 @@ as
   is
 
     l_confirmation_token              confirmation_tokens.confirmation_token%type;
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string_parameter(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
     l_new_password                    varchar2(60);
 
   begin
 
-    l_confirmation_token := db_twig.get_string_parameter(p_json_parameters, 'confirmationToken');
-    l_new_password := db_twig.get_string_parameter(p_json_parameters, 'newPassword');
+    l_confirmation_token := db_twig.get_string(p_json_parameters, 'confirmationToken');
+    l_new_password := db_twig.get_string(p_json_parameters, 'newPassword');
 
     icam.reset_password(l_confirmation_token, l_new_password, l_client_address);
 
@@ -348,7 +348,7 @@ as
 
   begin
 
-    l_username := db_twig.get_string_parameter(p_json_parameters, 'username');
+    l_username := db_twig.get_string(p_json_parameters, 'username');
     icam.toggle_account_status(l_username);
 
   end toggle_account_status;
@@ -366,9 +366,9 @@ as
 
   begin
 
-    l_first_name := db_twig.get_string_parameter(p_json_parameters, 'firstName');
-    l_last_name := db_twig.get_string_parameter(p_json_parameters, 'lastName');
-    l_middle_name := db_twig.get_string_parameter(p_json_parameters, 'middleName', false);
+    l_first_name := db_twig.get_string(p_json_parameters, 'firstName');
+    l_last_name := db_twig.get_string(p_json_parameters, 'lastName');
+    l_middle_name := db_twig.get_string(p_json_parameters, 'middleName', false);
     icam.update_user_info(icam.get_session_user_id_from_json(p_json_parameters),
       l_first_name, l_middle_name, l_last_name);
 
@@ -381,8 +381,8 @@ as
 
   is
 
-    l_default_timezone                icam_users.default_timezone%type := db_twig.get_string_parameter(p_json_parameters, 'defaultTimezone');
-    l_auth_method                     icam_users.auth_method%type := db_twig.get_string_parameter(p_json_parameters, 'authMethod');
+    l_default_timezone                icam_users.default_timezone%type := db_twig.get_string(p_json_parameters, 'defaultTimezone');
+    l_auth_method                     icam_users.auth_method%type := db_twig.get_string(p_json_parameters, 'authMethod');
 
   begin
 
@@ -404,9 +404,9 @@ as
 
   begin
 
-    l_username := db_twig.get_string_parameter(p_json_parameters, 'username');
-    l_session_limit := db_twig.get_number_parameter(p_json_parameters, 'sessionLimit');
-    l_session_inactivity_limit := db_twig.get_number_parameter(p_json_parameters, 'sessionInactivityLimit');
+    l_username := db_twig.get_string(p_json_parameters, 'username');
+    l_session_limit := db_twig.get_number(p_json_parameters, 'sessionLimit');
+    l_session_inactivity_limit := db_twig.get_number(p_json_parameters, 'sessionInactivityLimit');
     icam.update_user_properties(l_username, l_session_limit, l_session_inactivity_limit);
 
   end update_user_properties;
@@ -421,7 +421,7 @@ as
   begin
 
     icam.validate_change_email_code(icam.get_session_user_id_from_json(p_json_parameters),
-      db_twig.get_string_parameter(p_json_parameters, 'confirmationCode'));
+      db_twig.get_string(p_json_parameters, 'confirmationCode'));
 
   end;
 
@@ -434,7 +434,7 @@ as
   is
 
     l_confirmation_token              confirmation_tokens.confirmation_token%type :=
-      db_twig.get_string_parameter(p_json_parameters, 'confirmationToken');
+      db_twig.get_string(p_json_parameters, 'confirmationToken');
 
   begin
 
@@ -453,7 +453,7 @@ as
 
   begin
 
-    l_email_address := db_twig.get_string_parameter(p_json_parameters, 'emailAddress');
+    l_email_address := db_twig.get_string(p_json_parameters, 'emailAddress');
     icam.validate_new_email_address(l_email_address);
 
   end validate_new_email_address;
@@ -469,7 +469,7 @@ as
 
   begin
 
-    l_username := db_twig.get_string_parameter(p_json_parameters, 'username');
+    l_username := db_twig.get_string(p_json_parameters, 'username');
     icam.validate_new_username(l_username);
 
   end validate_new_username;

@@ -1,6 +1,7 @@
 create or replace
 package db_twig as
 
+  SERVICE_NAME                        constant varchar2(6) := 'dbTwig';
   GENERIC_ERROR                       constant pls_integer := -20100;           -- Borrowed from AsterionDB.
   SECONDS_PER_DAY                     constant pls_integer := 86400;
 
@@ -65,17 +66,17 @@ package db_twig as
 
 These helper functions make it easy to extract a parameter from a JSON object.
 
-The functions allow you to easily handle required parameters, parameters w/ a default value and parameters that are null if not present.'
+The functions allow you to easily handle required parameters, parameters w/ a default value and parameters that are null if not present.
 
-To specify a required parameter, set p_required to TRUE and omit the p_default_value parameter.
+To specify a required parameter, set p_required to TRUE (default) and omit the p_default_value parameter.
 
 To specify an optional parameter with a default value, set p_required to FALSE and provide a value for p_default_value.
 
-To specify an optional parameter w/ a default value of null, set p__required to FALSE and omit the p_default_value parameter.
+To specify an optional parameter w/ a default value of null, set p_required to FALSE and omit the p_default_value parameter.
 
 */
 
-  function get_array_parameter
+  function get_array
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -84,7 +85,16 @@ To specify an optional parameter w/ a default value of null, set p__required to 
   )
   return json_array_t;
 
-  function get_clob_parameter
+  function get_boolean
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_required                        boolean default true,
+    p_default_value                   boolean default null
+  )
+  return boolean;
+
+  function get_clob
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -95,7 +105,7 @@ To specify an optional parameter w/ a default value of null, set p__required to 
 
   function get_dbtwig_errors return clob;
 
-  function get_number_parameter
+  function get_number
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -104,7 +114,7 @@ To specify an optional parameter w/ a default value of null, set p__required to 
   )
   return number;
 
-  function get_object_parameter
+  function get_object
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,
@@ -125,7 +135,7 @@ To specify an optional parameter w/ a default value of null, set p__required to 
   )
   return db_twig_services.service_id%type;
 
-  function get_string_parameter
+  function get_string
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2,

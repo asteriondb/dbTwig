@@ -9,7 +9,7 @@ package body restapi as
   as
 
     l_spreadsheet_id                  maintenance_manuals.spreadsheet_id%type :=
-        db_twig.get_string_parameter(p_json_parameters, 'spreadsheetId');
+        db_twig.get_string(p_json_parameters, 'spreadsheetId');
 
   begin
 
@@ -25,7 +25,7 @@ package body restapi as
 
   as
 
-    l_manual_id                       maintenance_manuals.manual_id%type := db_twig.get_number_parameter(p_json_parameters, 'manualId');
+    l_manual_id                       maintenance_manuals.manual_id%type := db_twig.get_number(p_json_parameters, 'manualId');
 
   begin
 
@@ -54,8 +54,8 @@ package body restapi as
 
   as
 
-    l_tech_note                       technician_notes.tech_note%type := db_twig.get_string_parameter(p_json_parameters, 'techNote');
-    l_manual_id                       maintenance_manuals.manual_id%type := db_twig.get_number_parameter(p_json_parameters, 'manualId');
+    l_tech_note                       technician_notes.tech_note%type := db_twig.get_string(p_json_parameters, 'techNote');
+    l_manual_id                       maintenance_manuals.manual_id%type := db_twig.get_number(p_json_parameters, 'manualId');
 
   begin
 

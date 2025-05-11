@@ -82,6 +82,8 @@ package body error_logger as
 
     l_error_text := 'ORA-'||l_error_number||': '||get_error_stack;
 
+--  If you have other 'sensitive' parameters, strip them out here....
+
     if l_json_parameters.has('password') then
 
       l_json_parameters.remove('password');
@@ -100,7 +102,6 @@ package body error_logger as
     return l_error_id;
 
   end log_api_error;
-
 
   procedure purge_api_errors
   (

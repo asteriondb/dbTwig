@@ -790,7 +790,7 @@ All rights reserved.
   is
 
     l_user_id                         icam_sessions.user_id%type := get_session_user_id_from_json(p_json_parameters);
-    l_user_agent                      icam_sessions.user_agent%type := db_twig.get_string_parameter(p_json_parameters, 'userAgent');
+    l_user_agent                      icam_sessions.user_agent%type := db_twig.get_string(p_json_parameters, 'userAgent');
     l_session_id                      icam_sessions.session_id%type := dbms_random.string('x', get_column_length('ICAM_SESSIONS', 'SESSION_ID'));
 
   begin
@@ -2223,7 +2223,7 @@ All rights reserved.
           SS_SESSION_LIMIT = l_session_status or
           SS_AUTH_CODE = l_session_status ) and 'N' = p_allow_blocked_session then
 
-        terminate_session_with_error(l_session_id, INVALID_SESSION_STATUS, INVALID_SESSION_STATUS_EMSG);
+        terminate_session_with_error(l_session_id, INVALID_SESSION_STATUS, INVALID_SESSION_STATUS_EMSG||' - ' ||l_session_status);
 
       end if;
 
