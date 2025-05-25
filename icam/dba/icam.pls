@@ -2,70 +2,6 @@ create or replace
 package body icam as
 
   SERVICE_NAME                        CONSTANT varchar2(4) := 'icam';
-
-  ACTION_DISALLOWED                   constant pls_integer := -20011;
-  ACTION_DISALLOWED_EMSG              constant varchar2(35) := 'The requested action is not allowed';
-
-  NOT_A_SITE_ADMIN                    constant pls_integer := -20005;
-  NOT_A_SITE_ADMIN_EMSG               constant varchar2(48) := 'Privileged call made by a non site-administrator';
-
-  ACTIVE_USER_SESSION                 constant pls_integer := -20000;
-  ACTIVE_USER_SESSION_EMSG            constant varchar2(40) := 'There is an active session for this user';
-
-  SESSION_TIMEOUT                     constant pls_integer := -20002;
-  SESSION_TIMEOUT_EMSG                constant varchar2(26) := 'This session has timed out';
-
-  SESSION_IP_MISMATCH                 constant pls_integer := -20007;
-  SESSION_IP_MISMATCH_EMSG            constant varchar2(33) := 'Session IP addresses do not match';
-
-  INVALID_SESSION_STATUS              constant pls_integer := -20014;
-  INVALID_SESSION_STATUS_EMSG         constant varchar2(44) := 'An unexpected session status was encountered';
-
-  INVALID_SESSION_ID                  constant pls_integer := -20003;
-  INVALID_SESSION_ID_EMSG             constant varchar2(25) := 'The session ID is invalid';
-
-  SESSION_USER_AGENT_MISMATCH         constant pls_integer := -20008;
-  SESSION_USER_AGENT_MISMATCH_EMSG    constant varchar2(32) := 'Session user-agents do not match';
-
-  INVALID_CONFIRMATION_DATA           constant pls_integer := -20116;     -- Tied to JavaScript application.  Do not change value.
-  INVALID_CONFIRMATION_DATA_EMSG      constant varchar2(34) := 'The confirmation data is not valid';
-
-  EMAIL_ADDRESS_EXISTS                constant pls_integer := -20117;     -- Tied to JavaScript application.  Do not change value.
-  EMAIL_ADDRESS_EXISTS_EMSG           constant varchar2(45) := 'The email address has already been registered';
-
-  USERNAME_TAKEN                      constant pls_integer := -20118;     -- Tied to JavaScript application.  Do not change value.
-  USERNAME_TAKEN_EMSG                 constant varchar2(36) := 'This username has already been taken';
-
-  INVALID_EMAIL_ADDRESS               constant pls_integer := -20119;
-  INVALID_EMAIL_ADDRESS_EMSG          constant varchar2(39) := 'The email address is invalid or unknown';
-
-  NEW_OLD_PASSWORDS_MATCH             constant pls_integer := -20120;
-  NEW_OLD_PASSWORDS_MATCH_EMSG        constant varchar2(35) := 'The new and the old passwords match';
-
-  CHANGE_PASSWORD_FAILED              constant pls_integer := -20121;
-  CHANGE_PASSWORD_FAILED_EMSG         constant varchar2(44) := 'You did not enter your password in correctly';
-
-  UNABLE_TO_TERMINATE                 constant pls_integer := -20122;
-  UNABLE_TO_TERMINATE_EMSG            constant varchar2(29) := 'Unable to terminate a session';
-
-  UNBLOCK_SESSION_FAILED              constant pls_integer := -20123;
-  UNBLOCK_SESSION_FAILED_EMSG         constant varchar2(30) := 'Unblocking of a session failed';
-
-  USER_OR_PASSWORD                    constant pls_integer := -20124;
-  USER_OR_PASSWORD_EMSG               constant varchar2(35) := 'The username or password is invalid';
-
-  ACCOUNT_STATUS                      constant pls_integer := -20125;
-  ACCOUNT_STATUS_EMSG                 constant varchar2(25) := 'Invalid account status - ';
-
-  PASSWORD_REQUIRED                   constant pls_integer := -20134;
-  PASSWORD_REQUIRED_EMSG              constant varchar2(28) := 'A password value is required';
-
-  OWNER_ALREADY_EXISTS                constant pls_integer := -20141;
-  OWNER_ALREADY_EXISTS_EMSG           constant varchar2(58) := 'The owner of this installation has already been registered';
-
-  INVALID_INVITATION_TOKEN            constant pls_integer := -20133;
-  INVALID_INVITATION_TOKEN_EMSG       constant varchar2(55) := 'The invitation link is either invalid or it has expired';
-
   WEBAPP_CLIENT                       constant varchar2(12) := 'webAppClient';
   API_CLIENT                          constant varchar2(9) := 'apiClient';
 
@@ -168,13 +104,13 @@ All rights reserved.
 
     if p_session_address != p_client_address and '127.0.0.1' != p_client_address then
 
-      terminate_session_with_error(p_session_id, SESSION_IP_MISMATCH, SESSION_IP_MISMATCH_EMSG);
+      terminate_session_with_error(p_session_id, db_twig.SESSION_IP_MISMATCH, db_twig.SESSION_IP_MISMATCH_EMSG);
 
     end if;
 
     if p_session_user_agent != p_client_user_agent then
 
-      terminate_session_with_error(p_session_id, SESSION_USER_AGENT_MISMATCH, SESSION_USER_AGENT_MISMATCH_EMSG);
+      terminate_session_with_error(p_session_id, db_twig.SESSION_USER_AGENT_MISMATCH, db_twig.SESSION_USER_AGENT_MISMATCH_EMSG);
 
     end if;
 
@@ -325,7 +261,7 @@ All rights reserved.
 
     if SS_AUTH_CODE = l_session_status then
 
-      raise_application_error(-20000, 'email_send_auth_code');
+      raise_application_error(db_twig.GENERIC_ERROR, 'email_send_auth_code');
 
 /*      email.send_auth_code(p_user_id, create_confirmation_token(p_user_id => p_user_id,
         p_purpose => 'auth code', p_expiration_date => systimestamp at time zone 'utc' + mfa_timeout_limit / db_twig.SECONDS_PER_DAY,
@@ -335,7 +271,7 @@ All rights reserved.
 
     if SS_LOGIN_URL = l_session_status then
 
-      raise_application_error(-20000, 'email_send_auth_code');
+      raise_application_error(db_twig.GENERIC_ERROR, 'email_send_auth_code');
 
 /*      email.send_login_url(p_user_id, create_confirmation_token(p_user_id => p_user_id,
         p_purpose => 'login url', p_expiration_date => systimestamp at time zone 'utc' + mfa_timeout_limit / db_twig.SECONDS_PER_DAY,
@@ -405,7 +341,7 @@ All rights reserved.
 
     commit;
 
-    raise_application_error(USER_OR_PASSWORD, USER_OR_PASSWORD_EMSG);
+    raise_application_error(db_twig.USER_OR_PASSWORD, db_twig.USER_OR_PASSWORD_EMSG);
 
   end validate_identification_and_password;
 
@@ -440,7 +376,7 @@ All rights reserved.
 
     if 1 != sql%rowcount then
 
-      raise_application_error(UNABLE_TO_TERMINATE, UNABLE_TO_TERMINATE_EMSG);
+      raise_application_error(db_twig.UNABLE_TO_TERMINATE, db_twig.UNABLE_TO_TERMINATE_EMSG);
 
     end if;
 
@@ -452,7 +388,7 @@ All rights reserved.
 
     if at_session_limit(l_user_id, l_session_limit, l_client_type) then
 
-      raise_application_error(UNBLOCK_SESSION_FAILED, UNBLOCK_SESSION_FAILED_EMSG);
+      raise_application_error(db_twig.UNBLOCK_SESSION_FAILED, db_twig.UNBLOCK_SESSION_FAILED_EMSG);
 
     end if;
 
@@ -463,7 +399,7 @@ All rights reserved.
 
     if 1 != sql%rowcount then
 
-      raise_application_error(UNBLOCK_SESSION_FAILED, UNBLOCK_SESSION_FAILED_EMSG);
+      raise_application_error(db_twig.UNBLOCK_SESSION_FAILED, db_twig.UNBLOCK_SESSION_FAILED_EMSG);
 
     end if;
 
@@ -506,19 +442,19 @@ All rights reserved.
 
       if l_last_activity_in_seconds > l_session_inactivity_limit then
 
-        terminate_session_with_error(p_blocked_session_id, SESSION_TIMEOUT, SESSION_TIMEOUT_EMSG);
+        terminate_session_with_error(p_blocked_session_id, db_twig.SESSION_TIMEOUT, db_twig.SESSION_TIMEOUT_EMSG);
 
       end if;
 
       if l_client_address != p_blocked_client_address then
 
-        terminate_session_with_error(p_blocked_session_id, SESSION_IP_MISMATCH, SESSION_IP_MISMATCH_EMSG);
+        terminate_session_with_error(p_blocked_session_id, db_twig.SESSION_IP_MISMATCH, db_twig.SESSION_IP_MISMATCH_EMSG);
 
       end if;
 
       if l_user_agent != p_blocked_user_agent then
 
-        terminate_session_with_error(p_blocked_session_id, SESSION_USER_AGENT_MISMATCH, SESSION_USER_AGENT_MISMATCH_EMSG);
+        terminate_session_with_error(p_blocked_session_id, db_twig.SESSION_USER_AGENT_MISMATCH, db_twig.SESSION_USER_AGENT_MISMATCH_EMSG);
 
       end if;
 
@@ -526,7 +462,7 @@ All rights reserved.
 
     when no_data_found then
 
-      raise_application_error(INVALID_SESSION_ID, INVALID_SESSION_ID_EMSG);
+      raise_application_error(db_twig.INVALID_SESSION_ID, db_twig.INVALID_SESSION_ID_EMSG);
 
     end;
 
@@ -614,13 +550,13 @@ All rights reserved.
 
     if l_hashed_username_password != hashed_value(l_username||p_current_password, l_random_bytes) then
 
-      raise_application_error(CHANGE_PASSWORD_FAILED, CHANGE_PASSWORD_FAILED_EMSG);
+      raise_application_error(db_twig.CHANGE_PASSWORD_FAILED, db_twig.CHANGE_PASSWORD_FAILED_EMSG);
 
     end if;
 
     if l_hashed_username_password = hashed_value(l_username||p_new_password, l_random_bytes) then
 
-      raise_application_error(NEW_OLD_PASSWORDS_MATCH, NEW_OLD_PASSWORDS_MATCH_EMSG);
+      raise_application_error(db_twig.NEW_OLD_PASSWORDS_MATCH, db_twig.NEW_OLD_PASSWORDS_MATCH_EMSG);
 
     end if;
 
@@ -694,7 +630,7 @@ All rights reserved.
 
     if AS_UNCONFIRMED != l_account_status then
 
-      raise_application_error(INVALID_CONFIRMATION_DATA, INVALID_CONFIRMATION_DATA_EMSG);
+      raise_application_error(db_twig.INVALID_CONFIRMATION_DATA, db_twig.INVALID_CONFIRMATION_DATA_EMSG);
 
     end if;
 
@@ -713,7 +649,7 @@ All rights reserved.
 
   when no_data_found then
 
-    raise_application_error(INVALID_CONFIRMATION_DATA, INVALID_CONFIRMATION_DATA_EMSG);
+    raise_application_error(db_twig.INVALID_CONFIRMATION_DATA, db_twig.INVALID_CONFIRMATION_DATA_EMSG);
 
   end confirm_new_user;
 
@@ -741,7 +677,7 @@ All rights reserved.
 
     if p_txt_password is null then
 
-      raise_application_error(PASSWORD_REQUIRED, PASSWORD_REQUIRED_EMSG);
+      raise_application_error(db_twig.PASSWORD_REQUIRED, db_twig.PASSWORD_REQUIRED_EMSG);
 
     end if;
 
@@ -764,13 +700,13 @@ All rights reserved.
 
       if l_constraint_name = 'ICAM_USER_IX' then
 
-        raise_application_error(USERNAME_TAKEN, USERNAME_TAKEN_EMSG);
+        raise_application_error(db_twig.USERNAME_TAKEN, db_twig.USERNAME_TAKEN_EMSG);
 
       end if;
 
       if l_constraint_name = 'ICAM_EMAIL_IX' then
 
-        raise_application_error(EMAIL_ADDRESS_EXISTS, EMAIL_ADDRESS_EXISTS_EMSG);
+        raise_application_error(db_twig.EMAIL_ADDRESS_EXISTS, db_twig.EMAIL_ADDRESS_EXISTS_EMSG);
 
       end if;
 
@@ -870,13 +806,13 @@ All rights reserved.
 
       if l_constraint_name = 'ICAM_USER_IX' then
 
-        raise_application_error(USERNAME_TAKEN, USERNAME_TAKEN_EMSG);
+        raise_application_error(db_twig.USERNAME_TAKEN, db_twig.USERNAME_TAKEN_EMSG);
 
       end if;
 
       if l_constraint_name = 'ICAM_EMAIL_IX' then
 
-        raise_application_error(EMAIL_ADDRESS_EXISTS, EMAIL_ADDRESS_EXISTS_EMSG);
+        raise_application_error(db_twig.EMAIL_ADDRESS_EXISTS, db_twig.EMAIL_ADDRESS_EXISTS_EMSG);
 
       end if;
 
@@ -925,7 +861,7 @@ All rights reserved.
 
     if AS_ACTIVE != l_account_status and AS_CHANGE_PASSWORD != l_account_status then
 
-      raise_application_error(ACCOUNT_STATUS, ACCOUNT_STATUS_EMSG||' '||l_account_status);
+      raise_application_error(db_twig.ACCOUNT_STATUS, db_twig.ACCOUNT_STATUS_EMSG||' '||l_account_status);
 
     end if;
 
@@ -1169,7 +1105,7 @@ All rights reserved.
 
     when no_data_found then
 
-      raise_application_error(INVALID_SESSION_ID, INVALID_SESSION_ID_EMSG);
+      raise_application_error(db_twig.INVALID_SESSION_ID, db_twig.INVALID_SESSION_ID_EMSG);
 
     end;
 
@@ -1321,7 +1257,7 @@ All rights reserved.
 
     when no_data_found then
 
-      raise_application_error(INVALID_SESSION_ID, INVALID_SESSION_ID_EMSG);
+      raise_application_error(db_twig.INVALID_SESSION_ID, db_twig.INVALID_SESSION_ID_EMSG);
 
     end;
 
@@ -1389,7 +1325,7 @@ All rights reserved.
 
       if l_last_activity_in_seconds > l_session_inactivity_limit then
 
-        raise_application_error(SESSION_TIMEOUT, SESSION_TIMEOUT_EMSG);
+        raise_application_error(db_twig.SESSION_TIMEOUT, db_twig.SESSION_TIMEOUT_EMSG);
 
       end if;
 
@@ -1399,7 +1335,7 @@ All rights reserved.
 
     when no_data_found then
 
-      raise_application_error(INVALID_SESSION_ID, INVALID_SESSION_ID_EMSG);
+      raise_application_error(db_twig.INVALID_SESSION_ID, db_twig.INVALID_SESSION_ID_EMSG);
 
     end;
 
@@ -1655,7 +1591,7 @@ All rights reserved.
 
     if 0 != l_active_sessions then
 
-      raise_application_error(ACTIVE_USER_SESSION, ACTIVE_USER_SESSION_EMSG||' '||'Unable to remove user.');
+      raise_application_error(db_twig.ACTIVE_USER_SESSION, db_twig.ACTIVE_USER_SESSION_EMSG||' '||'Unable to remove user.');
 
     end if;
 
@@ -1714,7 +1650,7 @@ All rights reserved.
 
     if l_hashed_username_password = l_hashed_new_password then
 
-      raise_application_error(NEW_OLD_PASSWORDS_MATCH, NEW_OLD_PASSWORDS_MATCH_EMSG);
+      raise_application_error(db_twig.NEW_OLD_PASSWORDS_MATCH, db_twig.NEW_OLD_PASSWORDS_MATCH_EMSG);
 
     end if;
 
@@ -1797,7 +1733,7 @@ All rights reserved.
 
     if 'false' = l_true_false then
 
-      terminate_session_with_error(extract_session_id(p_json_parameters), NOT_A_SITE_ADMIN, NOT_A_SITE_ADMIN_EMSG);
+      terminate_session_with_error(extract_session_id(p_json_parameters), db_twig.NOT_A_SITE_ADMIN, db_twig.NOT_A_SITE_ADMIN_EMSG);
 
     end if;
 
@@ -1907,13 +1843,13 @@ All rights reserved.
 
     if AT_ADMINISTRATOR = l_account_type then
 
-      raise_application_error(ACTION_DISALLOWED, ACTION_DISALLOWED_EMSG);
+      raise_application_error(db_twig.ACTION_DISALLOWED, db_twig.ACTION_DISALLOWED_EMSG);
 
     end if;
 
     if 'locked' != l_old_status and 'active' != l_old_status then
 
-      raise_application_error(ACTION_DISALLOWED, ACTION_DISALLOWED_EMSG);
+      raise_application_error(db_twig.ACTION_DISALLOWED, db_twig.ACTION_DISALLOWED_EMSG);
 
     end if;
 
@@ -2067,7 +2003,7 @@ All rights reserved.
 
     when no_data_found then
 
-      raise_application_error(INVALID_CONFIRMATION_DATA, INVALID_CONFIRMATION_DATA_EMSG);
+      raise_application_error(db_twig.INVALID_CONFIRMATION_DATA, db_twig.INVALID_CONFIRMATION_DATA_EMSG);
 
     end;
 
@@ -2143,7 +2079,7 @@ All rights reserved.
       from  icam_users
      where  upper(email_address) = upper(p_email_address);
 
-    raise_application_error(EMAIL_ADDRESS_EXISTS, EMAIL_ADDRESS_EXISTS_EMSG);
+    raise_application_error(db_twig.EMAIL_ADDRESS_EXISTS, db_twig.EMAIL_ADDRESS_EXISTS_EMSG);
 
   exception
 
@@ -2169,7 +2105,7 @@ All rights reserved.
       from  icam_users
      where  upper(username) = upper(p_username);
 
-    raise_application_error(USERNAME_TAKEN, USERNAME_TAKEN_EMSG);
+    raise_application_error(db_twig.USERNAME_TAKEN, db_twig.USERNAME_TAKEN_EMSG);
 
   exception
 
@@ -2215,7 +2151,7 @@ All rights reserved.
 
       if l_last_activity_in_seconds > l_session_inactivity_limit and -1 != l_session_inactivity_limit then
 
-        terminate_session_with_error(l_session_id, SESSION_TIMEOUT, SESSION_TIMEOUT_EMSG);
+        terminate_session_with_error(l_session_id, db_twig.SESSION_TIMEOUT, db_twig.SESSION_TIMEOUT_EMSG);
 
       end if;
 
@@ -2223,13 +2159,13 @@ All rights reserved.
           SS_SESSION_LIMIT = l_session_status or
           SS_AUTH_CODE = l_session_status ) and 'N' = p_allow_blocked_session then
 
-        terminate_session_with_error(l_session_id, INVALID_SESSION_STATUS, INVALID_SESSION_STATUS_EMSG||' - ' ||l_session_status);
+        terminate_session_with_error(l_session_id, db_twig.INVALID_SESSION_STATUS, db_twig.INVALID_SESSION_STATUS_EMSG||' - ' ||l_session_status);
 
       end if;
 
       if SS_TERMINATED = l_session_status then
 
-        raise_application_error(INVALID_SESSION_STATUS, INVALID_SESSION_STATUS_EMSG);
+        raise_application_error(db_twig.INVALID_SESSION_STATUS, db_twig.INVALID_SESSION_STATUS_EMSG);
 
       end if;
 
@@ -2244,7 +2180,7 @@ All rights reserved.
 
     when no_data_found then
 
-      raise_application_error(INVALID_SESSION_ID, INVALID_SESSION_ID_EMSG);
+      raise_application_error(db_twig.INVALID_SESSION_ID, db_twig.INVALID_SESSION_ID_EMSG);
 
     end;
 

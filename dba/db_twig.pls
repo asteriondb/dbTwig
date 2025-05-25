@@ -13,11 +13,8 @@ package body db_twig as
   PACKAGE_DISCARDED                   EXCEPTION;
   pragma exception_init(PACKAGE_DISCARDED, -4068);
 
-  INVALID_PARAMETERS_EC               constant pls_integer := -20138;
-
-  INVALID_PARAMETERS                  EXCEPTION;
-  pragma exception_init(INVALID_PARAMETERS, INVALID_PARAMETERS_EC);             -- Borrowed from AsterionDB.
-  INVALID_PARAMETERS_MSG              constant varchar2(19) := 'Invalid parameters.';
+  INVALID_PARAMETERS_EX               EXCEPTION;
+  pragma exception_init(INVALID_PARAMETERS_EX, INVALID_PARAMETERS);
 
   s_production_mode                   db_twig_profile.production_mode%type;
   s_api_error_handler                 db_twig_profile.api_error_handler%type;
@@ -113,7 +110,7 @@ package body db_twig as
 
     if p_json_parameters is null then
 
-      db_twig_error(INVALID_PARAMETERS_EC, null, 'No parameters specified.');
+      db_twig_error(INVALID_PARAMETERS, null, 'No parameters specified.');
 
       if 'Y' = s_production_mode then
 
@@ -121,7 +118,7 @@ package body db_twig as
 
       else
 
-        raise_application_error(INVALID_PARAMETERS_EC, 'Null Parameter String', false);
+        raise_application_error(INVALID_PARAMETERS, 'Null Parameter String', false);
 
       end if;
 
@@ -138,7 +135,7 @@ package body db_twig as
 
     when others then
 
-      db_twig_error(INVALID_PARAMETERS_EC, p_json_parameters, sqlerrm);
+      db_twig_error(INVALID_PARAMETERS, p_json_parameters, sqlerrm);
       if 'Y' = s_production_mode then
 
         raise_application_error(GENERIC_ERROR, 'No information available', false);
@@ -162,14 +159,14 @@ package body db_twig as
 
     exception when no_data_found then
 
-      db_twig_error(INVALID_PARAMETERS_EC, p_json_parameters, 'Invalid service name: '||l_service_name);
+      db_twig_error(INVALID_PARAMETERS, p_json_parameters, 'Invalid service name: '||l_service_name);
       if 'Y' = s_production_mode then
 
         raise_application_error(GENERIC_ERROR, 'No information available', false);
 
       else
 
-        raise_application_error(INVALID_PARAMETERS_EC, 'Invalid service name: '||l_service_name, false);
+        raise_application_error(INVALID_PARAMETERS, 'Invalid service name: '||l_service_name, false);
 
       end if;
 
@@ -220,7 +217,7 @@ package body db_twig as
 
       else
 
-        raise_application_error(INVALID_PARAMETERS_EC, 'Invalid entry point.', false);
+        raise_application_error(INVALID_PARAMETERS, 'Invalid entry point.', false);
 
       end if;
 
@@ -448,7 +445,7 @@ package body db_twig as
 
       if p_required  then
 
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG, false);
+        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG, false);
 
       else
 
@@ -481,7 +478,7 @@ package body db_twig as
 
       if p_required then
 
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
       else
 
@@ -514,7 +511,7 @@ package body db_twig as
 
       if p_required then
 
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
       else
 
@@ -576,7 +573,7 @@ package body db_twig as
 
       if p_required then
 
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
       else
 
@@ -609,7 +606,7 @@ package body db_twig as
 
       if p_required then
 
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
       else
 
@@ -689,7 +686,7 @@ package body db_twig as
 
       if p_required then
 
-        raise_application_error(INVALID_PARAMETERS_EC, INVALID_PARAMETERS_MSG);
+        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
       else
 

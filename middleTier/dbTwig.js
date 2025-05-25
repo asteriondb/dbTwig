@@ -15,11 +15,8 @@ oracledb.autoCommit = true;
 
 const ORA_PACKAGE_STATE_DISCARDED = 4068;
 
-const USER_PASSWORD_ERROR = 20124;
-const USER_PASSWORD_ERROR_MSG = 'The username or password is invalid';
-const ACCOUNT_LOCKED = 20125;
+exports.INVALID_SESSION_STATUS = 20001;
 exports.SESSION_TIMEOUT = 20002;
-exports.INVALID_SESSION_STATUS = 20014;
 
 var systemParameters = 
 {
@@ -29,11 +26,6 @@ var systemParameters =
   userAgent: null,
   httpHost: null
 };
-
-var msleep = function(microSeconds) 
-{
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, microSeconds);
-}
 
 exports.getConnectionFromPool = async function()
 {
@@ -75,7 +67,6 @@ exports.callDbTwig = async function(connection, requestData)
   }
 
   let result = await tryAndCatch(connection, text, bindVars);
-
   if (result.status) return result;
 
   if (ORA_PACKAGE_STATE_DISCARDED === result.error.errorNum)
@@ -84,18 +75,6 @@ exports.callDbTwig = async function(connection, requestData)
     if (result.status) return result;
   }
 
-  if (USER_PASSWORD_ERROR === result.error.errorNum)
-  {
-    msleep(5000);
-    return {status: false, errorCode: result.error.errorNum, errorMessage: USER_PASSWORD_ERROR_MSG};
-  }
-  
-  if (ACCOUNT_LOCKED === result.error.errorNum)
-  {
-    msleep(5000);
-    return {status: false, errorCode: result.error.errorNum, errorMessage: result.error.message};
-  }
-  
   return {status: false, errorCode: result.error.errorNum, errorMessage: result.error.message};
 }
 

@@ -16,8 +16,6 @@ whenever sqlerror continue
 
 REM  Put stuff between here.....
 
-
-
 REM  ...and here
 
 set echo on

@@ -364,9 +364,7 @@ async function handleRequest(request, response)
   if (undefined !== result.lob && null !== result.lob)
     await dbTwig.sendLobResponse(result.lob, response);
   else
-  {
     response.send({status: result.status, errorCode: result.errorCode, errorMessage: result.errorMessage});
-  }
 
   dbTwig.closeConnection(connection);
   response.end();
