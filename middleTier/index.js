@@ -111,6 +111,12 @@ function getRequestData(request, serverAddress)
 async function handleOauthReply(request, response)
 {
   var state = request.query.state;
+  if (undefined === state)        // Sometimes state comes back undefined which causes dbTwig to bonk. Let's see what's happening
+  {
+    logger.log('error', "State is undefined");
+    logger.log('error', request);
+    return response.status(HTTP_SERVER_ERROR).send("State is undefined");    
+  }
   var origin = state.substr(0, state.lastIndexOf('/'));
   var sessionId = state.substr(state.lastIndexOf('/') + 1);
 
