@@ -734,19 +734,13 @@ package restapi as
 
   Embedded parameter values:
 
-    autoQueryEnabled          The value of the autoQueryEnabled, which maps to object_vault_users.auto_query_enabled.
-
-    authMethod                The users's authorization method. Valid values are:
+    authMethod                The user's authorization method. Valid values are:
 
                                 AM_PASSWORD
                                 AM_AUTH_CODE
                                 AM_LOGIC_URL
 
     defaultTimezone           The user's default timezone (e.g. America/Los_Angeles).
-
-    concurrentFileUploads     The number of files to be upload simultaneously via the web interface.
-
-    immutableUponCreation     This flag determines whether an object is flagged as immutable upon creation.
 
 */
 

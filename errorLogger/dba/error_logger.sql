@@ -17,6 +17,7 @@ All rights reserved.
 /*
 
   This function can be called by another micro-service to log an error and return the error-id from the error stack.
+  This is a PRAGMA AUTONOMOUS_TRANSACTION function.
 
 */
 
