@@ -405,6 +405,15 @@ package body db_twig as
     values
       (id_seq.nextval, p_service_owner, p_service_name, p_session_validation_procedure);
 
+  exception
+
+  when dup_val_on_index then
+
+    update  db_twig_services
+       set  service_owner = p_service_owner,
+            session_validation_procedure = p_session_validation_procedure
+     where  service_name = p_service_name;
+
   end create_dbtwig_service;
 
   function empty_json_array
