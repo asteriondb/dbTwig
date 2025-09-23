@@ -1,0 +1,28 @@
+/*
+
+
+
+*/
+
+define elog_user = '&1'
+
+spool $HOME/asterion/oracle/dbTwig/errorLogger/dba/upgrade-2025.09-main.log
+whenever sqlerror exit
+
+set echo on
+
+alter session set current_schema = &elog_user;
+whenever sqlerror continue
+
+REM  Put stuff between here.....
+
+
+
+REM  ...and here
+
+@error_logger
+@error_logger.pls
+
+prompt 
+spool off;
+
