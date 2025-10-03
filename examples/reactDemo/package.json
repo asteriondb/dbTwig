@@ -1,8 +1,8 @@
 {
   "name": "react-demo",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "versionComment": "",
-  "gitTag": "2025.09",
+  "gitTag": "rc2026.03",
   "gitBranch": "main",
   "private": true,
   "scripts": {

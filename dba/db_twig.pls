@@ -707,6 +707,22 @@ package body db_twig as
 
   end get_string;
 
+  procedure set_log_all_requests
+  (
+    p_service_name                    db_twig_services.service_name%type,
+    p_log_all_requests                db_twig_services.log_all_requests%type
+  )
+
+  is
+
+  begin
+
+    update  db_twig_services
+       set  log_all_requests = p_log_all_requests
+     where  service_name = p_service_name;
+
+  end set_log_all_requests;
+
 begin
 
   select  production_mode, api_error_handler

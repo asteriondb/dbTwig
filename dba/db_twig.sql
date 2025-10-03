@@ -218,6 +218,12 @@ To specify an optional parameter w/ a default value of null, set p_required to F
   )
   return varchar2;
 
+  procedure set_log_all_requests
+  (
+    p_service_name                    db_twig_services.service_name%type,
+    p_log_all_requests                db_twig_services.log_all_requests%type
+  );
+
 end db_twig;
 .
 /
