@@ -297,7 +297,7 @@ package body db_twig as
 
   end call_restapi;
 
-  function convert_date_to_unix_timestamp
+  function to_unix_timestamp
   (
     p_date_value                      date
   )
@@ -315,9 +315,9 @@ package body db_twig as
 
     return trunc(p_date_value - to_date('01-Jan-1970')) * db_twig.SECONDS_PER_DAY;
 
-  end convert_date_to_unix_timestamp;
+  end to_unix_timestamp;
 
-  function convert_timestamp_to_unix_timestamp
+  function to_unix_timestamp
   (
     p_timestamp_value                 timestamp
   )
@@ -337,9 +337,9 @@ package body db_twig as
       to_char(p_timestamp_value, 'sssss')) ||
       '.' || to_char(p_timestamp_value, 'FF6');
 
-  end convert_timestamp_to_unix_timestamp;
+  end to_unix_timestamp;
 
-  procedure convert_timestamp_to_timeval
+  procedure to_timeval
   (
     p_timestamp_value                 timestamp,
     p_tv_sec                          out number,
@@ -354,9 +354,9 @@ package body db_twig as
       to_char(p_timestamp_value, 'sssss');
     p_tv_usec := to_char(p_timestamp_value, 'FF6');
 
-  end convert_timestamp_to_timeval;
+  end to_timeval;
 
-  function convert_unix_timestamp_to_date
+  function unix_timestamp_to_date
   (
     p_unix_timestamp                  number
   )
@@ -368,9 +368,9 @@ package body db_twig as
 
     return to_date('01-jan-1970') + (p_unix_timestamp / db_twig.SECONDS_PER_DAY);
 
-  end convert_unix_timestamp_to_date;
+  end unix_timestamp_to_date;
 
-  function convert_unix_timestamp_to_timestamp
+  function unix_timestamp_to_timestamp
   (
     p_unix_timestamp                  float
   )
@@ -387,7 +387,7 @@ package body db_twig as
     l_timestamp := l_timestamp + numtodsinterval(l_nanoseconds, 'second');
     return l_timestamp;
 
-  end convert_unix_timestamp_to_timestamp;
+  end unix_timestamp_to_timestamp;
 
   procedure create_dbtwig_service
   (
@@ -542,11 +542,11 @@ package body db_twig as
   begin
 
     select  json_object('dbTwigErrors'  is json_arrayagg(json_object(
-              'errorTimestamp'          is db_twig.convert_timestamp_to_unix_timestamp(error_timestamp),
+              'errorTimestamp'          is db_twig.to_unix_timestamp(error_timestamp),
               'errorCode'               is error_code,
               'jsonParameters'          is json_parameters format json,
               'errorMessage'            is error_message returning clob)
-              order by db_twig.convert_timestamp_to_unix_timestamp(error_timestamp) desc returning clob) returning clob),
+              order by db_twig.to_unix_timestamp(error_timestamp) desc returning clob) returning clob),
             count(*)
       into  l_clob, l_rows
       from  db_twig_errors;

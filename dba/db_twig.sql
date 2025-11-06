@@ -85,32 +85,32 @@ package db_twig as
   )
   return clob;
 
-  function convert_date_to_unix_timestamp
+  function to_unix_timestamp
   (
     p_date_value                      date
   )
   return number;
 
-  function convert_timestamp_to_unix_timestamp
+  function to_unix_timestamp
   (
     p_timestamp_value                 timestamp
   )
   return varchar2;
 
-  procedure convert_timestamp_to_timeval
+  procedure to_timeval
   (
     p_timestamp_value                 timestamp,
     p_tv_sec                          out number,
     p_tv_usec                         out number
   );
 
-  function convert_unix_timestamp_to_date
+  function unix_timestamp_to_date
   (
     p_unix_timestamp                  number
   )
   return date;
 
-  function convert_unix_timestamp_to_timestamp
+  function unix_timestamp_to_timestamp
   (
     p_unix_timestamp                  float
   )

@@ -1049,12 +1049,12 @@ All rights reserved.
 
     select  count(*), json_object('activeSessions' is
             json_arrayagg(json_object(
-              'lastActivity'    is db_twig.convert_timestamp_to_unix_timestamp(last_activity),
+              'lastActivity'    is db_twig.to_unix_timestamp(last_activity),
               'sessionId'       is session_id,
               'clientAddress'   is client_address,
-              'sessionCreated'  is db_twig.convert_timestamp_to_unix_timestamp(session_created),
+              'sessionCreated'  is db_twig.to_unix_timestamp(session_created),
               'userAgent'       is user_agent)
-              order by db_twig.convert_timestamp_to_unix_timestamp(last_activity)) returning clob)
+              order by db_twig.to_unix_timestamp(last_activity)) returning clob)
       into  l_rows, l_result
       from  icam_sessions
      where  user_id = p_user_id
@@ -1149,15 +1149,15 @@ All rights reserved.
 
     select  count(*), json_object('loginHistory' is
             json_arrayagg(json_object(
-              'sessionCreated'      is db_twig.convert_timestamp_to_unix_timestamp(session_created),
+              'sessionCreated'      is db_twig.to_unix_timestamp(session_created),
               'clientAddress'       is client_address,
               'sessionStatus'       is session_status,
               'sessionDisposition'  is session_disposition,
               'userAgent'           is user_agent,
-              'sessionEnded'        is db_twig.convert_timestamp_to_unix_timestamp(session_ended),
-              'lastActivity'        is db_twig.convert_timestamp_to_unix_timestamp(last_activity),
+              'sessionEnded'        is db_twig.to_unix_timestamp(session_ended),
+              'lastActivity'        is db_twig.to_unix_timestamp(last_activity),
               'terminatedBy'        is icam.get_terminated_by(terminator_id))
-              order by db_twig.convert_timestamp_to_unix_timestamp(session_created) desc returning clob) returning clob)
+              order by db_twig.to_unix_timestamp(session_created) desc returning clob) returning clob)
       into  l_rows, l_result
       from  icam_sessions
      where  user_id = p_user_id
@@ -1408,9 +1408,9 @@ All rights reserved.
               'lastName'            is last_name,
               'accountStatus'       is account_status,
               'accountType'         is account_type,
-              'creationDate'        is db_twig.convert_timestamp_to_unix_timestamp(creation_date),
+              'creationDate'        is db_twig.to_unix_timestamp(creation_date),
               'activeSessionCount'  is icam.get_active_session_count(user_id),
-              'lastActivity'        is db_twig.convert_timestamp_to_unix_timestamp(icam.get_last_activity(user_id)))
+              'lastActivity'        is db_twig.to_unix_timestamp(icam.get_last_activity(user_id)))
               order by username returning clob)
       into  l_result
       from  icam_users;

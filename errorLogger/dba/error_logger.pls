@@ -18,13 +18,13 @@ package body error_logger as
 
     select  count(*), json_object('apiErrorLog' is
             json_arrayagg(json_object(
-              'errorTimestamp' is db_twig.convert_timestamp_to_unix_timestamp(error_timestamp),
+              'errorTimestamp' is db_twig.to_unix_timestamp(error_timestamp),
               'errorId' is error_id,
               'username' is icam.get_session_username(session_id),
               'errorCode' is error_code,
               'errorMessage' is error_message,
               'jsonParameters' is json_parameters format json returning clob)
-              order by db_twig.convert_timestamp_to_unix_timestamp(error_timestamp) desc returning clob) returning clob)
+              order by db_twig.to_unix_timestamp(error_timestamp) desc returning clob) returning clob)
       into  l_rows, l_result
       from  api_errors e
      where service_id = p_service_id;
