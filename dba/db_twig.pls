@@ -19,6 +19,8 @@ package body db_twig as
   s_production_mode                   db_twig_profile.production_mode%type;
   s_api_error_handler                 db_twig_profile.api_error_handler%type;
 
+-- This runs as an autonomous transaction to allow us to record the error while returning an exception which implies a rollback.
+
   procedure db_twig_error
   (
     p_error_code                      db_twig_errors.error_code%type,

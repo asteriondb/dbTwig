@@ -283,6 +283,8 @@ All rights reserved.
 
   end create_webapp_client_session;
 
+-- We always do this, no matter what, whenever called.
+
   procedure update_last_activity
   (
     l_session_id                      icam_sessions.session_id%type
@@ -301,6 +303,8 @@ All rights reserved.
     commit;
 
   end update_last_activity;
+
+-- We always do this, no matter what, whenever called.
 
   procedure validate_identification_and_password
   (
@@ -1558,13 +1562,13 @@ All rights reserved.
     )
     loop
 
-      delete  /*+ no_parallel */
+      delete
         from  confirmation_tokens
        where  user_id = unconfirmed_user_row.user_id;
 
     end loop;
 
-    delete  /*+ no_parallel */
+    delete
       from  icam_users
      where  account_status = AS_UNCONFIRMED;
 
@@ -1595,23 +1599,23 @@ All rights reserved.
 
     end if;
 
-    delete  /*+ no_parallel */
+    delete
       from  confirmation_tokens
      where  user_id = p_user_id;
 
-    delete  /*+ no_parallel */
+    delete
       from  icam_sessions
      where  user_id = p_user_id;
 
-    delete  /*+ no_parallel */
+    delete
       from  account_status_history
      where  user_id = p_user_id;
 
-    delete  /*+ no_parallel */
+    delete
       from  password_history
      where  user_id = p_user_id;
 
-    delete  /*+ no_parallel */
+    delete
       from  icam_users
      where  user_id = p_user_id;
 

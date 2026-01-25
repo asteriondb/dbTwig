@@ -57,6 +57,8 @@ package body error_logger as
 
   end get_error_stack;
 
+-- We always do this, no matter what.
+
   function log_api_error
   (
     p_json_parameters                 api_errors.json_parameters%type,

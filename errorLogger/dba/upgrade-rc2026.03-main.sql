@@ -20,8 +20,8 @@ REM  Put stuff between here.....
 
 REM  ...and here
 
-@error_logger
-@error_logger.pls
+@$HOME/asterion/oracle/dbTwig/errorLogger/dba/error_logger
+@$HOME/asterion/oracle/dbTwig/errorLogger/dba/error_logger.pls
 
 prompt 
 spool off;
