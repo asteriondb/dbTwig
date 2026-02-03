@@ -435,6 +435,23 @@ package body db_twig as
 
   end empty_json_array;
 
+  function epoch_timestamp_to_timestamp
+  (
+    p_epoch_timestamp                 integer
+  )
+  return timestamp
+
+  is
+
+    l_epoch                           timestamp;
+
+  begin
+
+    l_epoch := to_timestamp('1970-01-01', 'yyyy-mm-dd');
+    return l_epoch + numtodsinterval(p_epoch_timestamp, 'second');
+
+  end epoch_timestamp_to_timestamp;
+
   function get_array
   (
     p_json_parameters                 json_object_t,

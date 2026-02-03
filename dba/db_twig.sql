@@ -136,6 +136,12 @@ package db_twig as
   )
   return clob;
 
+  function epoch_timestamp_to_timestamp
+  (
+    p_epoch_timestamp                 integer
+  )
+  return timestamp;
+
 /*
 
 These helper functions make it easy to extract a parameter from a JSON object.
