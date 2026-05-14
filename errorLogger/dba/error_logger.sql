@@ -28,6 +28,26 @@ All rights reserved.
   )
   return api_errors.error_id%type;
 
+/*
+
+  function log_error
+
+  This function can be used to log a runtime error that is not created as a result of throwing an exception.
+  An example of this is used in dgbunker_ai.embedding_server to handle ORA-04036.
+
+  The returned value is the unique error_id value from the api_errors table.
+
+*/
+
+  function log_error
+  (
+    p_error_message                   api_errors.error_message%type,
+    p_error_code                      api_errors.error_code%type,
+    p_service_id                      api_errors.service_id%type,
+    p_json_parameters                 api_errors.json_parameters%type default null
+  )
+  return api_errors.error_id%type;
+
   procedure purge_api_errors
   (
     p_service_id                      api_errors.service_id%type

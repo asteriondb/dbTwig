@@ -79,42 +79,13 @@ package db_twig as
   INVALID_PARAMETERS                  constant pls_integer := -20099;
   INVALID_PARAMETERS_EMSG             constant varchar2(19) := 'Invalid parameters.';
 
+  function ai_enabled_database return boolean;
+
   function call_restapi
   (
     p_json_parameters                 clob
   )
   return clob;
-
-  function to_unix_timestamp
-  (
-    p_date_value                      date
-  )
-  return number;
-
-  function to_unix_timestamp
-  (
-    p_timestamp_value                 timestamp
-  )
-  return varchar2;
-
-  procedure to_timeval
-  (
-    p_timestamp_value                 timestamp,
-    p_tv_sec                          out number,
-    p_tv_usec                         out number
-  );
-
-  function unix_timestamp_to_date
-  (
-    p_unix_timestamp                  number
-  )
-  return date;
-
-  function unix_timestamp_to_timestamp
-  (
-    p_unix_timestamp                  float
-  )
-  return timestamp;
 
   procedure create_dbtwig_service
   (
@@ -122,6 +93,14 @@ package db_twig as
     p_service_name                    db_twig_services.service_name%type,
     p_session_validation_procedure    db_twig_services.session_validation_procedure%type
   );
+
+  function database_edition return varchar2;
+
+  function database_version
+  (
+    p_full_version_value              boolean default false
+  )
+  return varchar2;
 
   procedure db_twig_error
   (
@@ -229,6 +208,37 @@ To specify an optional parameter w/ a default value of null, set p_required to F
     p_service_name                    db_twig_services.service_name%type,
     p_log_all_requests                db_twig_services.log_all_requests%type
   );
+
+  function to_unix_timestamp
+  (
+    p_date_value                      date
+  )
+  return number;
+
+  function to_unix_timestamp
+  (
+    p_timestamp_value                 timestamp
+  )
+  return varchar2;
+
+  procedure to_timeval
+  (
+    p_timestamp_value                 timestamp,
+    p_tv_sec                          out number,
+    p_tv_usec                         out number
+  );
+
+  function unix_timestamp_to_date
+  (
+    p_unix_timestamp                  number
+  )
+  return date;
+
+  function unix_timestamp_to_timestamp
+  (
+    p_unix_timestamp                  float
+  )
+  return timestamp;
 
 end db_twig;
 .

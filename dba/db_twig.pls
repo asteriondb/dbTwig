@@ -79,6 +79,30 @@ package body db_twig as
 ---
 ---
 
+  function ai_enabled_database return boolean
+
+  is
+
+    l_banner_full                     v$version.banner_full%type;
+
+  begin
+
+    select  banner_full
+      into  l_banner_full
+      from  v$version;
+
+    if 0 != instr(l_banner_full, 'AI Database') then
+
+      return true;
+
+    else
+
+      return false;
+
+    end if;
+
+  end ai_enabled_database;
+
   function call_restapi
   (
     p_json_parameters                 clob
@@ -299,98 +323,6 @@ package body db_twig as
 
   end call_restapi;
 
-  function to_unix_timestamp
-  (
-    p_date_value                      date
-  )
-  return number
-
-  is
-
-  begin
-
-    if p_date_value is null then
-
-      return null;
-
-    end if;
-
-    return trunc(p_date_value - to_date('01-Jan-1970')) * db_twig.SECONDS_PER_DAY;
-
-  end to_unix_timestamp;
-
-  function to_unix_timestamp
-  (
-    p_timestamp_value                 timestamp
-  )
-  return varchar2
-
-  is
-
-  begin
-
-    if p_timestamp_value is null then
-
-      return null;
-
-    end if;
-
-    return to_char((trunc(cast(p_timestamp_value as date) - to_date('01-Jan-1970')) * db_twig.SECONDS_PER_DAY) +
-      to_char(p_timestamp_value, 'sssss')) ||
-      '.' || to_char(p_timestamp_value, 'FF6');
-
-  end to_unix_timestamp;
-
-  procedure to_timeval
-  (
-    p_timestamp_value                 timestamp,
-    p_tv_sec                          out number,
-    p_tv_usec                         out number
-  )
-
-  is
-
-  begin
-
-    p_tv_sec := (trunc(cast(p_timestamp_value as date) - to_date('01-Jan-1970')) * db_twig.SECONDS_PER_DAY) +
-      to_char(p_timestamp_value, 'sssss');
-    p_tv_usec := to_char(p_timestamp_value, 'FF6');
-
-  end to_timeval;
-
-  function unix_timestamp_to_date
-  (
-    p_unix_timestamp                  number
-  )
-  return date
-
-  is
-
-  begin
-
-    return to_date('01-jan-1970') + (p_unix_timestamp / db_twig.SECONDS_PER_DAY);
-
-  end unix_timestamp_to_date;
-
-  function unix_timestamp_to_timestamp
-  (
-    p_unix_timestamp                  float
-  )
-  return timestamp
-
-  is
-
-    l_timestamp                       timestamp;
-    l_nanoseconds                     float := mod(p_unix_timestamp, 1);
-
-  begin
-
-    l_timestamp := to_timestamp('01-jan-1970') + (p_unix_timestamp / db_twig.SECONDS_PER_DAY);
-    l_timestamp := l_timestamp + numtodsinterval(l_nanoseconds, 'second');
-    return l_timestamp;
-
-  end unix_timestamp_to_timestamp;
-
   procedure create_dbtwig_service
   (
     p_service_owner                   db_twig_services.service_owner%type,
@@ -417,6 +349,64 @@ package body db_twig as
      where  service_name = p_service_name;
 
   end create_dbtwig_service;
+
+  function database_edition return varchar2
+
+  is
+
+    l_banner_full                     v$version.banner_full%type;
+
+  begin
+
+    select  banner_full
+      into  l_banner_full
+      from  v$version;
+
+    if 0 != instr(l_banner_full, 'Enterprise') then
+
+      return 'Enterprise';
+
+    end if;
+
+    if 0 != instr(l_banner_full, 'Standard') then
+
+      return 'Standard';
+
+    end if;
+
+    if 0 != instr(l_banner_full, 'Free') then
+
+      return 'Free';
+
+    end if;
+
+    if 0 != instr(l_banner_full, 'XE') then
+
+      return 'XE';
+
+    end if;
+
+    return 'Unknown';
+
+  end database_edition;
+
+  function database_version
+  (
+    p_full_version_value              boolean default false
+  )
+  return varchar2
+
+  is
+
+    l_version                     varchar2(64);
+    l_compatibility               varchar2(64);
+
+  begin
+
+    dbms_utility.db_version(l_version, l_compatibility);
+    return l_version;
+
+  end database_version;
 
   function empty_json_array
   (
@@ -741,6 +731,98 @@ package body db_twig as
      where  service_name = p_service_name;
 
   end set_log_all_requests;
+
+  function to_unix_timestamp
+  (
+    p_date_value                      date
+  )
+  return number
+
+  is
+
+  begin
+
+    if p_date_value is null then
+
+      return null;
+
+    end if;
+
+    return trunc(p_date_value - to_date('01-Jan-1970')) * db_twig.SECONDS_PER_DAY;
+
+  end to_unix_timestamp;
+
+  function to_unix_timestamp
+  (
+    p_timestamp_value                 timestamp
+  )
+  return varchar2
+
+  is
+
+  begin
+
+    if p_timestamp_value is null then
+
+      return null;
+
+    end if;
+
+    return to_char((trunc(cast(p_timestamp_value as date) - to_date('01-Jan-1970')) * db_twig.SECONDS_PER_DAY) +
+      to_char(p_timestamp_value, 'sssss')) ||
+      '.' || to_char(p_timestamp_value, 'FF6');
+
+  end to_unix_timestamp;
+
+  procedure to_timeval
+  (
+    p_timestamp_value                 timestamp,
+    p_tv_sec                          out number,
+    p_tv_usec                         out number
+  )
+
+  is
+
+  begin
+
+    p_tv_sec := (trunc(cast(p_timestamp_value as date) - to_date('01-Jan-1970')) * db_twig.SECONDS_PER_DAY) +
+      to_char(p_timestamp_value, 'sssss');
+    p_tv_usec := to_char(p_timestamp_value, 'FF6');
+
+  end to_timeval;
+
+  function unix_timestamp_to_date
+  (
+    p_unix_timestamp                  number
+  )
+  return date
+
+  is
+
+  begin
+
+    return to_date('01-jan-1970') + (p_unix_timestamp / db_twig.SECONDS_PER_DAY);
+
+  end unix_timestamp_to_date;
+
+  function unix_timestamp_to_timestamp
+  (
+    p_unix_timestamp                  float
+  )
+  return timestamp
+
+  is
+
+    l_timestamp                       timestamp;
+    l_nanoseconds                     float := mod(p_unix_timestamp, 1);
+
+  begin
+
+    l_timestamp := to_timestamp('01-jan-1970') + (p_unix_timestamp / db_twig.SECONDS_PER_DAY);
+    l_timestamp := l_timestamp + numtodsinterval(l_nanoseconds, 'second');
+    return l_timestamp;
+
+  end unix_timestamp_to_timestamp;
 
 begin
 
