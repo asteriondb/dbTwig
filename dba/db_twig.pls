@@ -445,9 +445,7 @@ package body db_twig as
   function get_array
   (
     p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   json_array_t default null
+    p_key                             varchar2
   )
   return json_array_t
 
@@ -461,15 +459,31 @@ package body db_twig as
 
     else
 
-      if p_required  then
+      raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG, false);
 
-        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG, false);
+    end if;
 
-      else
+  end get_array;
 
-        return p_default_value;
+  function get_array
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   json_array_t
+  )
+  return json_array_t
 
-      end if;
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return treat(p_json_parameters.get(p_key) as json_array_t);
+
+    else
+
+      return p_default_value;
 
     end if;
 
@@ -478,9 +492,7 @@ package body db_twig as
   function get_boolean
   (
     p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   boolean default null
+    p_key                             varchar2
   )
   return boolean
 
@@ -494,15 +506,31 @@ package body db_twig as
 
     else
 
-      if p_required then
+      raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
-        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
+    end if;
 
-      else
+  end get_boolean;
 
-        return p_default_value;
+  function get_boolean
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   boolean
+  )
+  return boolean
 
-      end if;
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_boolean(p_key);
+
+    else
+
+      return p_default_value;
 
     end if;
 
@@ -511,9 +539,7 @@ package body db_twig as
   function get_clob
   (
     p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   clob default null
+    p_key                             varchar2
   )
   return clob
 
@@ -527,15 +553,31 @@ package body db_twig as
 
     else
 
-      if p_required then
+     raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
-        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
+    end if;
 
-      else
+  end get_clob;
 
-        return p_default_value;
+  function get_clob
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   clob
+  )
+  return clob
 
-      end if;
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_clob(p_key);
+
+    else
+
+      return p_default_value;
 
     end if;
 
@@ -573,9 +615,7 @@ package body db_twig as
   function get_number
   (
     p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   number default null
+    p_key                             varchar2
   )
   return number
 
@@ -589,15 +629,31 @@ package body db_twig as
 
     else
 
-      if p_required then
+      raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
-        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
+    end if;
 
-      else
+  end get_number;
 
-        return p_default_value;
+  function get_number
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   number
+  )
+  return number
 
-      end if;
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_number(p_key);
+
+    else
+
+      return p_default_value;
 
     end if;
 
@@ -606,9 +662,7 @@ package body db_twig as
   function get_object
   (
     p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   json_object_t default null
+    p_key                             varchar2
   )
   return json_object_t
 
@@ -622,15 +676,31 @@ package body db_twig as
 
     else
 
-      if p_required then
+      raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
-        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
+    end if;
 
-      else
+  end get_object;
 
-        return p_default_value;
+  function get_object
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   json_object_t
+  )
+  return json_object_t
 
-      end if;
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_object(p_key);
+
+    else
+
+      return p_default_value;
 
     end if;
 
@@ -686,9 +756,7 @@ package body db_twig as
   function get_string
   (
     p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   varchar2 default null
+    p_key                             varchar2
   )
   return varchar2
 
@@ -702,15 +770,31 @@ package body db_twig as
 
     else
 
-      if p_required then
+      raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
 
-        raise_application_error(INVALID_PARAMETERS, INVALID_PARAMETERS_EMSG);
+    end if;
 
-      else
+  end get_string;
 
-        return p_default_value;
+  function get_string
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   varchar2
+  )
+  return varchar2
 
-      end if;
+  is
+
+  begin
+
+    if p_json_parameters.has(p_key) then
+
+      return p_json_parameters.get_string(p_key);
+
+    else
+
+      return p_default_value;
 
     end if;
 

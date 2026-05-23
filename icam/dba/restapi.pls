@@ -123,10 +123,10 @@ as
 
     l_username := db_twig.get_string(p_json_parameters, 'username');
     l_first_name := db_twig.get_string(p_json_parameters, 'firstName');
-    l_middle_name := db_twig.get_string(p_json_parameters, 'middleName', false);
+    l_middle_name := db_twig.get_string(p_json_parameters, 'middleName', null);
     l_last_name := db_twig.get_string(p_json_parameters, 'lastName');
     l_email_address := db_twig.get_string(p_json_parameters, 'emailAddress');
-    l_default_timezone := db_twig.get_string(p_json_parameters, 'defaultTimezone', false, 'Etc/GMT');
+    l_default_timezone := db_twig.get_string(p_json_parameters, 'defaultTimezone', 'Etc/GMT');
 
     return icam.create_user_account(l_username, l_first_name, l_middle_name, l_last_name, l_email_address, l_default_timezone,
       l_client_address, l_caller_session_id);
@@ -368,7 +368,7 @@ as
 
     l_first_name := db_twig.get_string(p_json_parameters, 'firstName');
     l_last_name := db_twig.get_string(p_json_parameters, 'lastName');
-    l_middle_name := db_twig.get_string(p_json_parameters, 'middleName', false);
+    l_middle_name := db_twig.get_string(p_json_parameters, 'middleName', null);
     icam.update_user_info(icam.get_session_user_id_from_json(p_json_parameters),
       l_first_name, l_middle_name, l_last_name);
 

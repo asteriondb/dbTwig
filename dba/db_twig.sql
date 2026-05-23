@@ -138,27 +138,45 @@ To specify an optional parameter w/ a default value of null, set p_required to F
   function get_array
   (
     p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return json_array_t;
+
+  function get_array
+  (
+    p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   json_array_t default null
+    p_default_value                   json_array_t
   )
   return json_array_t;
 
   function get_boolean
   (
     p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return boolean;
+
+  function get_boolean
+  (
+    p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   boolean default null
+    p_default_value                   boolean
   )
   return boolean;
 
   function get_clob
   (
     p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return clob;
+
+  function get_clob
+  (
+    p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   clob default null
+    p_default_value                   clob
   )
   return clob;
 
@@ -167,18 +185,30 @@ To specify an optional parameter w/ a default value of null, set p_required to F
   function get_number
   (
     p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return number;
+
+  function get_number
+  (
+    p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   number default null
+    p_default_value                   number
   )
   return number;
 
   function get_object
   (
     p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return json_object_t;
+
+  function get_object
+  (
+    p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   json_object_t default null
+    p_default_value                   json_object_t
   )
   return json_object_t;
 
@@ -197,9 +227,15 @@ To specify an optional parameter w/ a default value of null, set p_required to F
   function get_string
   (
     p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return varchar2;
+
+  function get_string
+  (
+    p_json_parameters                 json_object_t,
     p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   varchar2 default null
+    p_default_value                   varchar2
   )
   return varchar2;
 
