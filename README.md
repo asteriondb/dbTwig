@@ -24,7 +24,7 @@ Think about it, if all of your files are now stored in the database and there ar
     14. You will simplify troubleshooting and hot patching
     15. You will be using a framework and an architecture that forces you to write secure applications
 
-Please see our comprehensive documentation located at: [DbTwig Middle Tier Adapter](https://asteriondb.com/dbtwig-readme/)
+Please see our comprehensive documentation located at: [DbTwig Middle Tier Adapter](https://support.asteriondb.com/dbtwig-readme/)
 
 *Note: the link does not open in a new window/tab.  Use ctrl/command or right-click if necessary*
 
