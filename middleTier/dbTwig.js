@@ -51,7 +51,13 @@ var tryAndCatch = async function(connection, text, bindVars)
 exports.callDbTwig = async function(connection, requestData)
 {
   //  Need logic here to throw an error if the client tries to stuff our system parameters in the bodyData.
-  
+
+  if (Object.hasOwn(requestData.body, 'sessionId')) delete requestData.body.sessionId;
+  if (Object.hasOwn(requestData.body, 'clientAddress')) delete requestData.body.clientAddress;  
+  if (Object.hasOwn(requestData.body, 'userAgent')) delete requestData.body.userAgent;
+  if (Object.hasOwn(requestData.body, 'httpHost')) delete requestData.body.httpHost;
+  if (Object.hasOwn(requestData.body, 'serverAddress')) delete requestData.body.serverAddress;
+
   systemParameters.sessionId = requestData.sessionId;
   systemParameters.clientAddress = requestData.clientAddress;
   systemParameters.userAgent = requestData.userAgent;
