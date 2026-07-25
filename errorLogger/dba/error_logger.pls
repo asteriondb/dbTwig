@@ -92,6 +92,12 @@ package body error_logger as
 
     end if;
 
+    if l_json_parameters.has('weblinkPassword') then
+
+      l_json_parameters.remove('weblinkPassword');
+
+    end if;
+
     l_clob := l_json_parameters.to_clob;
 
     insert into api_errors

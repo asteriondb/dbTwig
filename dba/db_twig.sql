@@ -5,7 +5,6 @@ package db_twig as
   SECONDS_PER_DAY                     constant pls_integer := 86400;
 
 -- Error codes -20000 through -20099 are reserved for use by DbTwig
--- Error codes -20001 through
 
   GENERIC_ERROR                       constant pls_integer := -20000;
 
@@ -121,26 +120,18 @@ package db_twig as
   )
   return timestamp;
 
-/*
-
-These helper functions make it easy to extract a parameter from a JSON object.
-
-The functions allow you to easily handle required parameters, parameters w/ a default value and parameters that are null if not present.
-
-To specify a required parameter, set p_required to TRUE (default) and omit the p_default_value parameter.
-
-To specify an optional parameter with a default value, set p_required to FALSE and provide a value for p_default_value.
-
-To specify an optional parameter w/ a default value of null, set p_required to FALSE and omit the p_default_value parameter.
-
-*/
-
   function get_array
   (
     p_json_parameters                 json_object_t,
     p_key                             varchar2
   )
   return json_array_t;
+
+-- These get_xxx functions exist as an easy way to get parameters from the supplied object.
+-- The first version of a get_xxx function is used when you are getting a required parameter.
+-- The overloaded version is used when getting an optional parameter. The p_default_value
+-- parameter is used if the requested parameter is not found. Note, null, and empty JSON
+-- objects are valid default values.
 
   function get_array
   (
