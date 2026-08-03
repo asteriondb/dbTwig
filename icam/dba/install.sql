@@ -84,7 +84,7 @@ create table login_history
 
 create table invited_users
 (
-  invitation_token			        varchar2(32) unique not null,
+  invitation_token			        raw(32) unique not null,
   user_sending_invitation           number(12) not null
     references icam_users(user_id),
   email_address				        varchar2(128) not null,
@@ -128,7 +128,7 @@ create index account_status_user_ix on account_status_history(user_id);
 
 create table icam_sessions
 (
-  session_id				        varchar2(32) primary key,
+  session_id				        raw(32) primary key,
   user_id				            number(12) not null
     references icam_users(user_id),
   client_address                	varchar2(39) not null,
@@ -144,7 +144,7 @@ create table icam_sessions
   session_inactivity_limit		    number(5) default 60 
     constraint user_sess_inactivity_limit_chk check (session_inactivity_limit <= 86400) not null,
   user_agent				        varchar2(1024) not null,
-  terminator_id                     varchar2(32)
+  terminator_id                     raw(32)
     references icam_sessions(session_id),
   client_type                       varchar2(16) not null
     constraint user_sess_client_type check (client_type in ('webAppClient', 'fileUploadClient', 'apiClient'))
@@ -154,7 +154,7 @@ create index icam_sessions_user_id_ix on icam_sessions(user_id);
 
 create table confirmation_tokens
 (
-  confirmation_token			    varchar2(32) unique not null,
+  confirmation_token			    raw(32) primary key,
   user_id				            number(12) not null
     references icam_users(user_id),
   purpose				            varchar2(20) not null
@@ -167,7 +167,7 @@ create table confirmation_tokens
       (token_status in ('unused', 'used', 'cancelled', 'expired')),
   client_address                    varchar2(39) not null,
   email_address                     varchar2(128),
-  session_id                        varchar2(32)
+  session_id                        raw(32)
     references icam_sessions(session_id)
 );
 

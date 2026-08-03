@@ -354,7 +354,13 @@ as
     p_json_parameters                 json_object_t
   );
 
-  procedure terminate_all_icam_sessions
+-- DBA use only. Not mapped to the middle tier.
+
+  procedure terminate_active_sessions;
+
+-- DBA use only. Not mapped to the middle tier.
+
+  procedure terminate_all_sessions
   (
     p_user_id                         icam_users.user_id%type
   );

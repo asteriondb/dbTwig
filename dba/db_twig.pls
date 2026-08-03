@@ -275,14 +275,14 @@ package body db_twig as
       if 'Y' = l_production_mode then
 
         db_twig_error(GENERIC_ERROR, p_json_parameters, utl_call_stack.error_msg(1));
+        raise_application_error(GENERIC_ERROR, 'Invalid PL/SQL', false);
 
       else
 
         db_twig_error(GENERIC_ERROR, p_json_parameters,  sqlerrm);
+        raise_application_error(GENERIC_ERROR, l_plsql_text, true);
 
       end if;
-
-      raise_application_error(GENERIC_ERROR, l_plsql_text, true);
 
     when PACKAGE_INVALIDATED or PACKAGE_DISCARDED then
 

@@ -133,7 +133,7 @@ All rights reserved.
 
   begin
 
-    l_confirmation_token := dbms_random.string('x', get_column_length('CONFIRMATION_TOKENS', 'CONFIRMATION_TOKEN'));
+    l_confirmation_token := dbms_crypto.randombytes(get_column_length('CONFIRMATION_TOKENS', 'CONFIRMATION_TOKEN'));
 
     insert into confirmation_tokens
       (confirmation_token, user_id, purpose, creation_date, expiration_date, client_address, email_address, session_id)
@@ -210,7 +210,7 @@ All rights reserved.
 
   begin
 
-    l_session_id := dbms_random.string('x', get_column_length('ICAM_SESSIONS', 'SESSION_ID'));
+    l_session_id := dbms_crypto.randombytes(get_column_length('ICAM_SESSIONS', 'SESSION_ID'));
 
     if AS_CHANGE_PASSWORD = p_account_status then
 
@@ -731,7 +731,7 @@ All rights reserved.
 
     l_user_id                         icam_sessions.user_id%type := get_session_user_id_from_json(p_json_parameters);
     l_user_agent                      icam_sessions.user_agent%type := db_twig.get_string(p_json_parameters, 'userAgent');
-    l_session_id                      icam_sessions.session_id%type := dbms_random.string('x', get_column_length('ICAM_SESSIONS', 'SESSION_ID'));
+    l_session_id                      icam_sessions.session_id%type := dbms_crypto.randombytes(get_column_length('ICAM_SESSIONS', 'SESSION_ID'));
 
   begin
 
@@ -918,7 +918,7 @@ All rights reserved.
 
   begin
 
-    l_session_id := p_json_object.get_string('sessionId');
+    l_session_id := hextoraw(p_json_object.get_string('sessionId'));
     return l_session_id;
 
   end extract_session_id;
@@ -1054,7 +1054,7 @@ All rights reserved.
     select  count(*), json_object('activeSessions' is
             json_arrayagg(json_object(
               'lastActivity'    is db_twig.to_unix_timestamp(last_activity),
-              'sessionId'       is session_id,
+              'sessionId'       is rawtohex(session_id),
               'clientAddress'   is client_address,
               'sessionCreated'  is db_twig.to_unix_timestamp(session_created),
               'userAgent'       is user_agent)
@@ -1190,7 +1190,7 @@ All rights reserved.
   begin
 
     select  json_object(
-              'sessionId' is session_id,
+              'sessionId' is rawtohex(session_id),
               'sessionStatus' is session_status,
               'firstName' is first_name,
               'middleName' is middle_name,
@@ -1743,7 +1743,21 @@ All rights reserved.
 
   end site_administrator_check;
 
-  procedure terminate_all_icam_sessions
+  procedure terminate_active_sessions
+
+  is
+
+  begin
+
+    update  icam_sessions
+       set  session_ended = systimestamp at time zone 'utc',
+            session_disposition = SD_CANCELED,
+            session_status = SS_TERMINATED
+     where  session_status = SS_ACTIVE;
+
+  end terminate_active_sessions;
+
+  procedure terminate_all_sessions
   (
     p_user_id                         icam_users.user_id%type
   )
@@ -1758,7 +1772,7 @@ All rights reserved.
             session_status = SS_TERMINATED
      where  user_id = p_user_id;
 
-  end terminate_all_icam_sessions;
+  end terminate_all_sessions;
 
   procedure terminate_idle_sessions
   (

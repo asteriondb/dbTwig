@@ -1,7 +1,7 @@
 create or replace
 package body dbtwig_example as
 
-  g_api_token                         varchar2(32) := '%api-token%';              --  Store your AsterionDB API Token here.
+  g_api_token                         raw(32) := hextoraw('');              --  Store your AsterionDB API Token here.
 
   SERVICE_NAME                        constant varchar2(13) := 'dbTwigExample';
 
