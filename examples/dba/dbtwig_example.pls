@@ -1,6 +1,10 @@
 create or replace
 package body dbtwig_example as
 
+-- This demonstration application focuses on showing you how an API call generated
+-- by a client navigates the middle-tier and down into your logic. It does not
+-- cover production issues such as session instatiation and validation.
+
   g_api_token                         raw(32) := hextoraw('');              --  Store your AsterionDB API Token here.
 
   SERVICE_NAME                        constant varchar2(13) := 'dbTwigExample';
