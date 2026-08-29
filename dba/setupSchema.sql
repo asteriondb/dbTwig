@@ -19,6 +19,13 @@ begin
     l_sql_text := 'grant create session to &dbtwig_listener identified by "&middle_tier_password"';
     execute immediate l_sql_text;
 
+    l_sql_text := 'grant create session to &dbplugin_user identified by "&middle_tier_password"';
+    execute immediate l_sql_text;
+
 end;
 .
 /
+
+grant execute on dbms_aq to &dbtwig_user;
+grant execute on dbms_aqadm to &dbtwig_user;
+

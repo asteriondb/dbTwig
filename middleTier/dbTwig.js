@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- *  Copyright (c) 2018, 2022 by AsterionDB Inc.                               *
+ *  Copyright (c) 2018, 2026 by AsterionDB Inc.                               *
  *                                                                            *
  *  All rights reserved.  No part of this work may be reproduced or otherwise *
  *  incorporated into other works without the express written consent of      *

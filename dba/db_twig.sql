@@ -2,7 +2,9 @@ create or replace
 package db_twig as
 
   SERVICE_NAME                        constant varchar2(6) := 'dbTwig';
+
   SECONDS_PER_DAY                     constant pls_integer := 86400;
+  MILLISECONDS                        constant pls_integer := 1000;
 
 -- Error codes -20000 through -20099 are reserved for use by DbTwig
 
@@ -32,6 +34,9 @@ package db_twig as
   SESSION_USER_AGENT_MISMATCH_EMSG    constant varchar2(32) := 'Session user-agents do not match';
 
   DBTWIG_FATAL_ERROR_FLOOR            constant pls_integer := -20007;
+
+  FEATURE_DISABLED                    constant pls_integer := -20084;
+  FEATURE_DISABLED_EMSG               constant varchar2(29) := 'Requested feature is disabled';
 
   ACTION_DISALLOWED                   constant pls_integer := -20085;
   ACTION_DISALLOWED_EMSG              constant varchar2(35) := 'The requested action is not allowed';
@@ -173,6 +178,8 @@ package db_twig as
 
   function get_dbtwig_errors return clob;
 
+  function get_dbtwig_profile return json_object_t;
+
   function get_number
   (
     p_json_parameters                 json_object_t,
@@ -236,6 +243,11 @@ package db_twig as
     p_log_all_requests                db_twig_services.log_all_requests%type
   );
 
+  procedure set_ssl_enabled
+  (
+    p_ssl_enabled                     db_twig_profile.ssl_enabled%type
+  );
+
   function to_unix_timestamp
   (
     p_date_value                      date
@@ -268,6 +280,12 @@ package db_twig as
   return timestamp;
 
 end db_twig;
+
+/*
+    sslEnabled                If enabled SSL enabled weblinks will be generated (e.g. https://...).  Use the constants
+                              OPTION_ENABLED and OPTION_DISABLED to set this value.
+
+*/
 .
 /
 show errors package db_twig

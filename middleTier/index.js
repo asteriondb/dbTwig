@@ -101,7 +101,7 @@ function getRequestData(request, serverAddress)
     serverAddress: serverAddress
   };
 
-  if (undefined !== authorization) obj.sessionId = authorization.split(" ")[1];
+  if (undefined !== authorization && null !== authorization && 'null' !== authorization) obj.sessionId = authorization.split(" ")[1];
 
   return(obj);
 }
@@ -121,16 +121,15 @@ async function handleOauthReply(request, response)
   var sessionId = state.substr(state.lastIndexOf('/') + 1);
 
   let authorization = request.get('authorization');
-
+  
   let requestData = 
   {
-    sessionId: (undefined !== authorization ? authorization.split(" ")[1] : ""), 
+    sessionId: (undefined !== authorization ? authorization.split(" ")[1] : sessionId), 
     clientAddress: request.get('x-forwarded-for'),
     userAgent: request.get('User-Agent'),
     httpHost: request.get('Host'),
-    body: request.body,
     entryPoint: 'saveOauthReply',
-    serviceName: 'dgBunker',
+    serviceName: 'email',
     originalUrl: request.originalUrl,
     serverAddress: server.address().address
   };
@@ -138,19 +137,22 @@ async function handleOauthReply(request, response)
   if (undefined !== request.query.error || undefined === request.query.code)
   {
     let connection = await dbTwig.getConnectionFromPool();
+    requestData.body = {error: request.query.error};
     let result = await dbTwig.callDbTwig(connection, requestData);
-  
-    if (!result.status) response.status(HTTP_SERVER_ERROR);
+    if (!result.status)
+    {
+      logger.log('error', result.errorMessage);
+      response.status(HTTP_SERVER_ERROR);
+    } 
 
     if (undefined !== result.lob)
     {
       let jsonPayload = await dbTwig.getJsonPayload(result.lob);
-      response.redirect(origin + '/gmailAuthReply');
     }
-    else
-      response.redirect(origin + '/gmailAuthReply');
-  
+
     dbTwig.closeConnection(connection);
+
+    return response.redirect(origin + '/gmailAuthReply?error=' + request.query.error);
   }
 
   requestData.entryPoint = 'getGmailAccessTokenParams';
@@ -201,7 +203,7 @@ async function handleOauthReply(request, response)
     jsonPayload = JSON.stringify({errorCode: result.errorCode, errorMessage: result.errorMessage});
 
   dbTwig.closeConnection(connection);
-  response.redirect(origin + '/gmailAuthReply');
+  response.redirect(origin + '/gmailAuthReply?success');
 }
 
 function handleUploadRequest(request, response)

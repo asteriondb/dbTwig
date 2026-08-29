@@ -123,17 +123,25 @@ All rights reserved.
     p_expiration_date                 confirmation_tokens.expiration_date%type,
     p_client_address                  confirmation_tokens.client_address%type default null,
     p_email_address                   confirmation_tokens.email_address%type default null,
-    p_session_id                      icam_sessions.session_id%type default null
+    p_session_id                      icam_sessions.session_id%type default null,
+    p_token_length                    pls_integer default null
   )
   return confirmation_tokens.confirmation_token%type
 
   is
 
     l_confirmation_token              confirmation_tokens.confirmation_token%type;
+    l_token_length                    pls_integer := p_token_length;
 
   begin
 
-    l_confirmation_token := dbms_crypto.randombytes(get_column_length('CONFIRMATION_TOKENS', 'CONFIRMATION_TOKEN'));
+    if l_token_length is null then
+
+      l_token_length := get_column_length('CONFIRMATION_TOKENS', 'CONFIRMATION_TOKEN');
+
+    end if;
+
+    l_confirmation_token := dbms_crypto.randombytes(l_token_length);
 
     insert into confirmation_tokens
       (confirmation_token, user_id, purpose, creation_date, expiration_date, client_address, email_address, session_id)
@@ -790,7 +798,6 @@ All rights reserved.
 
   begin
 
-
     begin
 
       insert into icam_users
@@ -922,48 +929,6 @@ All rights reserved.
     return l_session_id;
 
   end extract_session_id;
-
-  procedure generate_password_reset_token
-  (
-    p_email_address                   icam_users.email_address%type,
-    p_client_address                  confirmation_tokens.client_address%type
-  )
-
-  is
-
-    l_confirmation_token              confirmation_tokens.confirmation_token%type;
-    l_user_id                         icam_users.user_id%type;
-    l_first_name                      icam_users.first_name%type;
-    l_middle_name                     icam_users.middle_name%type;
-    l_last_name                       icam_users.last_name%type;
-    l_account_status                  icam_users.account_status%type;
-
-  begin
-
-    begin
-
-      select  user_id, first_name, middle_name, last_name, account_status
-        into  l_user_id, l_first_name, l_middle_name, l_last_name, l_account_status
-        from  icam_users
-       where  upper(email_address) = upper(p_email_address);
-
-      if AS_ACTIVE = l_account_status then
-
-        l_confirmation_token := create_confirmation_token(p_user_id => l_user_id, p_purpose => 'password reset',
-          p_expiration_date => systimestamp at time zone 'utc' + 1, p_client_address => p_client_address);
--- TODO        email.send_reset_password_email(l_first_name||' '||l_middle_name||' '||l_last_name, p_email_address, l_confirmation_token);
-
-      end if;
-
-    exception
-
-    when no_data_found then
-
-      null;
-
-    end;
-
-  end generate_password_reset_token;
 
   function generate_temporary_password
   (
@@ -1396,34 +1361,7 @@ All rights reserved.
 
   end get_user_id;
 
-  function get_user_list return clob
-
-  is
-
-    l_result                          clob;
-
-  begin
-
-    select  json_arrayagg(json_object(
-              'username'            is username,
-              'emailAddress'        is email_address,
-              'firstName'           is first_name,
-              'middleName'          is middle_name,
-              'lastName'            is last_name,
-              'accountStatus'       is account_status,
-              'accountType'         is account_type,
-              'creationDate'        is db_twig.to_unix_timestamp(creation_date),
-              'activeSessionCount'  is icam.get_active_session_count(user_id),
-              'lastActivity'        is db_twig.to_unix_timestamp(icam.get_last_activity(user_id)))
-              order by username returning clob)
-      into  l_result
-      from  icam_users;
-
-    return l_result;
-
-  end get_user_list;
-
-  function get_user_settings
+  function get_user_info
   (
     p_user_id                         icam_users.user_id%type
   )
@@ -1453,9 +1391,9 @@ All rights reserved.
 
     return l_result;
 
-  end get_user_settings;
+  end get_user_info;
 
-  function get_user_settings
+  function get_user_info
   (
     p_username                        icam_users.username%type
   )
@@ -1472,9 +1410,36 @@ All rights reserved.
       from  icam_users
      where  upper(username) = upper(p_username);
 
-    return get_user_settings(l_user_id);
+    return get_user_info(l_user_id);
 
-  end get_user_settings;
+  end get_user_info;
+
+  function get_user_list return clob
+
+  is
+
+    l_result                          clob;
+
+  begin
+
+    select  json_arrayagg(json_object(
+              'username'            is username,
+              'emailAddress'        is email_address,
+              'firstName'           is first_name,
+              'middleName'          is middle_name,
+              'lastName'            is last_name,
+              'accountStatus'       is account_status,
+              'accountType'         is account_type,
+              'creationDate'        is db_twig.to_unix_timestamp(creation_date),
+              'activeSessionCount'  is icam.get_active_session_count(user_id),
+              'lastActivity'        is db_twig.to_unix_timestamp(icam.get_last_activity(user_id)))
+              order by username returning clob)
+      into  l_result
+      from  icam_users;
+
+    return l_result;
+
+  end get_user_list;
 
   function hash_value_for_user
   (
@@ -1536,7 +1501,7 @@ All rights reserved.
         from  icam_users
        where  upper(email_address) = upper(p_email_address);
 
--- TODO      email.send_recovered_username_email(l_first_name||' '||l_middle_name||' '||l_last_name, p_email_address, l_username);
+      email.send_recovered_username_email(l_first_name||' '||l_middle_name||' '||l_last_name, p_email_address, l_username, SERVICE_NAME);
 
     exception
 
@@ -1680,17 +1645,58 @@ All rights reserved.
   is
 
     l_row_exists                      varchar2(1);
-    l_change_email_code               varchar2(6) :=
-      create_confirmation_token(p_user_id => p_user_id, p_purpose => 'change email',
-        p_expiration_date => systimestamp at time zone 'utc' + 1200 / db_twig.SECONDS_PER_DAY,
-        p_client_address => p_client_address, p_email_address => p_new_email_address);
+    l_expiration_date                 confirmation_tokens.expiration_date%type := systimestamp at time zone 'utc' + 1200 / db_twig.SECONDS_PER_DAY;
+    l_change_email_code               varchar2(8) :=
+      rawtohex(create_confirmation_token(p_user_id => p_user_id, p_purpose => 'change email',
+        p_expiration_date => l_expiration_date, p_client_address => p_client_address,
+        p_email_address => p_new_email_address, p_token_length => 4));
 
   begin
 
     validate_new_email_address(p_new_email_address);
--- TODO    email.send_change_email_code(p_user_id, p_new_email_address, l_change_email_code);
+    email.send_change_email_code(p_user_id, p_new_email_address, l_change_email_code, SERVICE_NAME, l_expiration_date);
 
   end send_change_email_code;
+
+  procedure send_password_reset_token
+  (
+    p_email_address                   icam_users.email_address%type,
+    p_client_address                  confirmation_tokens.client_address%type,
+    p_website_root_address            varchar2,
+    p_password_reset_page             varchar2
+  )
+
+  is
+
+    l_confirmation_token              confirmation_tokens.confirmation_token%type;
+    l_user_id                         icam_users.user_id%type;
+    l_expiration_date                 confirmation_tokens.expiration_date%type := systimestamp at time zone 'utc' + 1200 / db_twig.SECONDS_PER_DAY;
+    l_name                            varchar2(128);
+    l_account_status                  icam_users.account_status%type;
+
+  begin
+
+    select  user_id, first_name||' '||middle_name||' '||last_name, account_status
+      into  l_user_id, l_name, l_account_status
+      from  icam_users
+     where  upper(email_address) = upper(p_email_address);
+
+    if AS_ACTIVE = l_account_status then
+
+      l_confirmation_token := create_confirmation_token(p_user_id => l_user_id, p_purpose => 'password reset',
+        p_expiration_date => l_expiration_date, p_client_address => p_client_address);
+        email.send_reset_password_email(l_name, p_email_address, l_confirmation_token,
+        p_website_root_address, p_password_reset_page, service_name, 20);
+
+    end if;
+
+  exception
+
+  when no_data_found then
+
+    null;
+
+  end send_password_reset_token;
 
   function site_administrator_check
   (
@@ -2037,6 +2043,27 @@ All rights reserved.
      where  confirmation_token = p_confirmation_token;
 
   end validate_confirmation_token;
+
+  function validate_email_address
+  (
+    p_email_address                   icam_users.email_address%type
+  )
+  return icam_users.user_id%type
+
+  is
+
+    l_user_id                         icam_users.user_id%type;
+
+  begin
+
+    select  user_id
+      into  l_user_id
+      from  icam_users
+     where  upper(email_address) = upper(p_email_address);
+
+    return l_user_id;
+
+  end validate_email_address;
 
   function validate_login_authorization
   (

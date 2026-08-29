@@ -59,6 +59,7 @@ create table api_errors
 @$HOME/asterion/oracle/dbTwig/errorLogger/dba/error_logger.sql
 @$HOME/asterion/oracle/dbTwig/errorLogger/dba/error_logger.pls
 
+create or replace synonym &dbtwig_user..error_logger for &elog_user..error_logger;
 grant execute on &elog_user..error_logger to &dbtwig_user;
 
 exit;

@@ -1,0 +1,10 @@
+insert into middle_tier_map values ('disableSmtp', 'procedure', 'restapi.disable_smtp', 'email', 'administrator', 'N');
+insert into middle_tier_map values ('getEmailConfig', 'function', 'restapi.get_email_config', 'email', 'administrator', 'N');
+insert into middle_tier_map values ('getGmailAccessTokenParams', 'function', 'restapi.get_gmail_access_token_params', 'email', 'administrator', 'N');
+insert into middle_tier_map values ('getGmailSigninUrl', 'function', 'restapi.get_gmail_signin_url', 'email', 'administrator', 'N');
+insert into middle_tier_map values ('saveOauthReply', 'procedure', 'restapi.save_oauth_reply', 'email', 'none', 'N');
+insert into middle_tier_map values ('sendEmail', 'procedure', 'restapi.send_email', 'email', 'user', 'N');
+insert into middle_tier_map values ('sendEmailToAllUsers', 'procedure', 'restapi.send_email_to_all_users', 'email', 'administrator', 'N');
+insert into middle_tier_map values ('sendInvitation', 'procedure', 'restapi.send_invitation', 'email', 'administrator', 'N');
+insert into middle_tier_map values ('sendTestEmail', 'procedure', 'restapi.send_test_email', 'email', 'administrator', 'N');
+insert into middle_tier_map values ('updateEmailConfig', 'procedure', 'restapi.update_email_config', 'email', 'administrator', 'N');

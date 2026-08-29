@@ -98,17 +98,6 @@ as
   )
   return icam_sessions.session_id%type;
 
-  function create_confirmation_token
-  (
-    p_user_id                         icam_users.user_id%type,
-    p_purpose                         confirmation_tokens.purpose%type,
-    p_expiration_date                 confirmation_tokens.expiration_date%type,
-    p_client_address                  confirmation_tokens.client_address%type default null,
-    p_email_address                   confirmation_tokens.email_address%type default null,
-    p_session_id                      icam_sessions.session_id%type default null
-  )
-  return confirmation_tokens.confirmation_token%type;
-
   procedure create_icam_service;
 
   function create_user_account
@@ -144,12 +133,6 @@ as
     p_json_object                     json_object_t
   )
   return icam_sessions.session_id%type;
-
-  procedure generate_password_reset_token
-  (
-    p_email_address                   icam_users.email_address%type,
-    p_client_address                  confirmation_tokens.client_address%type
-  );
 
   function generate_temporary_password
   (
@@ -274,25 +257,25 @@ as
   )
   return icam_users.username%type;
 
-  function get_user_settings
-  (
-    p_user_id                         icam_users.user_id%type
-  )
-  return clob;
-
   function get_user_id
   (
     p_username                        icam_users.username%type
   )
   return icam_users.user_id%type;
 
-  function get_user_list return clob;
+  function get_user_info
+  (
+    p_user_id                         icam_users.user_id%type
+  )
+  return clob;
 
-  function get_user_settings
+  function get_user_info
   (
     p_username                        icam_users.username%type
   )
   return clob;
+
+  function get_user_list return clob;
 
   function hash_value_for_user
   (
@@ -347,6 +330,14 @@ as
     p_user_id                         icam_users.user_id%type,
     p_new_email_address               icam_users.email_address%type,
     p_client_address                  confirmation_tokens.client_address%type
+  );
+
+  procedure send_password_reset_token
+  (
+    p_email_address                   icam_users.email_address%type,
+    p_client_address                  confirmation_tokens.client_address%type,
+    p_website_root_address            varchar2,
+    p_password_reset_page             varchar2
   );
 
   procedure site_administrator_check

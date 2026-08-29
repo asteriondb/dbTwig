@@ -187,7 +187,12 @@ create or replace synonym &elog_user..icam for &icam_user..icam;
 
 alter package &elog_user..error_logger compile body;
 
-begin icam.create_icam_service; end;
+begin
+
+  db_twig.create_dbtwig_service(p_service_name => 'icam', p_service_owner => '&icam_user', 
+      p_session_validation_procedure => 'restapi.validate_session');
+
+end;
 .
 /
 

@@ -612,6 +612,23 @@ package body db_twig as
 
   end get_dbtwig_errors;
 
+  function get_dbtwig_profile return json_object_t
+
+  is
+
+    l_clob                            clob;
+
+  begin
+
+    select  json_object('productionMode' is production_mode,
+                        'sslEnabled' is ssl_enabled)
+      into  l_clob
+      from  db_twig_profile;
+
+    return json_object_t(l_clob);
+
+  end get_dbtwig_profile;
+
   function get_number
   (
     p_json_parameters                 json_object_t,
@@ -815,6 +832,20 @@ package body db_twig as
      where  service_name = p_service_name;
 
   end set_log_all_requests;
+
+  procedure set_ssl_enabled
+  (
+    p_ssl_enabled                     db_twig_profile.ssl_enabled%type
+  )
+
+  is
+
+  begin
+
+    update  db_twig_profile
+       set  ssl_enabled = p_ssl_enabled;
+
+  end set_ssl_enabled;
 
   function to_unix_timestamp
   (

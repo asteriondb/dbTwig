@@ -111,6 +111,22 @@ package body error_logger as
 
   end log_api_error;
 
+  procedure log_api_error
+  (
+    p_json_parameters                 api_errors.json_parameters%type,
+    p_service_id                      api_errors.service_id%type
+  )
+
+  is
+
+    l_error_id                        api_errors.error_id%type;
+
+  begin
+
+    l_error_id := log_api_error(p_json_parameters, p_service_id);
+
+  end log_api_error;
+
   function log_error
   (
     p_error_message                   api_errors.error_message%type,

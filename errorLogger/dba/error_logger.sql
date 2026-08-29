@@ -16,7 +16,7 @@ All rights reserved.
 
 /*
 
-  This function can be called by another micro-service to log an error and return the error-id from the error stack.
+  This function/procedure can be called by another micro-service to log an error and return the error-id from the error stack.
   This is a PRAGMA AUTONOMOUS_TRANSACTION function.
 
 */
@@ -27,6 +27,12 @@ All rights reserved.
     p_service_id                      api_errors.service_id%type
   )
   return api_errors.error_id%type;
+
+  procedure log_api_error
+  (
+    p_json_parameters                 api_errors.json_parameters%type,
+    p_service_id                      api_errors.service_id%type
+  );
 
 /*
 
