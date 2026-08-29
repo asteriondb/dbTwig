@@ -109,6 +109,15 @@ Copyright 2014 - 2025 by AsterionDB, Inc. All rights reserved.
   )
   return clob;
 
+
+  function get_plugin_modules
+  (
+    p_plugin_server                   plugin_modules.plugin_server%type
+  )
+  return clob;
+
+  function get_plugin_servers return json_array_t;
+
 /*
 
   get_plugin_server

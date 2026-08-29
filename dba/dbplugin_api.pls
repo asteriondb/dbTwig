@@ -330,6 +330,27 @@ Copyright 2014 - 2025 by AsterionDB, Inc. All rights reserved.
 
   end execute_python_script;
 
+  function get_plugin_modules
+  (
+    p_plugin_server                   plugin_modules.plugin_server%type
+  )
+  return clob
+
+  is
+
+    l_clob                            clob;
+
+  begin
+
+    select  nvl(json_arrayagg(json_object('pluginModule' is plugin_module)), '[]')
+      into  l_clob
+      from  plugin_modules
+     where  plugin_server = p_plugin_server;
+
+    return l_clob;
+
+  end get_plugin_modules;
+
   function get_plugin_server
   (
     p_plugin_module                   plugin_modules.plugin_module%type
@@ -357,6 +378,34 @@ Copyright 2014 - 2025 by AsterionDB, Inc. All rights reserved.
     raise_application_error(PLUGIN_SERVER_ERROR, 'Requested plugin is not available: ' || p_plugin_module);
 
   end get_plugin_server;
+
+  function get_plugin_servers return json_array_t
+
+  is
+
+    l_plugin_servers                  json_array_t := json_array_t;
+    l_plugin_modules                  json_array_t;
+    l_plugin_server                   json_object_t;
+
+  begin
+
+    for plugin_row in
+    (
+      select  plugin_server, support_info, dbplugin_api.get_plugin_modules(plugin_server) plugin_modules
+        from  plugin_servers
+    )
+    loop
+
+      l_plugin_server := json_object_t(substr(plugin_row.support_info, 1, 1)||'"pluginServer":"'||plugin_row.plugin_server||'",'||substr(plugin_row.support_info, 2));
+      l_plugin_modules := json_array_t(plugin_row.plugin_modules);
+      l_plugin_server.put('pluginModules', l_plugin_modules);
+      l_plugin_servers.append(l_plugin_server);
+
+    end loop;
+
+    return l_plugin_servers;
+
+  end get_plugin_servers;
 
   function get_plugin_server_status
   (
