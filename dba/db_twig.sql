@@ -83,7 +83,7 @@ package db_twig as
   INVALID_PARAMETERS                  constant pls_integer := -20099;
   INVALID_PARAMETERS_EMSG             constant varchar2(19) := 'Invalid parameters.';
 
-  function ai_enabled_database return boolean;
+  function ai_enabled_database return varchar2;
 
   function call_restapi
   (

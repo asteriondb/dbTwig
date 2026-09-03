@@ -79,7 +79,7 @@ package body db_twig as
 ---
 ---
 
-  function ai_enabled_database return boolean
+  function ai_enabled_database return varchar2
 
   is
 
@@ -93,11 +93,11 @@ package body db_twig as
 
     if 0 != instr(l_banner_full, 'AI Database') then
 
-      return true;
+      return 'Y';
 
     else
 
-      return false;
+      return 'N';
 
     end if;
 
