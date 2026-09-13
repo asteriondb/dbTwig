@@ -2,10 +2,11 @@ create or replace
 package db_twig as
 
   SERVICE_NAME                        constant varchar2(6) := 'dbTwig';
+
   SECONDS_PER_DAY                     constant pls_integer := 86400;
+  MILLISECONDS                        constant pls_integer := 1000;
 
 -- Error codes -20000 through -20099 are reserved for use by DbTwig
--- Error codes -20001 through
 
   GENERIC_ERROR                       constant pls_integer := -20000;
 
@@ -33,6 +34,9 @@ package db_twig as
   SESSION_USER_AGENT_MISMATCH_EMSG    constant varchar2(32) := 'Session user-agents do not match';
 
   DBTWIG_FATAL_ERROR_FLOOR            constant pls_integer := -20007;
+
+  FEATURE_DISABLED                    constant pls_integer := -20084;
+  FEATURE_DISABLED_EMSG               constant varchar2(29) := 'Requested feature is disabled';
 
   ACTION_DISALLOWED                   constant pls_integer := -20085;
   ACTION_DISALLOWED_EMSG              constant varchar2(35) := 'The requested action is not allowed';
@@ -79,11 +83,170 @@ package db_twig as
   INVALID_PARAMETERS                  constant pls_integer := -20099;
   INVALID_PARAMETERS_EMSG             constant varchar2(19) := 'Invalid parameters.';
 
+  function ai_enabled_database return varchar2;
+
   function call_restapi
   (
     p_json_parameters                 clob
   )
   return clob;
+
+  procedure create_dbtwig_service
+  (
+    p_service_owner                   db_twig_services.service_owner%type,
+    p_service_name                    db_twig_services.service_name%type,
+    p_session_validation_procedure    db_twig_services.session_validation_procedure%type
+  );
+
+  function database_edition return varchar2;
+
+  function database_version
+  (
+    p_full_version_value              boolean default false
+  )
+  return varchar2;
+
+  procedure db_twig_error
+  (
+    p_error_code                      db_twig_errors.error_code%type,
+    p_json_parameters                 db_twig_errors.json_parameters%type default null,
+    p_error_message                   db_twig_errors.error_message%type default null
+  );
+
+  function empty_json_array
+  (
+    p_key                             varchar2
+  )
+  return clob;
+
+  function epoch_timestamp_to_timestamp
+  (
+    p_epoch_timestamp                 integer
+  )
+  return timestamp;
+
+  function get_array
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return json_array_t;
+
+-- These get_xxx functions exist as an easy way to get parameters from the supplied object.
+-- The first version of a get_xxx function is used when you are getting a required parameter.
+-- The overloaded version is used when getting an optional parameter. The p_default_value
+-- parameter is used if the requested parameter is not found. Note, null, and empty JSON
+-- objects are valid default values.
+
+  function get_array
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   json_array_t
+  )
+  return json_array_t;
+
+  function get_boolean
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return boolean;
+
+  function get_boolean
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   boolean
+  )
+  return boolean;
+
+  function get_clob
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return clob;
+
+  function get_clob
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   clob
+  )
+  return clob;
+
+  function get_dbtwig_errors return clob;
+
+  function get_dbtwig_profile return json_object_t;
+
+  function get_number
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return number;
+
+  function get_number
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   number
+  )
+  return number;
+
+  function get_object
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return json_object_t;
+
+  function get_object
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   json_object_t
+  )
+  return json_object_t;
+
+  function get_service_data
+  (
+    p_service_name                    db_twig_services.service_name%type
+  )
+  return clob;
+
+  function get_service_id
+  (
+    p_service_name                    db_twig_services.service_name%type
+  )
+  return db_twig_services.service_id%type;
+
+  function get_string
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2
+  )
+  return varchar2;
+
+  function get_string
+  (
+    p_json_parameters                 json_object_t,
+    p_key                             varchar2,
+    p_default_value                   varchar2
+  )
+  return varchar2;
+
+  procedure set_log_all_requests
+  (
+    p_service_name                    db_twig_services.service_name%type,
+    p_log_all_requests                db_twig_services.log_all_requests%type
+  );
+
+  procedure set_ssl_enabled
+  (
+    p_ssl_enabled                     db_twig_profile.ssl_enabled%type
+  );
 
   function to_unix_timestamp
   (
@@ -116,121 +279,13 @@ package db_twig as
   )
   return timestamp;
 
-  procedure create_dbtwig_service
-  (
-    p_service_owner                   db_twig_services.service_owner%type,
-    p_service_name                    db_twig_services.service_name%type,
-    p_session_validation_procedure    db_twig_services.session_validation_procedure%type
-  );
-
-  procedure db_twig_error
-  (
-    p_error_code                      db_twig_errors.error_code%type,
-    p_json_parameters                 db_twig_errors.json_parameters%type default null,
-    p_error_message                   db_twig_errors.error_message%type default null
-  );
-
-  function empty_json_array
-  (
-    p_key                             varchar2
-  )
-  return clob;
-
-  function epoch_timestamp_to_timestamp
-  (
-    p_epoch_timestamp                 integer
-  )
-  return timestamp;
+end db_twig;
 
 /*
-
-These helper functions make it easy to extract a parameter from a JSON object.
-
-The functions allow you to easily handle required parameters, parameters w/ a default value and parameters that are null if not present.
-
-To specify a required parameter, set p_required to TRUE (default) and omit the p_default_value parameter.
-
-To specify an optional parameter with a default value, set p_required to FALSE and provide a value for p_default_value.
-
-To specify an optional parameter w/ a default value of null, set p_required to FALSE and omit the p_default_value parameter.
+    sslEnabled                If enabled SSL enabled weblinks will be generated (e.g. https://...).  Use the constants
+                              OPTION_ENABLED and OPTION_DISABLED to set this value.
 
 */
-
-  function get_array
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   json_array_t default null
-  )
-  return json_array_t;
-
-  function get_boolean
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   boolean default null
-  )
-  return boolean;
-
-  function get_clob
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   clob default null
-  )
-  return clob;
-
-  function get_dbtwig_errors return clob;
-
-  function get_number
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   number default null
-  )
-  return number;
-
-  function get_object
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   json_object_t default null
-  )
-  return json_object_t;
-
-  function get_service_data
-  (
-    p_service_name                    db_twig_services.service_name%type
-  )
-  return clob;
-
-  function get_service_id
-  (
-    p_service_name                    db_twig_services.service_name%type
-  )
-  return db_twig_services.service_id%type;
-
-  function get_string
-  (
-    p_json_parameters                 json_object_t,
-    p_key                             varchar2,
-    p_required                        boolean default true,
-    p_default_value                   varchar2 default null
-  )
-  return varchar2;
-
-  procedure set_log_all_requests
-  (
-    p_service_name                    db_twig_services.service_name%type,
-    p_log_all_requests                db_twig_services.log_all_requests%type
-  );
-
-end db_twig;
 .
 /
 show errors package db_twig

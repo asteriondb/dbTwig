@@ -5,14 +5,13 @@ insert into middle_tier_map values ('checkConfirmationToken', 'procedure', 'rest
 insert into middle_tier_map values ('createUserAccount', 'function', 'restapi.create_user_account', 'icam', 'administrator', 'N');
 insert into middle_tier_map values ('createUserSession', 'function', 'restapi.create_user_session', 'icam', 'none', 'N');
 insert into middle_tier_map values ('enrollNewUser', 'function', 'restapi.enroll_new_user', 'icam', 'administrator', 'N');
-insert into middle_tier_map values ('generatePasswordResetToken', 'procedure', 'restapi.generate_password_reset_token', 'icam', 'none', 'N');
 insert into middle_tier_map values ('generateTemporaryPassword', 'function', 'restapi.generate_temporary_password', 'icam', 'administrator', 'N');
 insert into middle_tier_map values ('getActiveSessions', 'function', 'restapi.get_active_sessions', 'icam', 'user', 'Y');
 insert into middle_tier_map values ('getLoginHistory', 'function', 'restapi.get_login_history', 'icam', 'user', 'N');
 insert into middle_tier_map values ('getLoginHistoryForUser', 'function', 'restapi.get_login_history_for_user', 'icam', 'administrator', 'N');
 insert into middle_tier_map values ('getSessionInfo', 'function', 'restapi.get_session_info', 'icam', 'user', 'Y');
+insert into middle_tier_map values ('getUserInfo', 'function', 'restapi.get_user_info', 'icam', 'user', 'N');
 insert into middle_tier_map values ('getUserList', 'function', 'restapi.get_user_list', 'icam', 'administrator', 'N');
-insert into middle_tier_map values ('getUserSettings', 'function', 'restapi.get_user_settings', 'icam', 'user', 'N');
 insert into middle_tier_map values ('recoverUsername', 'procedure', 'restapi.recover_username', 'icam', 'none', 'N');
 insert into middle_tier_map values ('resetPassword', 'procedure', 'restapi.reset_password', 'icam', 'none', 'N');
 insert into middle_tier_map values ('terminateUserSession', 'procedure', 'restapi.terminate_user_session', 'icam', 'user', 'Y');

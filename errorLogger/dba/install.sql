@@ -47,7 +47,7 @@ create table api_errors
 (
   error_id                          varchar2(11) primary key,
   error_timestamp                   timestamp default systimestamp at time zone 'utc' not null,
-  session_id                        varchar2(32),                           -- Doesn't have to reference parent table. This allows us to catch bogus session-ids properly.
+  session_id                        raw(32),                           -- Doesn't have to reference parent table. This allows us to catch bogus session-ids properly.
   error_code                        number(6) not null,
   error_message                     varchar2(4000),
   json_parameters                   clob
@@ -59,6 +59,7 @@ create table api_errors
 @$HOME/asterion/oracle/dbTwig/errorLogger/dba/error_logger.sql
 @$HOME/asterion/oracle/dbTwig/errorLogger/dba/error_logger.pls
 
+create or replace synonym &dbtwig_user..error_logger for &elog_user..error_logger;
 grant execute on &elog_user..error_logger to &dbtwig_user;
 
 exit;

@@ -6,7 +6,7 @@ rem  Written By:  Steve Guilford
 rem
 rem  This SQL script drives the creation of all required objects for the DbTwig Middle Tier Framework
 rem
-rem  Invocation: sqlplus /nolog @install $DBA_USER $DBA_PASSWORD $DATABASE_NAME $DBTWIG_USER $ELOG_USER $DBTWIG_LISTENER $MIDDLE_TIER_PASSWORD
+rem  Invocation: sqlplus /nolog @install $DBA_USER $DBA_PASSWORD $DATABASE_NAME $DBTWIG_USER $ELOG_USER $DBTWIG_LISTENER $MIDDLE_TIER_PASSWORD &SSL_ENABLED
 
 whenever sqlerror exit failure;
 
@@ -19,7 +19,9 @@ define database_name = '&3'
 define dbtwig_user = '&4'
 define elog_user = '&5'
 define dbtwig_listener = '&6'
-define middle_tier_password = '&7'
+define dbplugin_user = '&7'
+define middle_tier_password = '&8'
+define ssl_enabled = '&9'
 
 connect &dba_user/"&dba_password"@"&database_name";
 
@@ -40,13 +42,15 @@ create table db_twig_profile
 (
   production_mode                   varchar2(1) default 'Y'
    constraint dbtwig_prod_mode_chk check (production_mode in ('Y', 'N')) not null,
-  api_error_handler                 varchar2(256) not null
+  api_error_handler                 varchar2(256) not null,
+  ssl_enabled                       varchar2(1) default 'N' not null
+    constraint ssl_enabled_chk check (ssl_enabled in ('N', 'Y'))
 );
 
 insert into db_twig_profile 
-  (production_mode, api_error_handler) 
+  (production_mode, api_error_handler, ssl_enabled) 
 values 
-  ('Y', '&elog_user'||'.error_logger.restapi_error');
+  ('Y', '&elog_user'||'.error_logger.restapi_error', '&ssl_enabled');
 
 commit;
 
@@ -79,12 +83,35 @@ create table logged_requests
     constraint request_chk check (request is json) not null
 );
 
-@@db_twig
-@@db_twig.pls
+create table plugin_servers 
+(
+  plugin_server					    varchar2(255) primary key,
+  ip_address					    varchar2(39),
+  last_activity_timestamp	        timestamp,
+  support_info                      clob default null
+    constraint plugin_support_json_chk check (support_info is json),
+  heartbeat_timestamp               timestamp not null,
+  heartbeat_interval                number(3) default 60 not null);
 
-@@call_restapi.sql
-@@get_column_length.sql
+create table plugin_modules 
+(
+  plugin_server					    varchar2(255)
+    constraint plugin_module_server_fk references
+    plugin_servers(plugin_server),
+  plugin_module					    varchar2(30),
+  driver_name					    varchar2(30) default 'dbPluginDriver',
+  library_name					    varchar2(30));
+
+create unique index plugin_module_ix on plugin_modules(plugin_server, plugin_module);
+
+@$HOME/asterion/oracle/dbTwig/dba/dbPluginType
+@$HOME/asterion/oracle/dbTwig/dba/createDbPluginQueue &dbtwig_user
+
+@@loadPackages
 
 grant execute on call_restapi to &dbtwig_listener;
+
+create or replace synonym &dbplugin_user..dbplugin_runtime_api for &dbtwig_user..dbplugin_runtime_api;
+grant execute on &dbtwig_user..dbplugin_runtime_api to &dbplugin_user;
 
 exit;

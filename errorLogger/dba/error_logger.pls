@@ -43,13 +43,19 @@ package body error_logger as
 
   is
 
-    l_error_text                      clob;
+    l_error_text                      clob := null;
 
   begin
 
     for x in 0..utl_call_stack.error_depth - 1 loop
 
-      l_error_text := l_error_text||utl_call_stack.error_msg(x+1)||chr(10);
+      if l_error_text is not null then
+
+        l_error_text := l_error_text||chr(10);
+
+      end if;
+
+      l_error_text := l_error_text||utl_call_stack.error_msg(x+1);
 
     end loop;
 
@@ -74,7 +80,7 @@ package body error_logger as
     l_session_id                      api_errors.session_id%type := l_json_parameters.get_string('sessionId');
     l_error_id                        api_errors.error_id%type :=
       dbms_random.string('x', get_column_length('API_ERRORS', 'ERROR_ID') - 1);
-    l_error_text                      clob;
+    l_error_text                      api_errors.error_message%type;
     l_error_number                    pls_integer := utl_call_stack.error_number(1);
     l_clob                            clob;
 
@@ -92,6 +98,12 @@ package body error_logger as
 
     end if;
 
+    if l_json_parameters.has('weblinkPassword') then
+
+      l_json_parameters.remove('weblinkPassword');
+
+    end if;
+
     l_clob := l_json_parameters.to_clob;
 
     insert into api_errors
@@ -104,6 +116,47 @@ package body error_logger as
     return l_error_id;
 
   end log_api_error;
+
+  procedure log_api_error
+  (
+    p_json_parameters                 api_errors.json_parameters%type,
+    p_service_id                      api_errors.service_id%type
+  )
+
+  is
+
+    l_error_id                        api_errors.error_id%type;
+
+  begin
+
+    l_error_id := log_api_error(p_json_parameters, p_service_id);
+
+  end log_api_error;
+
+  function log_error
+  (
+    p_error_message                   api_errors.error_message%type,
+    p_error_code                      api_errors.error_code%type,
+    p_service_id                      api_errors.service_id%type,
+    p_json_parameters                 api_errors.json_parameters%type default null
+  )
+  return api_errors.error_id%type
+
+  is
+
+    l_error_id                        api_errors.error_id%type :=
+      dbms_random.string('x', get_column_length('API_ERRORS', 'ERROR_ID'));
+
+  begin
+
+    insert into api_errors
+      (error_id, error_code, error_message, service_id, json_parameters)
+    values
+      (l_error_id, p_error_code, p_error_message, p_service_id, p_json_parameters);
+
+    return l_error_id;
+
+  end log_error;
 
   procedure purge_api_errors
   (

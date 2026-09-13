@@ -248,37 +248,6 @@ package restapi as
 
 /*
 
-  procedure generate_password_reset_token
-
-  API Entry Point: generatePasswordResetToken
-
-  The generate_password_reset_token procedure allows a client application to generate a unique weblink that will allow an
-  unauthenticated user (i.e. not logged in) to recover their password.  This function requires outbound SMTP email support to
-  be enabled.  The AsterionDB system will send an email to the user with a weblink that can be used to access a password reset
-  page.
-
-  This procedure is callable by unauthenticated users.  It supports password recovery when the user has forgotten their password.
-  The application calling this procedure should communicate to the user that a password reset email will be sent to the specified email
-  address.
-
-  Note that if the email address is not registered in the system, a reset email will not be sent.  This procedure will not
-  inform the caller if the email address is valid or not.
-
-  The calling application should indicate to the user that an email will be sent to the specified address if it is valid.
-
-  Embedded parameter values:
-
-    emailAddress              The user's email address.
-
-*/
-
-  procedure generate_password_reset_token
-  (
-    p_json_parameters                 json_object_t
-  );
-
-/*
-
   function generate_temporary_password
 
   API Entry Point: generateTemporaryPassword
@@ -501,6 +470,65 @@ package restapi as
   )
   return clob;
 
+
+/*
+
+  function get_user_settings
+
+  API Entry Point: getUserSettings
+
+  The get_user_settings allows a client application to retrieve the user's settings.
+
+  Embedded parameter values:
+
+    There are no required parameters.
+
+  The JSON object returned by this function contains the following properties:
+
+    username                  The user's username.
+
+    firstName                 The user's first name.
+
+    middleName                The user's middle name.
+
+    lastName                  The user's last name.
+
+    emailAddress              The user's email address.
+
+    accountType               The account type.  Valid values are:
+
+                                AT_USER
+                                AT_EVALUATOR
+                                AT_OWNER
+
+    sessionInactivityLimit    The inactivity limit, expressed in seconds.  A user session that exceedes the inactivity limit will
+                              be terminated.
+
+    sessionLimit              The limit on the number of concurrently active sessions the user may create.
+
+    authMethod                The users's authorization method. Valid values are:
+
+                                AM_PASSWORD
+                                AM_AUTH_CODE
+                                AM_LOGIC_URL
+
+    defaultTimezone           The user's default timezone (e.g. America/Los_Angeles).
+
+    accountStatus             The user account status.  Possible values are:
+
+                                AS_ACTIVE
+                                AS_LOCKED
+                                AS_UNCONFIRMED
+                                AS_CHANGE_PASSWORD
+
+*/
+
+  function get_user_info
+  (
+    p_json_parameters                 json_object_t
+  )
+  return clob;
+
 /*
 
   function get_user_list
@@ -556,61 +584,30 @@ package restapi as
 
 /*
 
-  function get_user_settings
+  procedure send_change_email_code
 
-  API Entry Point: getUserSettings
+  API Entry Point: sendChangeEmailCode
 
-  The get_user_settings allows a client application to retrieve the user's settings.
+  The send_change_email_code is the first step taken when a user changes their email address.  The
+  second step is a call to validate_change_email_code.
+
+  This procedure will send a 6 digit confirmation code to the user's new email address. The user/client must
+  then call validate_change_email_code.
 
   Embedded parameter values:
 
-    There are no required parameters.
+    newEmailAddress           The user's new email address
 
-  The JSON object returned by this function contains the following properties:
+  Possible exceptions returned:
 
-    username                  The user's username.
-
-    firstName                 The user's first name.
-
-    middleName                The user's middle name.
-
-    lastName                  The user's last name.
-
-    emailAddress              The user's email address.
-
-    accountType               The account type.  Valid values are:
-
-                                AT_USER
-                                AT_EVALUATOR
-                                AT_OWNER
-
-    sessionInactivityLimit    The inactivity limit, expressed in seconds.  A user session that exceedes the inactivity limit will
-                              be terminated.
-
-    sessionLimit              The limit on the number of concurrently active sessions the user may create.
-
-    authMethod                The users's authorization method. Valid values are:
-
-                                AM_PASSWORD
-                                AM_AUTH_CODE
-                                AM_LOGIC_URL
-
-    defaultTimezone           The user's default timezone (e.g. America/Los_Angeles).
-
-    accountStatus             The user account status.  Possible values are:
-
-                                AS_ACTIVE
-                                AS_LOCKED
-                                AS_UNCONFIRMED
-                                AS_CHANGE_PASSWORD
+    error_logging.FEATURE_DISABLED
 
 */
 
-  function get_user_settings
+  procedure send_change_email_code
   (
     p_json_parameters                 json_object_t
-  )
-  return clob;
+  );
 
 /*
 
