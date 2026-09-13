@@ -43,13 +43,19 @@ package body error_logger as
 
   is
 
-    l_error_text                      clob;
+    l_error_text                      clob := null;
 
   begin
 
     for x in 0..utl_call_stack.error_depth - 1 loop
 
-      l_error_text := l_error_text||utl_call_stack.error_msg(x+1)||chr(10);
+      if l_error_text is not null then
+
+        l_error_text := l_error_text||chr(10);
+
+      end if;
+
+      l_error_text := l_error_text||utl_call_stack.error_msg(x+1);
 
     end loop;
 
