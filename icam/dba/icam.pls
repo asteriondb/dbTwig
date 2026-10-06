@@ -153,51 +153,6 @@ All rights reserved.
 
   end create_confirmation_token;
 
-/*
-  function create_file_upload_client_session
-  (
-    p_user_id                         icam_users.user_id%type,
-    p_session_inactivity_limit        icam_sessions.session_inactivity_limit%type,
-    p_client_address                  icam_sessions.client_address%type,
-    p_user_agent                      icam_sessions.user_agent%type,
-    p_client_type                     icam_sessions.client_type%type
-  )
-  return clob
-
-  is
-
-    l_session_id                      icam_sessions.session_id%type;
-    l_session_status                  icam_sessions.session_status%type;
-    l_clob                            clob;
-
-  begin
-
-    l_session_id := dbms_random.string('x', digital_bunker.get_column_length('USER_SESSIONS', 'SESSION_ID'));
-    l_session_status := SESSION_ACTIVE;
-
-    insert into icam_sessions
-      (session_id, user_id, client_address, session_created, last_activity, session_inactivity_limit,
-       user_agent, session_status, client_type)
-    values
-      (l_session_id, p_user_id, p_client_address, systimestamp at time zone 'utc', systimestamp at time zone 'utc',
-       p_session_inactivity_limit, p_user_agent, l_session_status, p_client_type);
-
-    select  json_object(
-              'sessionId' is s.session_id,
-              'sessionStatus' is session_status,
-              'firstName' is first_name,
-              'lastName' is last_name)
-      into  l_clob
-      from  icam_sessions s, icam_users u
-     where  s.user_id = icam.get_session_user_id(l_session_id)
-       and  s.session_id = l_session_id
-       and  s.user_id = u.user_id;
-
-    return l_clob;
-
-  end create_file_upload_client_session;
-*/
-
   function create_webapp_client_session
   (
     p_user_id                         icam_users.user_id%type,
@@ -377,6 +332,12 @@ All rights reserved.
     l_session_limit                   icam_users.session_limit%type;
 
   begin
+
+    if get_session_user_id(p_session_id) != get_session_user_id(p_session_to_terminate) then
+
+      raise_application_error(db_twig.INVALID_PARAMETERS, db_twig.INVALID_PARAMETERS_EMSG);
+
+    end if;
 
     update  icam_sessions
        set  session_status = SS_TERMINATED,
@@ -738,7 +699,7 @@ All rights reserved.
   is
 
     l_user_id                         icam_sessions.user_id%type := get_session_user_id_from_json(p_json_parameters);
-    l_user_agent                      icam_sessions.user_agent%type := db_twig.get_string(p_json_parameters, 'userAgent');
+    l_user_agent                      icam_sessions.user_agent%type := extract_user_agent(p_json_parameters);
     l_session_id                      icam_sessions.session_id%type := dbms_crypto.randombytes(get_column_length('ICAM_SESSIONS', 'SESSION_ID'));
 
   begin
@@ -879,23 +840,25 @@ All rights reserved.
     return create_webapp_client_session(l_user_id, l_session_limit, l_session_inactivity_limit,
       l_account_status, p_client_address, p_user_agent, l_auth_method);
 
-/*
-    if restapi.WEBAPP_CLIENT = p_client_type then
-
-      return create_webapp_client_session(l_user_id, l_session_limit, l_session_inactivity_limit,
-        l_account_status, p_client_address, p_user_agent, p_client_type, l_auth_method);
-
-    end if;
-
-    if restapi.FILE_UPLOAD_CLIENT = p_client_type then
-
-      return create_file_upload_client_session(l_user_id, l_session_inactivity_limit,
-        p_client_address, p_user_agent, p_client_type);
-
-    end if;
-*/
-
   end create_user_session;
+
+  function extract_client_address
+  (
+    p_json_parameters                 json_object_t
+  )
+  return icam_sessions.client_address%type
+
+  is
+
+    l_system_parameters               json_object_t := p_json_parameters.get_object('systemParameters');
+    l_client_address                  icam_sessions.client_address%type;
+
+  begin
+
+    l_client_address := l_system_parameters.get_string('clientAddress');
+    return l_client_address;
+
+  end extract_client_address;
 
   function extract_email_domain
   (
@@ -913,22 +876,75 @@ All rights reserved.
 
   end extract_email_domain;
 
+  function extract_http_host
+  (
+    p_json_parameters                 json_object_t
+  )
+  return varchar2
+
+  is
+
+    l_system_parameters               json_object_t := p_json_parameters.get_object('systemParameters');
+
+  begin
+
+    return l_system_parameters.get_string('httpHost');
+
+  end extract_http_host;
+
+  function extract_server_address
+  (
+    p_json_parameters                 json_object_t
+  )
+  return icam_sessions.client_address%type
+
+  is
+
+    l_system_parameters               json_object_t := p_json_parameters.get_object('systemParameters');
+    l_server_address                  icam_sessions.client_address%type;
+
+  begin
+
+    l_server_address := l_system_parameters.get_string('serverAddress');
+    return l_server_address;
+
+  end extract_server_address;
+
   function extract_session_id
   (
-    p_json_object                     json_object_t
+    p_json_parameters                 json_object_t
   )
   return icam_sessions.session_id%type
 
   is
 
+    l_system_parameters               json_object_t := p_json_parameters.get_object('systemParameters');
     l_session_id                      icam_sessions.session_id%type;
 
   begin
 
-    l_session_id := hextoraw(p_json_object.get_string('sessionId'));
+    l_session_id := hextoraw(l_system_parameters.get_string('sessionId'));
     return l_session_id;
 
   end extract_session_id;
+
+  function extract_user_agent
+  (
+    p_json_parameters                 json_object_t
+  )
+  return icam_sessions.user_agent%type
+
+  is
+
+    l_system_parameters               json_object_t := p_json_parameters.get_object('systemParameters');
+    l_user_agent                      icam_sessions.user_agent%type;
+
+  begin
+
+    l_user_agent := l_system_parameters.get_string('userAgent');
+    return l_user_agent;
+
+  end extract_user_agent;
 
   function generate_temporary_password
   (
@@ -1049,18 +1065,16 @@ All rights reserved.
   is
 
     l_session_id                      icam_sessions.session_id%type := extract_session_id(p_json_parameters);
+    l_system_parameters               json_object_t := p_json_parameters.get_object('systemParameters');
     l_blocked_client_address          icam_sessions.client_address%type default null;
     l_blocked_user_agent              icam_sessions.user_agent%type default null;
     l_user_id                         icam_users.user_id%type;
-    l_client_address                  icam_sessions.client_address%type;
-    l_user_agent                      icam_sessions.user_agent%type;
+    l_client_address                  icam_sessions.client_address%type := extract_client_address(p_json_parameters);
+    l_user_agent                      icam_sessions.user_agent%type := extract_user_agent(p_json_parameters);
 
   begin
 
     begin
-
-      l_client_address := p_json_parameters.get_string('clientAddress');
-      l_user_agent := p_json_parameters.get_string('userAgent');
 
       select  user_id, client_address, user_agent
         into  l_user_id, l_blocked_client_address, l_blocked_user_agent
@@ -1236,7 +1250,7 @@ All rights reserved.
 
   function get_session_user_id_from_json
   (
-    p_json_object                     json_object_t
+    p_json_parameters                 json_object_t
   )
   return icam_users.user_id%type
 
@@ -1244,7 +1258,7 @@ All rights reserved.
 
   begin
 
-    return get_session_user_id(extract_session_id(p_json_object));
+    return get_session_user_id(extract_session_id(p_json_parameters));
 
   end get_session_user_id_from_json;
 
@@ -2170,8 +2184,9 @@ All rights reserved.
   is
 
     l_session_id                      icam_sessions.session_id%type := extract_session_id(p_json_parameters);
-    l_client_address                  icam_sessions.client_address%type default null;
-    l_user_agent                      icam_sessions.user_agent%type default null;
+    l_system_parameters               json_object_t := p_json_parameters.get_object('systemParameters');
+    l_client_address                  icam_sessions.client_address%type := extract_client_address(p_json_parameters);
+    l_user_agent                      icam_sessions.user_agent%type := extract_user_agent(p_json_parameters);
     l_last_activity_in_seconds        number(9);
     l_session_inactivity_limit        icam_sessions.session_inactivity_limit%type;
     l_session_address                 icam_sessions.client_address%type;
@@ -2182,9 +2197,6 @@ All rights reserved.
   begin
 
     begin
-
-      l_client_address := p_json_parameters.get_string('clientAddress');
-      l_user_agent := p_json_parameters.get_string('userAgent');
 
       select  ( cast(systimestamp at time zone 'utc' as date) - cast(last_activity as date)) * db_twig.SECONDS_PER_DAY,
               s.session_inactivity_limit, client_address, user_agent, session_status, client_type

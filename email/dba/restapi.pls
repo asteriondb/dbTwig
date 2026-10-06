@@ -57,8 +57,8 @@ package body restapi as
 
     l_origin                          varchar2(256) := db_twig.get_string(p_json_parameters, 'origin');
     l_session_id                      icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_client_addr                     icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
-    l_server_addr                     icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'serverAddress');
+    l_client_addr                     icam_sessions.client_address%type := icam.extract_client_address(p_json_parameters);
+    l_server_addr                     icam_sessions.client_address%type := icam.extract_server_address(p_json_parameters);
 
   begin
 

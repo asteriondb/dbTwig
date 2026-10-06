@@ -57,19 +57,28 @@ exports.callDbTwig = async function(connection, requestData)
   if (Object.hasOwn(requestData.body, 'userAgent')) delete requestData.body.userAgent;
   if (Object.hasOwn(requestData.body, 'httpHost')) delete requestData.body.httpHost;
   if (Object.hasOwn(requestData.body, 'serverAddress')) delete requestData.body.serverAddress;
+  if (Object.hasOwn(requestData.body, 'systemParameters')) delete requestData.body.systemParameters;
+
+  if (Object.hasOwn(requestData.query, 'sessionId')) delete requestData.body.sessionId;
+  if (Object.hasOwn(requestData.query, 'clientAddress')) delete requestData.body.clientAddress;  
+  if (Object.hasOwn(requestData.query, 'userAgent')) delete requestData.body.userAgent;
+  if (Object.hasOwn(requestData.query, 'httpHost')) delete requestData.body.httpHost;
+  if (Object.hasOwn(requestData.query, 'serverAddress')) delete requestData.body.serverAddress;
+  if (Object.hasOwn(requestData.query, 'systemParameters')) delete requestData.query.systemParameters;
 
   systemParameters.sessionId = requestData.sessionId;
   systemParameters.clientAddress = requestData.clientAddress;
   systemParameters.userAgent = requestData.userAgent;
   systemParameters.httpHost =  requestData.httpHost;
   systemParameters.serverAddress = requestData.serverAddress;
+  systemParameters.serviceName = requestData.serviceName;
+  systemParameters.entryPoint = requestData.entryPoint;
 
   let text = 'declare json_data clob := null; begin json_data := call_restapi(:jsonParameters); :jsonData := json_data; end;';
   let bindVars = 
   {
     jsonData: {type: oracledb.CLOB, dir: oracledb.BIND_OUT},
-    jsonParameters: JSON.stringify({...systemParameters, ...requestData.body, ...requestData.query, serviceName: requestData.serviceName, 
-      entryPoint: requestData.entryPoint})
+    jsonParameters: JSON.stringify({...requestData.query, ...requestData.body, systemParameters: systemParameters})
   }
 
   let result = await tryAndCatch(connection, text, bindVars);

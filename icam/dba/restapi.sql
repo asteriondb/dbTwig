@@ -47,7 +47,7 @@ package restapi as
   Embedded parameter values:
 
     There are no required parameters. The activate_blocked_session function determines the blocked session-id from the embedded
-    parameters that are required by the DbTwig middle-tier handler.
+    parameters that are provided by the DbTwig middle-tier handler.
 
   Embedded values in the returned JSON string value:
 

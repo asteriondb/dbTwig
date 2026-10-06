@@ -122,17 +122,41 @@ as
   )
   return clob;
 
+  function extract_client_address
+  (
+    p_json_parameters                 json_object_t
+  )
+  return icam_sessions.client_address%type;
+
   function extract_email_domain
   (
     p_email_address                   icam_users.email_address%type
   )
   return varchar2 deterministic;
 
+  function extract_http_host
+  (
+    p_json_parameters                 json_object_t
+  )
+  return varchar2;
+
+  function extract_server_address
+  (
+    p_json_parameters                 json_object_t
+  )
+  return icam_sessions.client_address%type;
+
   function extract_session_id
   (
-    p_json_object                     json_object_t
+    p_json_parameters                 json_object_t
   )
   return icam_sessions.session_id%type;
+
+  function extract_user_agent
+  (
+    p_json_parameters                 json_object_t
+  )
+  return icam_sessions.user_agent%type;
 
   function generate_temporary_password
   (
@@ -235,7 +259,7 @@ as
 
   function get_session_user_id_from_json
   (
-    p_json_object                     json_object_t
+    p_json_parameters                 json_object_t
   )
   return icam_users.user_id%type;
 

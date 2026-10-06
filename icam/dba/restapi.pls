@@ -31,8 +31,8 @@ as
   is
 
     l_blocked_session_id              icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_blocked_client_address          icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
-    l_blocked_user_agent              icam_sessions.user_agent%type := db_twig.get_string(p_json_parameters, 'userAgent');
+    l_blocked_client_address          icam_sessions.client_address%type := icam.extract_client_address(p_json_parameters);
+    l_blocked_user_agent              icam_sessions.user_agent%type := icam.extract_user_agent(p_json_parameters);
 
   begin
 
@@ -51,13 +51,13 @@ as
     l_session_status                  icam_sessions.session_status%type;
 
     l_session_id                      icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := icam.extract_client_address(p_json_parameters);
     l_current_password                varchar2(60);
     l_new_password                    varchar2(60);
     l_clob                            clob;
 
     l_blocked_session_id              icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_blocked_user_agent              icam_sessions.user_agent%type := db_twig.get_string(p_json_parameters, 'userAgent');
+    l_blocked_user_agent              icam_sessions.user_agent%type := icam.extract_user_agent(p_json_parameters);
 
 
   begin
@@ -117,7 +117,7 @@ as
     l_email_address                   icam_users.email_address%type;
     l_default_timezone                icam_users.default_timezone%type;
     l_caller_session_id               icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := icam.extract_client_address(p_json_parameters);
 
   begin
 
@@ -141,7 +141,7 @@ as
 
   is
 
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := icam.extract_client_address(p_json_parameters);
     l_user_agent                      icam_sessions.user_agent%type;
     l_clob                            clob;
     l_identification                  icam_users.username%type;
@@ -149,7 +149,7 @@ as
 
   begin
 
-    l_user_agent := db_twig.get_string(p_json_parameters, 'userAgent');
+    l_user_agent := icam.extract_user_agent(p_json_parameters);
     l_identification := db_twig.get_string(p_json_parameters, 'identification');
     l_txt_password := db_twig.get_string(p_json_parameters, 'password');
     l_clob := icam.create_user_session(l_identification, l_txt_password, l_client_address, l_user_agent);
@@ -167,7 +167,7 @@ as
   is
 
     l_session_id                      icam_sessions.session_id%type := icam.extract_session_id(p_json_parameters);
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := icam.extract_client_address(p_json_parameters);
     l_username                        icam_users.username%type := db_twig.get_string(p_json_parameters, 'username');
     l_clob                            clob;
     l_temporary_password              varchar2(10);
@@ -278,7 +278,7 @@ as
   is
 
     l_email_address                   icam_users.email_address%type := db_twig.get_string(p_json_parameters, 'emailAddress');
-    l_client_address                  confirmation_tokens.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
+    l_client_address                  confirmation_tokens.client_address%type := icam.extract_client_address(p_json_parameters);
 
   begin
 
@@ -294,7 +294,7 @@ as
   is
 
     l_confirmation_token              confirmation_tokens.confirmation_token%type;
-    l_client_address                  icam_sessions.client_address%type := db_twig.get_string(p_json_parameters, 'clientAddress');
+    l_client_address                  icam_sessions.client_address%type := icam.extract_client_address(p_json_parameters);
     l_new_password                    varchar2(60);
 
   begin
@@ -317,11 +317,11 @@ as
       db_twig.get_string(p_json_parameters, 'newEmailAddress');
     l_user_id                         icam_users.user_id%type := icam.get_session_user_id_from_json(p_json_parameters);
     l_client_address                  icam_sessions.client_address%type :=
-      db_twig.get_string(p_json_parameters, 'clientAddress');
+      icam.extract_client_address(p_json_parameters);
 
   begin
 
-    icam.send_change_email_code(l_user_id, l_new_email_address, db_twig.get_string(p_json_parameters, 'clientAddress'));
+    icam.send_change_email_code(l_user_id, l_new_email_address, icam.extract_client_address(p_json_parameters));
 
   end send_change_email_code;
 

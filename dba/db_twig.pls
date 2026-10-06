@@ -33,6 +33,7 @@ package body db_twig as
     PRAGMA AUTONOMOUS_TRANSACTION;
 
     l_json_parameters                 json_object_t := json_object_t(p_json_parameters);
+    l_system_parameters               json_object_t := l_json_parameters.get_object('systemParameters');
     l_clob                            clob;
 
   begin
@@ -118,6 +119,7 @@ package body db_twig as
     l_json_response                   clob := '{"status": "success"}';
     l_json_data                       json_object_t;
     l_entry_point                     varchar2(128);
+    l_system_parameters               json_object_t;
     l_service_name                    db_twig_services.service_name%type;
     l_service_owner                   db_twig_services.service_owner%type;
     l_service_id                      db_twig_services.service_id%type;
@@ -154,8 +156,9 @@ package body db_twig as
 
     begin
 
-      l_service_name  := get_string(l_json_parameters, 'serviceName');
-      l_entry_point := get_string(l_json_parameters, 'entryPoint');
+      l_system_parameters := get_object(l_json_parameters, 'systemParameters');
+      l_service_name  := get_string(l_system_parameters, 'serviceName');
+      l_entry_point := get_string(l_system_parameters, 'entryPoint');
 
     exception
 
@@ -307,12 +310,12 @@ package body db_twig as
 
       if 'Y' = l_production_mode then
 
-        l_error_text := l_error_text||utl_call_stack.error_msg(1);
+        l_error_text := l_error_text;
         raise_application_error(l_error_code, l_error_text, false);
 
       else
 
-        l_error_text := utl_call_stack.error_msg(1)||chr(10)||l_error_text;
+        l_error_text := l_error_text||chr(10)||utl_call_stack.error_msg(1);
         raise_application_error(l_error_code, l_error_text, true);
 
       end if;
